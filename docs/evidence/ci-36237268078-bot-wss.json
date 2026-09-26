@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "build_sha": "bfae49d685c235c29ff6f264a643703f5323e9ab",
+  "ruleset": "openmajiang.mcr@1.0.0",
+  "clock_profile": "production_defaults",
+  "transport": "wss",
+  "match_format": "standard_16",
+  "requested_hands": 100,
+  "external_bot_processes": 4,
+  "sdk_runtimes": {
+    "python": 3,
+    "typescript": 1
+  },
+  "registered_and_verified_accounts": 4,
+  "completed_hands": 112,
+  "completed_matches": 7,
+  "anonymous_privacy_checks": 112,
+  "reconnect_injected": true,
+  "connections": {
+    "0": 12,
+    "1": 11,
+    "2": 11,
+    "3": 10
+  },
+  "platform_interrupted": false,
+  "server_self_timeouts": 0,
+  "server_reaction_timeouts": 2,
+  "server_timeout_counters_complete": true,
+  "bot_metrics": {
+    "0": {
+      "decisions": 9467,
+      "acks": 9466,
+      "errors": {
+        "STALE_CONTROL": 1
+      }
+    },
+    "1": {
+      "decisions": 9455,
+      "acks": 9455,
+      "errors": {}
+    },
+    "2": {
+      "decisions": 9471,
+      "acks": 9471,
+      "errors": {}
+    },
+    "3": {
+      "decisions": 9494,
+      "acks": 9494,
+      "errors": {}
+    }
+  },
+  "credential_revocations_verified": 4,
+  "elapsed_seconds": 5676.35
+}
