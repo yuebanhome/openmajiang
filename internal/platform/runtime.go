@@ -94,6 +94,7 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 		}
 	}
 	if !valid {
+		_ = s.recordInvalidAction(ctx, m, participant, a.CommandID, "INVALID_OPTION")
 		return nil, api(400, "INVALID_OPTION")
 	}
 	var exists bool
@@ -119,6 +120,9 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 	if e != nil {
 		return nil, e
 	}
+	if e = s.recordDecision(ctx, tx, m, a.DecisionID, participant, "accepted", accepted); e != nil {
+		return nil, e
+	}
 	response := jsonBytes(map[string]any{"type": "command_ack", "command_id": a.CommandID, "decision_id": a.DecisionID, "status": status})
 	_, e = tx.Exec(ctx, `INSERT INTO platform_commands(participant_id,match_id,command_id,payload_hash,decision_id,response,accepted_at) VALUES($1,$2,$3,$4,$5,$6,$7)`, participant, m.ID, a.CommandID, hash, a.DecisionID, response, accepted)
 	if e != nil {
@@ -130,7 +134,7 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 	return response, nil
 }
 func (s *Service) Run(ctx context.Context) {
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(25 * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		select {
@@ -142,7 +146,8 @@ func (s *Service) Run(ctx context.Context) {
 	}
 }
 func (s *Service) tick(ctx context.Context) {
-	rows, e := s.pool.Query(ctx, `SELECT id FROM platform_matches WHERE status='active' AND (owner_id=$1 OR owner_until<now()) ORDER BY updated_at LIMIT 200`, s.id)
+	_, _ = s.pool.Exec(ctx, `UPDATE platform_matches SET owner_until=now()+interval '5 seconds' WHERE status='active' AND owner_id=$1 AND owner_until<now()+interval '3 seconds'`, s.id)
+	rows, e := s.pool.Query(ctx, `SELECT id FROM platform_matches WHERE status='active' AND ((owner_id=$1 AND (next_run_at<=now() OR deadline_at<=now())) OR owner_until<now()) ORDER BY LEAST(next_run_at,deadline_at) LIMIT 200`, s.id)
 	if e != nil {
 		return
 	}
@@ -169,6 +174,8 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 	if e != nil || m.Status != "active" {
 		return
 	}
+	initialSeq := m.Seq
+	originalDeadline := m.Deadline
 	recovered := false
 	if m.Owner != s.id {
 		var expired bool
@@ -217,10 +224,38 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 		}
 		e = s.advance(ctx, tx, &m, rule, rulesdk.Input{Type: "next_hand"})
 	} else if expired || recovered {
+		if expired || recovered {
+			for _, d := range flow.Decisions {
+				if _, exists := m.Choices[d.ParticipantID]; !exists {
+					outcome := "timeout"
+					if recovered {
+						outcome = "recovery"
+					}
+					if e = s.recordDecision(ctx, tx, m, d.ID, d.ParticipantID, outcome, time.Now()); e != nil {
+						return
+					}
+					if recovered {
+						continue
+					}
+					column := "self_timeouts"
+					if flow.WindowKind == "reaction" {
+						column = "reaction_timeouts"
+					}
+					_, e = tx.Exec(ctx, "UPDATE platform_seats SET "+column+"="+column+"+1 WHERE participant_id=$1", d.ParticipantID)
+					if e != nil {
+						return
+					}
+				}
+			}
+		}
 		if flow.WindowKind == "reaction" {
 			e = s.advance(ctx, tx, &m, rule, rulesdk.Input{Type: "resolve", Choices: m.Choices})
 		} else if flow.WindowKind == "self" {
-			e = s.advance(ctx, tx, &m, rule, rulesdk.Input{Type: "timeout"})
+			pid := ""
+			if len(flow.Decisions) > 0 {
+				pid = flow.Decisions[0].ParticipantID
+			}
+			e = s.advance(ctx, tx, &m, rule, rulesdk.Input{Type: "timeout", ParticipantID: pid})
 		}
 	} else if flow.WindowKind == "self" || flow.WindowKind == "reaction" {
 		for _, d := range flow.Decisions {
@@ -246,6 +281,9 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 			if choice == "" {
 				continue
 			}
+			if e = s.recordDecision(ctx, tx, m, d.ID, d.ParticipantID, "builtin", time.Now()); e != nil {
+				return
+			}
 			if flow.WindowKind == "reaction" {
 				m.Choices[d.ParticipantID] = choice
 				_, e = tx.Exec(ctx, `UPDATE platform_matches SET choices=$2 WHERE id=$1`, m.ID, jsonBytes(m.Choices))
@@ -255,8 +293,13 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 			}
 		}
 	}
+	if e == nil && m.Seq == initialSeq && m.Deadline != nil {
+		_, e = tx.Exec(ctx, `UPDATE platform_matches SET next_run_at=$2 WHERE id=$1`, m.ID, m.Deadline)
+	}
 	if e == nil {
-		_ = tx.Commit(ctx)
+		if err := tx.Commit(ctx); err == nil && expired && originalDeadline != nil && m.Seq != initialSeq && s.cfg.ObserveTimerLag != nil {
+			s.cfg.ObserveTimerLag(time.Since(*originalDeadline))
+		}
 	}
 }
 

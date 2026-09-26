@@ -22,6 +22,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 	m.HandleFunc("POST /v1/rooms/{id}/bots", s.mutation(s.addBot))
 	m.HandleFunc("POST /v1/rooms/{id}/start", s.mutation(s.startRoom))
 	m.HandleFunc("POST /v1/rooms/{id}/leave", s.mutation(s.leaveRoom))
+	m.HandleFunc("POST /v1/rooms/{id}/rematch", s.mutation(s.rematch))
 	m.HandleFunc("POST /v1/rooms/{id}/actions", s.mutation(s.actionHTTP))
 	m.HandleFunc("GET /v1/rooms/{id}/view", s.playerView)
 	m.HandleFunc("POST /v1/rooms/{id}/take-control", s.mutation(s.takeControl))
@@ -47,6 +48,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 	s.botRoutes(m)
 	s.queueRoutes(m)
 	s.adminRoutes(m)
+	s.statisticsRoutes(m)
 }
 func (s *Service) listRooms(w http.ResponseWriter, r *http.Request) {
 	rows, e := s.pool.Query(r.Context(), `SELECT id FROM platform_rooms ORDER BY CASE status WHEN 'playing' THEN 0 WHEN 'waiting' THEN 1 ELSE 2 END,created_at DESC LIMIT 100`)
@@ -178,6 +180,9 @@ func (s *Service) create(ctx context.Context, u auth.User, c createRequest) (Roo
 		return r, "", e
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, c.RuleID, c.RuleVersion); e != nil {
+		return r, "", e
+	}
 	if e = lockEligible(ctx, tx, u.ID); e != nil {
 		return r, "", e
 	}
@@ -260,6 +265,9 @@ func (s *Service) join(ctx context.Context, rid, invite string, u auth.User) err
 		return e
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, "", ""); e != nil {
+		return e
+	}
 	if e = lockEligible(ctx, tx, u.ID); e != nil {
 		return e
 	}
@@ -300,6 +308,9 @@ func (s *Service) join(ctx context.Context, rid, invite string, u auth.User) err
 		return api(409, "ALREADY_SEATED")
 	}
 	_, _ = tx.Exec(ctx, `DELETE FROM platform_queue WHERE user_id=$1 AND bot_id=''`, u.ID)
+	if e = resetReady(ctx, tx, rid); e != nil {
+		return e
+	}
 	return tx.Commit(ctx)
 }
 func (s *Service) joinRoom(w http.ResponseWriter, r *http.Request) {
@@ -405,6 +416,23 @@ func (s *Service) leaveRoom(w http.ResponseWriter, r *http.Request) {
 	} else {
 		_, e = tx.Exec(r.Context(), `DELETE FROM platform_seats WHERE room_id=$1 AND user_id=$2 AND kind='human'`, r.PathValue("id"), u.ID)
 	}
+	if e == nil && status == "waiting" {
+		e = resetReady(r.Context(), tx, r.PathValue("id"))
+		if e == nil {
+			var next string
+			err := tx.QueryRow(r.Context(), `SELECT user_id FROM platform_seats WHERE room_id=$1 AND active AND kind<>'builtin' ORDER BY seat_order LIMIT 1`, r.PathValue("id")).Scan(&next)
+			if err == nil {
+				_, e = tx.Exec(r.Context(), `UPDATE platform_rooms SET owner_id=$2 WHERE id=$1 AND owner_id=$3`, r.PathValue("id"), next, u.ID)
+			} else if err == pgx.ErrNoRows {
+				_, e = tx.Exec(r.Context(), `UPDATE platform_rooms SET status='cancelled' WHERE id=$1`, r.PathValue("id"))
+				if e == nil {
+					_, e = tx.Exec(r.Context(), `UPDATE platform_seats SET active=false WHERE room_id=$1`, r.PathValue("id"))
+				}
+			} else {
+				e = err
+			}
+		}
+	}
 	if e == nil {
 		e = tx.Commit(r.Context())
 	}
@@ -459,6 +487,7 @@ func (s *Service) BeforeDelete(ctx context.Context, userID string) error {
 	return nil
 }
 func (s *Service) OnDelete(userID string) {
+	s.invalidatePublicSnapshots()
 	ctx := context.Background()
 	_, _ = s.pool.Exec(ctx, `UPDATE platform_seats SET name='已注销用户' WHERE user_id=$1`, userID)
 	_, _ = s.pool.Exec(ctx, `UPDATE platform_bots SET enabled=false,name='已注销 Bot' WHERE owner_id=$1`, userID)
@@ -469,7 +498,7 @@ func (s *Service) OnRevoke(userID, sessionID string, all bool) {
 	q := `UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',connected_until=NULL WHERE user_id=$1 AND kind='human'`
 	args := []any{userID}
 	if !all {
-		q += ` AND controller=$2`
+		q += ` AND controller_session=$2`
 		args = append(args, sessionID)
 	}
 	_, _ = s.pool.Exec(ctx, q, args...)

@@ -1,0 +1,118 @@
+# HTTP API 与平台运行契约
+
+本文件对应 `internal/platform` 和 `internal/auth` 的实际路由。JSON 成功响应使用下表中的对象；错误统一为 `{"error":{"code":"…","message":"…"}}`。未知 `/v1/` 路由返回 JSON 404，不落入前端 SPA。
+
+## 身份、来源和写入
+
+- 浏览器账号使用 HttpOnly 会话 Cookie。`GET /v1/me` 提供本人资料和 CSRF token。浏览器写请求必须同源 `Origin`、`X-CSRF-Token`、`Content-Type: application/json`；游客观战票据不要求注册或 CSRF。
+- 创建房间、入座、排队和创建 Bot 必须验证邮箱，账号状态必须 `active`。未验证账号可访问自己的设置、完成验证；游客可访问公开发现、观战和弃牌回放。
+- Bot API Key 仅用于换取短期 Bot session，不能访问账号管理 API。短期 session 通过 `Authorization: Bearer …` 发送。任何密钥均不得放进 URL。
+- 公开房间、公开快照、公开牌谱全部是弃牌视角。即使使用自己的账号 Cookie 或该桌 Bot 所有者身份访问公开接口，也不会升级为私人视角。
+- 账号写接口按可信代理策略获得客户端地址。全局 HTTP、写请求、票据签发和 WS 消息有独立速率限制；WS 最多 512 条、每地址 32 条、每控制身份 4 条。消息上限 32 KiB，发送阻塞 2 秒会断开慢消费者。
+
+## 房间与入座
+
+| 方法与路径 | 请求 | 响应与权限 |
+|---|---|---|
+| `GET /v1/public/rooms` | 无 | `{rooms:[Room]}`，最多 100 条，活跃优先 |
+| `GET /v1/public/rooms/{id}` | 无 | `{room:Room}`，无需邀请码 |
+| `GET /v1/rooms/{id}` | 无 | `{room,own_participant_id?}`，本人身份单独标识 |
+| `POST /v1/rooms` | `{name,mode,ruleset_id,ruleset_version,match_format,online_profile?,seat_count?,invite_only,self_test}` | `{room,invite_code}`；邀请码仅本次返回，不存明文 |
+| `POST /v1/rooms/{id}/join` | `{invite_code?:string}` | `{room,own_participant_id}` |
+| `POST /v1/rooms/join` | `{invite_code:string}` | 查找邀请房并入座，返回房间 |
+| `POST /v1/rooms/{id}/ready` | `{ready:boolean}` | 仅本人真人席位；返回房间 |
+| `POST /v1/rooms/{id}/bots` | `{builtin:"random_legal"或"basic_heuristic"}` 或 `{bot_id:string}` | 房主添加内置或自己 Bot；返回房间 |
+| `POST /v1/rooms/{id}/start` | `{}` | 房主开始；满座、全部准备、外部 Bot 在线且兼容后返回房间 |
+| `POST /v1/rooms/{id}/leave` | `{}` | 等待中立即离席；比赛中记录手后退出 |
+| `POST /v1/rooms/{id}/invite-rotate` | `{}` | 等待中的房主轮换邀请码，旧邀请码失效；观战不受影响 |
+| `POST /v1/practice` | `{}` | 本人加三个内置 Bot，直接开始国标单盘练习，返回 `{room}` |
+| `GET /v1/queue` | 无 | `{queued,room_id}`，本人匹配状态 |
+| `POST /v1/queue` | `{ruleset_id,ruleset_version,match_format}` | `{status:"queued"}`，只匹配真人 |
+| `DELETE /v1/queue` | 无 | `{status:"cancelled"}` |
+
+`Room` 包含 `id/name/owner_id/mode/ruleset_id/ruleset_version/online_profile/match_format/capacity/invite_only/self_test/status/match_id/seats`。`seats` 仅给 `participant_id/bot_id?/name/kind/seat_id/ready/connected/leave_after_hand`，不返回账号邮箱、会话、控制凭证或私牌。房间等待时的 `seat_id` 是入座顺序；比赛中当前座位以授权快照和 `seat_assignment_version` 为准。
+
+`mode` 为 `human_only/mixed/bot_only`。默认规则 `openmajiang.mcr@1.0.0`，默认标准 16 盘；练习使用 `practice_1/practice_4`。人数与线上补充从插件 manifest 选择，非法组合被拒绝。`self_test` 必须启用邀请入座，但依然公开观战。公共匹配同所有者最多一个身份，自测允许同一所有者多个独立 Bot。
+
+公共匹配达到插件人数后，保留一个等待房间 60 秒，真人逐一准备，Bot 通过已鉴权 WS 发送 `ready`。全员准备后自动开始；确认超时取消房间并释放席位。不会静默用 Bot 填真人桌。
+
+## 参赛、决策与恢复
+
+| 方法与路径 | 响应 |
+|---|---|
+| `GET /v1/me/active-match` | `{room:null,match:null}` 或 `{room,match_id}` |
+| `GET /v1/rooms/{id}/view` | 本人过滤快照及授权上下文，其他人的手牌不返回 |
+| `POST /v1/rooms/{id}/take-control` | 增加本人控制世代，并返回新快照；旧连接不能继续控制 |
+| `POST /v1/rooms/{id}/actions` | 完整 `submit_action` JSON；返回持久化 `command_ack` |
+| `GET /v1/me/matches` | `{matches:[…]}`，本人及本人 Bot 的历史场次 |
+| `GET /v1/me/matches/{id}` | 本人当前快照；Bot 视角通过 `?bot_id=…` 明确选择并校验归属 |
+| `GET /v1/me/matches/{id}/replay?after=0&limit=100&hand_index=1` | `{frames,next_after,view_policy:"participant_private"}` |
+| `GET /v1/me/hands/{id}/replay` | 同上，`hand_id` 为 `{match_id}_hand_{index}` |
+
+动作需携带 `type/protocol_version/match_id/hand_id/participant_id/seat_id/seat_assignment_version/control_epoch/decision_id/window_id/command_id/option_id`。`protocol_version` 为 `1.0`，`command_id` 8–128 字符；`option_id` 必须来自本次合法动作。重试使用完全相同的动作对象，不能生成新的 `command_id`。
+
+幂等范围 `(participant_id,match_id,command_id)`。在认证之后、当前窗口检查之前查询历史命令：同负载返回第一次结果，不同负载返回 `IDEMPOTENCY_CONFLICT`。`recorded` 表示响应意向已登记，不表示已经胜出；`applied` 表示直接动作已裁决。响应窗保持固定截止，多个玩家的登记互不使对方决策失效；时间到后统一裁决。
+
+事务同时保存最新规则状态、输入和事件、每个参赛者过滤观测、独立弃牌投影及命令结果。事务提交前不会发送 ACK。回放数据也是这些已经持久化的过滤观测，不是事后重新生成的全知牌谱。
+
+## 匿名弃牌观战
+
+| 方法与路径 | 响应 |
+|---|---|
+| `POST /v1/public/rooms/{id}/spectator-ticket` | `{ticket,expires_at,view_policy}`，5 分钟只读票据 |
+| `POST /v1/public/matches/{id}/spectator-tickets` | 同上，按比赛找到房间 |
+| `GET /v1/public/rooms/{id}/spectator` | `{type:"spectator_snapshot",view,room,match_id,hand_id,…}` |
+| `GET /v1/public/matches` | `{matches:[{id,room_id,status,ruleset_id,ruleset_version,match_format,platform_interrupted,created_at}]}` |
+| `GET /v1/public/matches/{id}` | 公开房间、比赛摘要和弃牌视图 |
+| `GET /v1/public/matches/{id}/snapshot` | 公开弃牌快照 |
+| `GET /v1/public/matches/{id}/replay?after=0&limit=100&hand_index=1` | `{frames,next_after,view_policy:"spectator_discard_only@1"}`；limit 最大 200 |
+| `GET /v1/public/hands/{id}/replay` | 指定一手的公开弃牌回放 |
+
+观众 `view` 是严格白名单，唯一牌面字段是 `discards[].kind`；discard 使用独立 `discard_id`。不能包含实体 tile ID、手牌、花牌牌面、副露牌面、番种、拆牌、墙序或随机种子。取用弃牌只改变 `claimed`，不展开手中消耗的牌。手终或比赛结束也不放宽。
+
+公开流可包含座位展示名、身份类型、手牌张数、门风、圈风、剩余张数、动作名称、比分、终局方式和身份列表。`winners` 是为未来多赢家插件保留的纯参赛身份数组。
+
+## WebSocket
+
+- 玩家：`/v1/ws/players?room_id=…`，同源 Cookie。连接时重新核验账号和会话并领取新控制世代。
+- Bot：`/v1/ws/bots?room_id=…`，短期 Bearer session；省略 room_id 则查询该 Bot 活动席位。
+- 观众：`/v1/ws/spectators?room_id=…`，建立后 5 秒内首帧发送 `{"type":"authenticate","ticket":"…"}`。首帧通过前不发牌桌数据。
+
+等待房间发送 `room_snapshot`。参赛快照线类型为 **`snapshot`**，并依次发送 `decision_request`；观众为 `spectator_snapshot`。每个连接得到独立 stream，跨手和场次重置。新手先发 `seat_assigned` 控制帧。完整快照带 `stream_id/view_seq`；决策的 `observation_ref` 精确引用刚发出的快照。`self_timeout_count/reaction_timeout_count` 只在本人授权快照中给出，用于接入验收。
+
+输入支持 `hello/resume/ready/submit_action/ping/heartbeat`。`resume` 建立完整快照屏障，不延长截止时间；已登记意向放在快照 `recorded` 字段，不要求重复选牌。`ready` 只改变本人等待席位，观众无此权限。任何观众的 `submit_action` 返回 `READ_ONLY`。
+
+服务端每 10 秒发送 `heartbeat`；`ping/heartbeat` 输入得到 `pong`。控制帧 `command_ack/command_error/error/seat_assigned/control_changed` 不通过状态序号去重。错误线类型为 **`command_error`**，内含 `command_id/error.code`。控制世代被取代的旧连接立即停止传输。每次参赛快照和动作前重新验证 session，撤销凭证会使既有连接失效。
+
+## Bot 控制台与凭证
+
+| 方法与路径 | 请求与响应 |
+|---|---|
+| `GET /v1/bots` | `{bots:[{id,name,enabled,current_version,online}]}`，仅本人 |
+| `POST /v1/bots` | `{name}` → `{bot}`；每账号最多四个自定义 Bot |
+| `PATCH /v1/bots/{id}` | `{name?,enabled?}`，停用会撤销现有凭证/session和控制世代 |
+| `GET /v1/bots/{id}/versions` | `{versions:[{id,label,metadata,created_at}]}` |
+| `POST /v1/bots/{id}/versions` | `{label,metadata?}` → `{version}`，新版本独立不可改写；场次锁定所选版本 |
+| `GET /v1/bots/{id}/credentials` | 只列 `{id,created_at,revoked_at}`，不读取密钥 |
+| `POST /v1/bots/{id}/credentials` | `{}` → `{credential_id,api_key,shown_once:true}`；仅这一次显示明文 |
+| `DELETE /v1/bots/{id}/credentials/{credential}` | 撤销 key、关联 session，并增加控制世代 |
+| `POST /v1/bots/{id}/queue` | `{ruleset_id,ruleset_version,match_format,continuous}`，所有者操作 |
+| `DELETE /v1/bots/{id}/queue` | 取消排队及当前场次后的连续匹配 |
+| `POST /v1/bot-sessions` | 长 key Bearer + `{protocol_version:"1.0",rulesets:[{id,version}]}` → `{session_token,expires_at,bot_id,protocol_version}` |
+| `GET /v1/bot/active-match` | 短 session → `{room,match_id}` 或 `{room:null}` |
+| `POST /v1/bot/queue` | 短 session，body 同 owner 队列接口 |
+| `DELETE /v1/bot/queue` | 短 session，停止排队/连续匹配 |
+
+短 session 有效 30 分钟；SDK 在到期前更新、断线后重新换取并恢复。能力清单会存入 session，开局前要求包含房间锁定的规则版本。外部 Bot 不在添加时自动准备，必须真实连接后发送 `ready`。完成场次后 `continuous` 身份原子返回队列；规则、赛程、同所有者限制继续有效。
+
+## 插件目录、运维与健康
+
+- `GET /v1/rulesets`（别名 `/v1/public/rules`）返回 `{rulesets:[Manifest]}`；`GET /v1/rulesets/{id}/versions/{version}` 返回单版本。
+- Manifest 声明人数、赛程、线上补充、接口及视图 schema、渲染器、功能和产物 hash。房间/Match 固定配置和 manifest，恢复时 hash 不匹配终止恢复，不能换引擎重新算历史分。
+- 运维账户角色是 `operator`，通过部署 CLI `openmajiang admin grant --email … --reason …` 授予已验证账号；普通账号无提权接口。
+- 运维与维护路由见 [operations.md](operations.md)，不提供改分或全知看牌接口。
+- `GET /health/live` 检查进程存活，`GET /health/ready` 检查 PostgreSQL 及必需迁移；`openmajiang healthcheck` 调用 ready。
+- `openmajiang migrate` 执行账号和平台增量迁移；`serve` 不自动建库、不创建默认账号。缺少数据库、独立 32 字节 Base64 密钥或 SMTP 配置时启动失败。
+- `SIGTERM` 停止工作循环并限时关闭 HTTP；服务恢复通过数据库 owner/epoch 和表锁裁决。旧 owner 不得继续推进。同版本产物缺失、无效状态或停机超过 60 秒会结束当前未完成手，不补造分数。
+
+常见错误包括 `AUTH_EXPIRED/ACCOUNT_NOT_ELIGIBLE/FORBIDDEN_SEAT/STALE_CONTROL/DECISION_CLOSED/ALREADY_SUBMITTED/INVALID_OPTION/IDEMPOTENCY_CONFLICT/ROOM_NOT_FOUND/INVALID_INVITE/TABLE_FULL/NOT_ALL_READY/BOT_OFFLINE_OR_INCOMPATIBLE/OWNER_ALREADY_SEATED_OR_QUEUED/MAINTENANCE/RULESET_DISABLED/RATE_LIMITED/CONNECTION_LIMIT`。鉴权错误重新认证，过期动作恢复快照，同一决策已提交则等结果；非法动作可以在原截止前修正，幂等冲突不能盲重试。

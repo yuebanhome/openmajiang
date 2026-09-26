@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"net/textproto"
 	"os"
 	"regexp"
@@ -16,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -63,6 +66,25 @@ func TestOriginAndCSRFRejectWithoutDatabase(t *testing.T) {
 	h(w, r)
 	if w.Code != 403 {
 		t.Fatal(w.Code)
+	}
+}
+
+func TestTrustedProxyChain(t *testing.T) {
+	s := &Service{trustedProxies: []netip.Prefix{netip.MustParsePrefix("10.0.0.0/24")}}
+	r := httptest.NewRequest("GET", "http://localhost/", nil)
+	r.RemoteAddr = "198.51.100.8:1234"
+	r.Header.Set("X-Forwarded-For", "192.0.2.9")
+	if got := s.ClientIP(r); got != "198.51.100.8" {
+		t.Fatal("untrusted peer spoofed client", got)
+	}
+	r.RemoteAddr = "10.0.0.2:1234"
+	r.Header.Set("X-Forwarded-For", "192.0.2.9, 198.51.100.8, 10.0.0.3")
+	if got := s.ClientIP(r); got != "198.51.100.8" {
+		t.Fatal("must stop at first untrusted hop", got)
+	}
+	r.Header.Set("X-Forwarded-For", "not-an-ip")
+	if got := s.ClientIP(r); got != "10.0.0.2" {
+		t.Fatal("malformed proxy chain", got)
 	}
 }
 
@@ -282,6 +304,11 @@ func TestAccountLifecyclePostgres(t *testing.T) {
 	expectStatus(t, call(t, mux, "POST", "/v1/me/email-change/confirm", map[string]string{"token": emailToken}, cookie, csrf), 200)
 	expectStatus(t, call(t, mux, "GET", "/v1/me", nil, cookie, ""), 401)
 	cookie, csrf = loginTest(t, mux, "changed@example.com", nextPassword)
+	// The platform's active-match guard and credential cleanup share this tx.
+	s.cfg.BeforeDeleteTx = func(context.Context, pgx.Tx, string) error { return errors.New("active match") }
+	expectStatus(t, call(t, mux, "POST", "/v1/me/delete-account", map[string]string{"password": nextPassword}, cookie, csrf), 409)
+	expectStatus(t, call(t, mux, "GET", "/v1/me", nil, cookie, ""), 200)
+	s.cfg.BeforeDeleteTx = nil
 	deleted := false
 	s.cfg.OnDelete = func(string) { deleted = true }
 	expectStatus(t, call(t, mux, "POST", "/v1/me/delete-account", map[string]string{"password": nextPassword}, cookie, csrf), 200)

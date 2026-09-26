@@ -54,15 +54,42 @@ type Score struct {
 	Total         int    `json:"total"`
 }
 type Flow struct {
-	Phase       string       `json:"phase"`
-	HandIndex   int          `json:"hand_index"`
-	WindowID    string       `json:"window_id"`
-	WindowKind  string       `json:"window_kind"` // self, reaction, intermission, ended
-	Assignments []Assignment `json:"assignments"`
-	Decisions   []Decision   `json:"decisions"`
-	HandEnded   bool         `json:"hand_ended"`
-	MatchEnded  bool         `json:"match_ended"`
-	Scores      []Score      `json:"scores"`
+	HandResult       *HandResult  `json:"hand_result,omitempty"`
+	Rankings         []Ranking    `json:"rankings,omitempty"`
+	PreserveDeadline bool         `json:"preserve_deadline,omitempty"` // current window continues the previous self-turn clock
+	Phase            string       `json:"phase"`
+	HandIndex        int          `json:"hand_index"`
+	WindowID         string       `json:"window_id"`
+	WindowKind       string       `json:"window_kind"` // self, reaction, intermission, ended
+	Assignments      []Assignment `json:"assignments"`
+	Decisions        []Decision   `json:"decisions"`
+	HandEnded        bool         `json:"hand_ended"`
+	MatchEnded       bool         `json:"match_ended"`
+	Scores           []Score      `json:"scores"`
+}
+
+// HandResult contains only settled facts needed for generic platform statistics.
+// It cannot include tile identities, hand composition or a private fan breakdown.
+type HandResult struct {
+	HandIndex   int      `json:"hand_index"`
+	Scores      []Score  `json:"scores"`
+	Winners     []Winner `json:"winners"`
+	DiscarderID string   `json:"discarder_id,omitempty"`
+}
+type Winner struct {
+	ParticipantID   string `json:"participant_id"`
+	SelfDraw        bool   `json:"self_draw"`
+	NonFlowerPoints *int   `json:"non_flower_points,omitempty"`
+}
+type Rational struct {
+	Numerator   int `json:"numerator"`
+	Denominator int `json:"denominator"`
+}
+type Ranking struct {
+	ParticipantID  string    `json:"participant_id"`
+	Rank           int       `json:"rank"`
+	RawScore       int       `json:"raw_score"`
+	StandardPoints *Rational `json:"standard_points,omitempty"`
 }
 type Input struct {
 	Type          string            `json:"type"` // action, resolve, timeout, next_hand

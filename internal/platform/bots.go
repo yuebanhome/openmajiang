@@ -43,7 +43,7 @@ func (s *Service) listBots(w http.ResponseWriter, r *http.Request) {
 		failure(w, e)
 		return
 	}
-	rows, e := s.pool.Query(r.Context(), `SELECT b.id,b.name,b.enabled,b.current_version,EXISTS(SELECT 1 FROM platform_bot_sessions bs WHERE bs.bot_id=b.id AND bs.revoked_at IS NULL AND bs.expires_at>now()) FROM platform_bots b WHERE owner_id=$1 ORDER BY created_at`, u.ID)
+	rows, e := s.pool.Query(r.Context(), `SELECT b.id,b.name,b.enabled,b.current_version,b.suspended,EXISTS(SELECT 1 FROM platform_bot_sessions bs WHERE bs.bot_id=b.id AND bs.revoked_at IS NULL AND bs.expires_at>now()) FROM platform_bots b WHERE owner_id=$1 ORDER BY created_at`, u.ID)
 	if e != nil {
 		failure(w, e)
 		return
@@ -52,12 +52,12 @@ func (s *Service) listBots(w http.ResponseWriter, r *http.Request) {
 	bots := []any{}
 	for rows.Next() {
 		var id, name, version string
-		var enabled, online bool
-		if e = rows.Scan(&id, &name, &enabled, &version, &online); e != nil {
+		var enabled, online, suspended bool
+		if e = rows.Scan(&id, &name, &enabled, &version, &suspended, &online); e != nil {
 			failure(w, e)
 			return
 		}
-		bots = append(bots, map[string]any{"id": id, "name": name, "enabled": enabled, "current_version": version, "online": online})
+		bots = append(bots, map[string]any{"id": id, "name": name, "enabled": enabled, "suspended": suspended, "current_version": version, "online": online})
 	}
 	write(w, 200, map[string]any{"bots": bots})
 }
@@ -121,6 +121,13 @@ func (s *Service) updateBot(w http.ResponseWriter, r *http.Request) {
 	if v.Name != nil && (len([]rune(*v.Name)) < 1 || len([]rune(*v.Name)) > 50) {
 		failure(w, api(400, "INVALID_NAME"))
 		return
+	}
+	if v.Enabled != nil && *v.Enabled {
+		var suspended bool
+		if e := s.pool.QueryRow(r.Context(), `SELECT suspended FROM platform_bots WHERE id=$1`, b.ID).Scan(&suspended); e != nil || suspended {
+			failure(w, api(403, "BOT_SUSPENDED"))
+			return
+		}
 	}
 	_, e := s.pool.Exec(r.Context(), `UPDATE platform_bots SET name=COALESCE($2,name),enabled=COALESCE($3,enabled) WHERE id=$1`, b.ID, v.Name, v.Enabled)
 	if e != nil {
@@ -199,6 +206,11 @@ func (s *Service) createCredential(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	var suspended bool
+	if e := s.pool.QueryRow(r.Context(), `SELECT suspended FROM platform_bots WHERE id=$1`, b.ID).Scan(&suspended); e != nil || suspended {
+		failure(w, api(403, "BOT_SUSPENDED"))
+		return
+	}
 	secret := id("omj_bot")
 	cid := id("credential")
 	_, e := s.pool.Exec(r.Context(), `INSERT INTO platform_bot_credentials(id,bot_id,secret_hash) VALUES($1,$2,$3)`, cid, b.ID, s.hash(secret))
@@ -270,7 +282,7 @@ func (s *Service) revokeBot(ctx context.Context, bid string) {
 	_ = tx.Commit(ctx)
 }
 func (s *Service) botSession(w http.ResponseWriter, r *http.Request) {
-	if !s.limit("bot-session:"+r.RemoteAddr, 30) {
+	if !s.limit("bot-session:"+s.clientIP(r), 30) {
 		failure(w, api(429, "RATE_LIMITED"))
 		return
 	}
@@ -373,17 +385,17 @@ func (s *Service) botWS(w http.ResponseWriter, r *http.Request) {
 		failure(w, e)
 		return
 	}
-	c, e := s.accept(w, r)
+	c, release, e := s.accept(w, r, "bot:"+b.ID)
 	if e != nil {
 		return
 	}
+	defer release()
 	defer c.Close(1000, "closed")
-	epoch, e := s.acquireControl(r.Context(), p, b.Session, true)
+	control, _, _, e := s.acquireControl(r.Context(), p, b.Session, true, true)
 	if e != nil {
 		return
 	}
-	defer s.disconnect(p.ParticipantID, b.Session, epoch)
-	s.socketLoop(r.Context(), c, r, rid, p.ParticipantID, b.Session, false, func() bool { _, e := s.authenticateBot(r); return e == nil })
+	s.socketLoop(r.Context(), c, r, rid, p.ParticipantID, control, false, func() bool { _, e := s.authenticateBot(r); return e == nil })
 }
 func (s *Service) addBot(w http.ResponseWriter, r *http.Request) {
 	u, e := s.user(r, true)
@@ -410,6 +422,9 @@ func (s *Service) addBotToRoom(ctx context.Context, rid, owner, bid, builtin str
 		return e
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, "", ""); e != nil {
+		return e
+	}
 	if e = lockEligible(ctx, tx, owner); e != nil {
 		return e
 	}
@@ -460,6 +475,9 @@ func (s *Service) addBotToRoom(ctx context.Context, rid, owner, bid, builtin str
 	_, e = tx.Exec(ctx, `INSERT INTO platform_seats(participant_id,room_id,user_id,bot_id,name,kind,seat_order,ready,bot_version,builtin_strategy) VALUES($1,$2,$3,$4,$5,$6,$7,$9,$8,$10)`, id("participant"), rid, owner, bid, name, kind, order, version, kind == "builtin", builtin)
 	if e != nil {
 		return api(409, "BOT_ALREADY_SEATED")
+	}
+	if e = resetReady(ctx, tx, rid); e != nil {
+		return e
 	}
 	return tx.Commit(ctx)
 }

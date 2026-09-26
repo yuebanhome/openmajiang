@@ -274,6 +274,16 @@ func TestSelfDrawPayment(t *testing.T) {
 			t.Fatalf("wrong self draw transfer %+v", sc)
 		}
 	}
+	flow, err := (Rule{}).Inspect(encode(t, s))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if flow.HandResult == nil || len(flow.HandResult.Winners) != 1 || flow.HandResult.Winners[0].ParticipantID != "A" || !flow.HandResult.Winners[0].SelfDraw || flow.HandResult.Winners[0].NonFlowerPoints == nil || *flow.HandResult.Winners[0].NonFlowerPoints != s.Result.NonFlower || flow.HandResult.DiscarderID != "" {
+		t.Fatal("incorrect generic hand summary")
+	}
+	if len(flow.Rankings) != 4 || flow.Rankings[0].ParticipantID != "A" || flow.Rankings[0].StandardPoints != nil {
+		t.Fatal("incorrect practice ranking summary")
+	}
 	assertSpectator(t, encode(t, s))
 }
 
@@ -376,6 +386,36 @@ func TestReactionTimeoutPreservesRecordedChoices(t *testing.T) {
 	s = state(t, apply(t, encode(t, s), rulesdk.Input{Type: "timeout", Choices: map[string]string{"B": o.ID}}))
 	if s.Active != 1 || len(s.Seats[1].Melds) != 1 {
 		t.Fatal("timeout discarded previously recorded choice")
+	}
+}
+
+func TestTimeoutFlowerPreservesDeadlineContract(t *testing.T) {
+	s := fixture(t, "h1 1m")
+	raw := apply(t, encode(t, s), rulesdk.Input{Type: "timeout"})
+	flow, err := (Rule{}).Inspect(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if flow.WindowKind != "self" || !flow.PreserveDeadline {
+		t.Fatal("timeout flower replacement must retain deadline")
+	}
+	d := flow.Decisions[0]
+	o := choose(t, d.Options, "discard")
+	raw = apply(t, raw, rulesdk.Input{Type: "action", ParticipantID: d.ParticipantID, OptionID: o.ID})
+	flow, err = (Rule{}).Inspect(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if flow.PreserveDeadline {
+		t.Fatal("discard reaction must get its own deadline")
+	}
+	raw = apply(t, raw, rulesdk.Input{Type: "resolve"})
+	flow, err = (Rule{}).Inspect(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if flow.PreserveDeadline {
+		t.Fatal("next normal draw retained old deadline")
 	}
 }
 
@@ -574,6 +614,14 @@ func simulate(t *testing.T, format string, seed int) {
 			if len(hands) != s.handLimit() {
 				t.Fatal("wrong hand count")
 			}
+			if flow.HandResult == nil || flow.HandResult.HandIndex != s.handLimit() || len(flow.Rankings) != 4 {
+				t.Fatal("missing generic match summary")
+			}
+			for _, ranking := range flow.Rankings {
+				if (ranking.StandardPoints != nil) != (format == "standard_16") {
+					t.Fatal("standard points crossed match-format boundary")
+				}
+			}
 			break
 		}
 		in := rulesdk.Input{}
@@ -655,6 +703,21 @@ func soakMatch(t *testing.T, seed int, counts map[string]int) {
 		if err = s.validateInventory(); err != nil {
 			t.Fatalf("seed %d step %d: %v", seed, steps, err)
 		}
+		for seat, p := range s.Seats {
+			want := 13
+			if s.Phase == "self" && seat == s.Active {
+				want = 14
+			}
+			if s.Phase == "reaction" && s.Pending.Type == "rob_kong" && seat == s.Pending.Seat {
+				want = 14
+			}
+			if s.Result != nil && s.Result.Method != "exhaustive_draw" && s.Result.Winner == seat {
+				want = 14
+			}
+			if got := len(p.Hand) + 3*len(p.Melds); got != want {
+				t.Fatalf("seed %d step %d seat %d effective hand=%d want=%d", seed, steps, seat, got, want)
+			}
+		}
 		for seat, original := range rotations[(s.HandIndex-1)/4] {
 			if s.Seats[seat].ParticipantID != s.InitialOrder[original] {
 				t.Fatal("soak seat rotation mismatch")
@@ -672,7 +735,7 @@ func soakMatch(t *testing.T, seed int, counts map[string]int) {
 			if s.Result.Method != "exhaustive_draw" && s.Result.NonFlower < 8 {
 				t.Fatal("soak under-eight win")
 			}
-			counts[s.Result.Method]++
+			counts["hand:"+s.Result.Method]++
 			if s.Phase == "ended" {
 				if finishedHands != 16 {
 					t.Fatal("soak incomplete match")

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -67,8 +68,8 @@ func run() error {
 		}
 		return nil
 	}
-	if command != "serve" && command != "migrate" {
-		return errors.New("usage: openmajiang serve|migrate|healthcheck|version")
+	if command != "serve" && command != "migrate" && command != "admin" {
+		return errors.New("usage: openmajiang serve|migrate|healthcheck|version|admin grant --email <email> --reason <reason>")
 	}
 	if os.Getenv("DATABASE_URL") == "" {
 		return errors.New("DATABASE_URL is required")
@@ -82,6 +83,18 @@ func run() error {
 	defer pool.Close()
 	if e = pool.Ping(ctx); e != nil {
 		return errors.New("database unavailable")
+	}
+	if command == "admin" {
+		if len(os.Args) < 3 || os.Args[2] != "grant" {
+			return errors.New("usage: openmajiang admin grant --email <email> --reason <reason>")
+		}
+		f := flag.NewFlagSet("admin grant", flag.ContinueOnError)
+		email := f.String("email", "", "verified operator email")
+		reason := f.String("reason", "", "audit reason")
+		if e = f.Parse(os.Args[3:]); e != nil {
+			return e
+		}
+		return platform.GrantOperator(ctx, pool, *email, *reason)
 	}
 	if command == "migrate" {
 		if e = auth.Migrate(ctx, pool); e != nil {
@@ -160,7 +173,7 @@ func run() error {
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'")
-		mux.ServeHTTP(w, r)
+		p.Middleware(mux).ServeHTTP(w, r)
 	})
 	server := http.Server{Addr: env("HTTP_ADDR", ":8080"), Handler: handler, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
 	go p.Run(ctx)

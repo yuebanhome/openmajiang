@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {DecisionEngine,firstLegal} from '../dist/index.js';
+import {BotClient,ControlTransferredError,DecisionEngine,firstLegal} from '../dist/index.js';
 const fixture=JSON.parse(await readFile(new URL('../../fixtures/decision.json',import.meta.url),'utf8'));
 const pair=()=>structuredClone(fixture);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -28,4 +28,22 @@ test('new snapshots cancel strategy and discard late results',async()=>{
 });
 test('expired decisions and invalid strategy actions cannot be sent',async()=>{
  const sent=[];const engine=new DecisionEngine(()=> 'not-an-option',f=>sent.push(f));const{snapshot,decision}=pair();engine.receive(snapshot);engine.receive(decision);await tick();assert.equal(sent.length,0);engine.disconnect();decision.deadline_at=decision.server_time;engine.receive(snapshot);engine.receive(decision);await tick();assert.equal(sent.length,0);engine.disconnect();
+});
+
+test('continuous runtime discovers new rooms after terminal matches',async()=>{
+ const stop=new AbortController(),rooms=[];let round=0;
+ const client=new BotClient({baseURL:'http://localhost:8080',apiKey:'test-key',queue:{ruleset_id:'openmajiang.mcr',ruleset_version:'1.0.0',match_format:'practice_1',continuous:true}},firstLegal);
+ client.authenticate=async()=>{};
+ client.request=async()=>({room:{id:`room_${++round}`}});
+ client.connect=async(room)=>{rooms.push(room);if(rooms.length===2)stop.abort();return true};
+ await client.run(stop.signal);assert.deepEqual(rooms,['room_1','room_2']);
+});
+
+test('planned renewal does not end a once-only match and takeover is terminal',async()=>{
+ const client=new BotClient({baseURL:'http://localhost:8080',apiKey:'test-key',queue:{ruleset_id:'openmajiang.mcr',ruleset_version:'1.0.0',match_format:'practice_1',continuous:false}},firstLegal);
+ client.authenticate=async()=>{};client.request=async()=>({room:{id:'same_room'}});let connects=0;
+ client.connect=async()=>++connects===2;
+ await client.run(new AbortController().signal);assert.equal(connects,2);
+ client.connect=async()=>{throw new ControlTransferredError()};
+ await assert.rejects(client.run(new AbortController().signal),ControlTransferredError);
 });

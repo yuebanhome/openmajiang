@@ -25,12 +25,12 @@
     },
     "fan_calculator.cpp": {
       "upstream_sha256": "eb034fa0664a4cddb0f6e4ec17cc06ce8e60efebcdf91e5da56db3a1f43f1d95",
-      "vendored_sha256": "27e1f124403ee35c535093e2859893b76768bfcaa9b8f628dcd6cb6f9ba5dfb6",
+      "vendored_sha256": "078574a68285771fc35b8a5182c5732b10d605c8a3e1c92923c576696d1d5f74",
       "modified": true
     },
     "fan_calculator.h": {
       "upstream_sha256": "4c56f1cdd48bcd7288163909543c6fb13f5fd3e737f9b601f596173aae323df2",
-      "vendored_sha256": "24456ec7cd291d66ecce227a53d14225b226199648c7f7e5fad28bdd5db482d8",
+      "vendored_sha256": "119342873b2e64eb9619b10e590cdfafe4f82e4e95302ae2628c6284d7a95204",
       "modified": true
     },
     "shanten.cpp": {

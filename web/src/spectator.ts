@@ -19,7 +19,7 @@ export function normalizeSpectator(input: unknown): SpectatorView {
   const players = (Array.isArray(view.seats) ? view.seats : []).map(raw => {
     const p = asObject(raw);
     const score = scores.find(s => s.participant_id === p.participant_id);
-    return { seat_id: number(p.seat_id), name: string(p.name), score: number(score?.total) };
+    return { seat_id: number(p.seat_id), seat_wind:number(p.seat_wind), name: string(p.name), score: number(score?.total) };
   });
   return { match_id: string(root.match_id), phase: string(view.phase), hand_index: number(view.hand_index), discards, players, status: string(root.status) };
 }

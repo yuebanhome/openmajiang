@@ -66,6 +66,9 @@ func (s *Service) persistViews(ctx context.Context, tx pgx.Tx, m match, rule rul
 	if e != nil {
 		return e
 	}
+	if e = s.persistStatistics(ctx, tx, m, f); e != nil {
+		return e
+	}
 	public, e := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.SpectatorDiscardOnly})
 	if e != nil {
 		return e
@@ -133,19 +136,14 @@ func (s *Service) advance(ctx context.Context, tx pgx.Tx, m *match, rule rulesdk
 		m.Deadline = nil
 	} else if old.WindowID != f.WindowID {
 		d := s.deadline(ctx, tx, *m, f)
-		if input.Type == "action" && old.WindowKind == "self" && f.WindowKind == "self" && old.HandIndex == f.HandIndex {
-			for _, v := range old.Decisions {
-				for _, o := range v.Options {
-					if o.ID == input.OptionID && o.Type == "replace_flower" && m.Deadline != nil {
-						d = *m.Deadline
-					}
-				}
-			}
+		if f.PreserveDeadline && old.WindowKind == "self" && f.WindowKind == "self" && old.HandIndex == f.HandIndex && m.Deadline != nil {
+			d = *m.Deadline
 		}
+
 		m.Deadline = &d
 	}
 	m.WindowID = f.WindowID
-	res, e := tx.Exec(ctx, `UPDATE platform_matches SET state=$2,seq=$3,status=$4,window_id=$5,deadline_at=$6,choices=$7,updated_at=now(),owner_until=now()+interval '5 seconds' WHERE id=$1 AND owner_id=$8 AND owner_epoch=$9`, m.ID, m.State, m.Seq, m.Status, m.WindowID, m.Deadline, jsonBytes(m.Choices), s.id, m.OwnerEpoch)
+	res, e := tx.Exec(ctx, `UPDATE platform_matches SET state=$2,seq=$3,status=$4,window_id=$5,deadline_at=$6,choices=$7,updated_at=now(),next_run_at=now(),owner_until=now()+interval '5 seconds' WHERE id=$1 AND owner_id=$8 AND owner_epoch=$9`, m.ID, m.State, m.Seq, m.Status, m.WindowID, m.Deadline, jsonBytes(m.Choices), s.id, m.OwnerEpoch)
 	if e != nil {
 		return e
 	}
@@ -173,6 +171,9 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 		return "", e
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, "", ""); e != nil {
+		return "", e
+	}
 	if e = lockEligible(ctx, tx, userID); e != nil {
 		return "", e
 	}
@@ -191,6 +192,9 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 	if e != nil {
 		return "", e
 	}
+	if e = s.requireAdmissionsTx(ctx, tx, r.RulesetID, r.RulesetVersion); e != nil {
+		return "", e
+	}
 	if len(r.Seats) != r.Capacity {
 		return "", api(409, "TABLE_NOT_FULL")
 	}
@@ -202,7 +206,7 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 		if a.Kind == "bot" {
 			var capable bool
 			capability := jsonBytes([]map[string]string{{"id": r.RulesetID, "version": r.RulesetVersion}})
-			e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM platform_bot_sessions ss JOIN platform_bot_credentials c ON c.id=ss.credential_id JOIN platform_bots b ON b.id=ss.bot_id JOIN platform_seats ps ON ps.bot_id=b.id AND ps.controller=ss.id WHERE ps.participant_id=$1 AND ss.expires_at>now() AND ss.revoked_at IS NULL AND c.revoked_at IS NULL AND b.enabled AND NOT b.suspended AND ss.capabilities @> $2::jsonb AND ps.connected_until>now())`, a.ParticipantID, capability).Scan(&capable)
+			e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM platform_bot_sessions ss JOIN platform_bot_credentials c ON c.id=ss.credential_id JOIN platform_bots b ON b.id=ss.bot_id JOIN platform_seats ps ON ps.bot_id=b.id AND ps.controller_session=ss.id WHERE ps.participant_id=$1 AND ss.expires_at>now() AND ss.revoked_at IS NULL AND c.revoked_at IS NULL AND b.enabled AND NOT b.suspended AND ss.capabilities @> $2::jsonb AND ps.connected_until>now())`, a.ParticipantID, capability).Scan(&capable)
 			if e != nil || !capable {
 				return "", api(409, "BOT_OFFLINE_OR_INCOMPATIBLE")
 			}
@@ -230,6 +234,9 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 	m.Deadline = &d
 	_, e = tx.Exec(ctx, `INSERT INTO platform_matches(id,room_id,ruleset_id,ruleset_version,match_format,state,window_id,deadline_at,owner_id,artifact_hash,manifest,config,owner_until) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now()+interval '5 seconds')`, m.ID, r.ID, m.RulesetID, m.RulesetVersion, m.Format, state, m.WindowID, d, s.id, rule.Manifest().ArtifactHash, jsonBytes(rule.Manifest()), jsonBytes(cfg))
 	if e != nil {
+		return "", e
+	}
+	if e = s.freezeStatistics(ctx, tx, m); e != nil {
 		return "", e
 	}
 	if e = s.persistViews(ctx, tx, m, rule, nil, rulesdk.Input{Type: "init"}); e != nil {

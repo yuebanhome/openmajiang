@@ -3,6 +3,7 @@ package platform
 import (
 	"context"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -52,6 +53,9 @@ func (s *Service) enqueue(ctx context.Context, uid, bid string, q queueRequest) 
 		return e
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, q.Rule, q.Version); e != nil {
+		return e
+	}
 	if e = lockEligible(ctx, tx, uid); e != nil {
 		return e
 	}
@@ -99,7 +103,7 @@ func (s *Service) joinHumanQueue(w http.ResponseWriter, r *http.Request) {
 func (s *Service) leaveHumanQueue(w http.ResponseWriter, r *http.Request) {
 	u, e := s.user(r, false)
 	if e == nil {
-		_, e = s.pool.Exec(r.Context(), `DELETE FROM platform_queue WHERE user_id=$1 AND bot_id=''`, u.ID)
+		e = s.cancelQueue(r.Context(), u.ID, "")
 	}
 	if e != nil {
 		failure(w, e)
@@ -144,7 +148,7 @@ func (s *Service) leaveOwnerBotQueue(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	_, e := s.pool.Exec(r.Context(), `DELETE FROM platform_queue WHERE bot_id=$1`, b.ID)
+	e := s.cancelQueue(r.Context(), b.Owner, b.ID)
 	if e != nil {
 		failure(w, e)
 		return
@@ -171,12 +175,13 @@ func (s *Service) joinBotQueue(w http.ResponseWriter, r *http.Request) {
 func (s *Service) leaveBotQueue(w http.ResponseWriter, r *http.Request) {
 	b, e := s.authenticateBot(r)
 	if e == nil {
-		_, e = s.pool.Exec(r.Context(), `DELETE FROM platform_queue WHERE bot_id=$1`, b.ID)
+		e = s.cancelQueue(r.Context(), b.Owner, b.ID)
 	}
 	if e != nil {
 		failure(w, e)
 		return
 	}
+	_, _ = s.pool.Exec(r.Context(), `UPDATE platform_seats SET continuous=false WHERE bot_id=$1`, b.ID)
 	write(w, 200, map[string]any{"status": "cancelled"})
 }
 
@@ -191,11 +196,14 @@ func (s *Service) matchQueues(ctx context.Context) {
 		return
 	}
 	defer tx.Rollback(ctx)
+	if e = s.requireAdmissionsTx(ctx, tx, "", ""); e != nil {
+		return
+	}
 	var locked bool
 	if tx.QueryRow(ctx, `SELECT pg_try_advisory_xact_lock(918735034)`).Scan(&locked) != nil || !locked {
 		return
 	}
-	rows, e := tx.Query(ctx, `SELECT participant_key,user_id,bot_id,ruleset_id,ruleset_version,match_format,continuous FROM platform_queue ORDER BY created_at LIMIT 100 FOR UPDATE SKIP LOCKED`)
+	rows, e := tx.Query(ctx, `SELECT participant_key,user_id,bot_id,ruleset_id,ruleset_version,match_format,continuous FROM platform_queue ORDER BY created_at LIMIT 100`)
 	if e != nil {
 		return
 	}
@@ -215,6 +223,9 @@ func (s *Service) matchQueues(ctx context.Context) {
 		if len(items) == 0 {
 			continue
 		}
+		if e = s.requireAdmissionsTx(ctx, tx, items[0].rule, items[0].version); e != nil {
+			continue
+		}
 		rule, e := s.rule(items[0].rule, items[0].version)
 		if e != nil {
 			continue
@@ -224,8 +235,20 @@ func (s *Service) matchQueues(ctx context.Context) {
 			continue
 		}
 		items = items[:n]
+		ordered := append([]queued(nil), items...)
+		sort.Slice(ordered, func(i, j int) bool { return ordered[i].uid < ordered[j].uid })
+		for _, q := range ordered {
+			if e = lockEligible(ctx, tx, q.uid); e != nil {
+				return
+			}
+		}
 		valid := true
 		for _, q := range items {
+			var key string
+			if tx.QueryRow(ctx, `SELECT participant_key FROM platform_queue WHERE participant_key=$1 AND ruleset_id=$2 AND ruleset_version=$3 AND match_format=$4 FOR UPDATE`, q.key, q.rule, q.version, q.format).Scan(&key) != nil {
+				valid = false
+				continue
+			}
 			var eligible bool
 			e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM auth_users WHERE id=$1 AND status='active' AND verified) AND NOT EXISTS(SELECT 1 FROM platform_seats WHERE user_id=$1 AND active AND kind<>'builtin')`, q.uid).Scan(&eligible)
 			if e != nil || !eligible {

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-from openmajiang import DecisionEngine, first_legal
+from openmajiang import BotClient, ControlTransferredError, DecisionEngine, first_legal
 
 FIXTURE = json.loads((Path(__file__).resolve().parents[2] / "fixtures" / "decision.json").read_text())
 
@@ -118,6 +118,41 @@ class ProtocolTests(unittest.IsolatedAsyncioTestCase):
         engine.receive(decision)
         await asyncio.sleep(0)
         self.assertEqual(sent, [])
+
+    async def test_continuous_runtime_discovers_new_rooms(self):
+        stop, rooms = asyncio.Event(), []
+        client = BotClient("http://localhost:8080", "test-key", first_legal, queue={"continuous": True})
+        async def authenticate():
+            pass
+        async def request(*args):
+            return {"room": {"id": f"room_{len(rooms)+1}"}}
+        async def connect(room, _):
+            rooms.append(room)
+            if len(rooms) == 2:
+                stop.set()
+            return True
+        client._authenticate, client._request, client._connect = authenticate, request, connect
+        await client.run(stop)
+        self.assertEqual(rooms, ["room_1", "room_2"])
+
+    async def test_planned_renewal_and_controller_takeover(self):
+        client = BotClient("http://localhost:8080", "test-key", first_legal, queue={"continuous": False})
+        calls = []
+        async def authenticate():
+            pass
+        async def request(*args):
+            return {"room": {"id": "same_room"}}
+        async def connect(*args):
+            calls.append(True)
+            return len(calls) == 2
+        client._authenticate, client._request, client._connect = authenticate, request, connect
+        await client.run(asyncio.Event())
+        self.assertEqual(len(calls), 2)
+        async def transferred(*args):
+            raise ControlTransferredError("BOT_CONTROL_TRANSFERRED")
+        client._connect = transferred
+        with self.assertRaises(ControlTransferredError):
+            await client.run(asyncio.Event())
 
 
 if __name__ == "__main__":

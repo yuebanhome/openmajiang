@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 	"encoding/json"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -20,7 +19,7 @@ type ticketClaim struct {
 }
 
 func (s *Service) spectatorTicket(w http.ResponseWriter, r *http.Request) {
-	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+	host := s.clientIP(r)
 	if !s.limit("ticket:"+host, 60) {
 		failure(w, api(429, "RATE_LIMITED"))
 		return
@@ -58,23 +57,59 @@ func (s *Service) verifyTicket(token, room string) bool {
 	}
 	return c.Room == room && time.Now().Unix() < c.Expiry
 }
-func (s *Service) accept(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	c, e := websocket.Accept(w, r, &websocket.AcceptOptions{})
-	if e == nil {
-		c.SetReadLimit(32 << 10)
+func (s *Service) accept(w http.ResponseWriter, r *http.Request, identity string) (*websocket.Conn, func(), error) {
+	ip := "ip:" + s.clientIP(r)
+	roomKey := ""
+	if identity == "" {
+		roomKey = "watch-room:" + r.URL.Query().Get("room_id")
 	}
-	return c, e
+	s.mu.Lock()
+	if s.sockets["all"] >= 2048 || s.sockets[ip] >= 32 || (roomKey != "" && s.sockets[roomKey] >= 500) || (identity != "" && s.sockets[identity] >= 4) {
+		s.mu.Unlock()
+		failure(w, api(429, "CONNECTION_LIMIT"))
+		return nil, func() {}, api(429, "CONNECTION_LIMIT")
+	}
+	s.sockets["all"]++
+	s.sockets[ip]++
+	if roomKey != "" {
+		s.sockets[roomKey]++
+	}
+	if identity != "" {
+		s.sockets[identity]++
+	}
+	s.mu.Unlock()
+	release := func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		for _, k := range []string{"all", ip, identity, roomKey} {
+			if k != "" {
+				s.sockets[k]--
+				if s.sockets[k] <= 0 {
+					delete(s.sockets, k)
+				}
+			}
+		}
+	}
+	c, e := websocket.Accept(w, r, &websocket.AcceptOptions{})
+	if e != nil {
+		release()
+		return nil, func() {}, e
+	}
+	c.SetReadLimit(32 << 10)
+	return c, release, nil
 }
+
 func (s *Service) spectatorWS(w http.ResponseWriter, r *http.Request) {
 	rid := r.URL.Query().Get("room_id")
 	if rid == "" {
 		failure(w, api(400, "ROOM_REQUIRED"))
 		return
 	}
-	c, e := s.accept(w, r)
+	c, release, e := s.accept(w, r, "")
 	if e != nil {
 		return
 	}
+	defer release()
 	defer c.Close(websocket.StatusNormalClosure, "closed")
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
@@ -108,17 +143,28 @@ func (s *Service) playerWS(w http.ResponseWriter, r *http.Request) {
 		failure(w, api(401, "AUTH_EXPIRED"))
 		return
 	}
-	c, e := s.accept(w, r)
+	c, release, e := s.accept(w, r, "user:"+u.ID)
 	if e != nil {
 		return
 	}
+	defer release()
 	defer c.Close(websocket.StatusNormalClosure, "closed")
-	epoch, e := s.acquireControl(r.Context(), p, session, false)
+	control, epoch, granted, e := s.acquireControl(r.Context(), p, session, false, false)
 	if e != nil {
 		return
 	}
-	defer s.disconnect(p.ParticipantID, session, epoch)
-	s.socketLoop(r.Context(), c, r, rid, p.ParticipantID, session, false, func() bool { _, err := s.cfg.Auth.Authenticate(r); return err == nil })
+	message := map[string]any{"type": "control_readonly", "control_epoch": epoch}
+	if granted {
+		message["type"] = "control_granted"
+		message["control_token"] = control
+	}
+	out, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	e = c.Write(out, websocket.MessageText, jsonBytes(message))
+	cancel()
+	if e != nil {
+		return
+	}
+	s.socketLoop(r.Context(), c, r, rid, p.ParticipantID, control, !granted, func() bool { _, err := s.cfg.Auth.Authenticate(r); return err == nil })
 }
 func (s *Service) disconnect(pid, controller string, epoch int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -151,6 +197,11 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 	var lastRoom string
 	timer := time.NewTicker(150 * time.Millisecond)
 	defer timer.Stop()
+	defer func() {
+		if pid != "" && controller != "" {
+			s.disconnect(pid, controller, lastEpoch)
+		}
+	}()
 	heartbeat := time.NewTicker(10 * time.Second)
 	defer heartbeat.Stop()
 	send := func(v any) bool {
@@ -174,10 +225,15 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		if !force && seq == lastSeq && epoch == lastEpoch && matchID == previousMatch && hand == previousHand && roomHash == lastRoom {
 			return true
 		}
-		if epoch != lastEpoch && lastEpoch >= 0 && pid != "" {
+		if epoch != lastEpoch && lastEpoch >= 0 && pid != "" && !readonly {
 			return send(map[string]any{"type": "control_changed", "control_epoch": epoch}) && false
 		}
 		if previousMatch != matchID || previousHand != hand {
+			if pid != "" && hand != "" {
+				if !send(map[string]any{"type": "seat_assigned", "match_id": matchID, "hand_id": hand, "participant_id": pid, "seat_id": v["seat_id"], "seat_assignment_version": v["seat_assignment_version"], "control_epoch": epoch}) {
+					return false
+				}
+			}
 			stream = id("stream")
 			sent = 0
 		}
@@ -191,6 +247,12 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		v["view_seq"] = sent
 		delete(v, "seq")
 		decision := v["decision"]
+		if readonly {
+			decision = nil
+			v["control_status"] = "readonly"
+		} else if pid != "" {
+			v["control_status"] = "owner"
+		}
 		delete(v, "decision")
 		if !send(v) {
 			return false
@@ -220,7 +282,7 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 				_ = c.Close(websocket.StatusPolicyViolation, "authentication expired")
 				return
 			}
-			if pid != "" {
+			if pid != "" && !readonly {
 				res, e := s.pool.Exec(ctx, `UPDATE platform_seats SET connected_until=now()+interval '30 seconds' WHERE participant_id=$1 AND controller=$2 AND control_epoch=$3`, pid, controller, lastEpoch)
 				if e != nil || res.RowsAffected() != 1 {
 					return
@@ -230,6 +292,10 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 				return
 			}
 		case raw := <-incoming:
+			if !s.limit("wsmsg:"+s.clientIP(r)+":"+pid, 600) {
+				_ = c.Close(websocket.StatusPolicyViolation, "rate limit")
+				return
+			}
 			var head struct {
 				Type string `json:"type"`
 			}
@@ -239,6 +305,33 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 			switch head.Type {
 			case "heartbeat", "ping":
 				if !send(map[string]any{"type": "pong"}) {
+					return
+				}
+			case "resume_control":
+				if pid == "" {
+					continue
+				}
+				if valid != nil && !valid() {
+					return
+				}
+				var claim struct {
+					Token string `json:"control_token"`
+				}
+				if json.Unmarshal(raw, &claim) != nil || claim.Token == "" {
+					continue
+				}
+				var epoch int64
+				err := s.pool.QueryRow(ctx, `SELECT control_epoch FROM platform_seats WHERE participant_id=$1 AND controller=$2 AND active`, pid, claim.Token).Scan(&epoch)
+				if err != nil {
+					if !send(map[string]any{"type": "control_readonly"}) {
+						return
+					}
+					continue
+				}
+				controller = claim.Token
+				readonly = false
+				lastEpoch = epoch
+				if !send(map[string]any{"type": "control_granted", "control_token": controller, "control_epoch": epoch}) || !snapshot(true) {
 					return
 				}
 			case "hello", "resume":

@@ -67,16 +67,21 @@ or administer bots; that authorization belongs to the platform. Restricted users
 can authenticate for account recovery but must be denied game actions. Public
 registration cannot set a role; operator bootstrap is a deployment CLI concern.
 
-The platform implements `BeforeDelete` to fence new queue/room admission and
-reject an active match, then `OnDelete` to revoke bot keys, clear queues and
-anonymize public references. Stable user IDs and match records are retained.
+The platform implements `BeforeDeleteTx(ctx, tx, userID)` while the account row
+is locked: reject active matches, revoke bot credentials and clear queue entries
+in the same transaction as anonymization. All admission transactions acquire the
+same account row lock. `OnDelete` is a post-commit notification for connections,
+not the durable credential cleanup. Stable user IDs and match records are retained.
 `OnRevoke(userID,sessionID,all)` runs after the database commit; connected players
 must also re-check authorization on subsequent commands for crash-safe denial.
 
-Rate limits apply per immediate peer and hashed normalized account identifier.
-They are process-local for the single-node deployment; the trusted ingress
-should additionally enforce connection/body/rate limits. Forwarded IP headers
-are deliberately not trusted by this module. A scaled deployment needs a shared
+Rate limits apply per resolved client and hashed normalized account identifier.
+`TrustedProxyCIDRs` is empty by default. If the immediate peer is trusted, the
+X-Forwarded-For chain is traversed from right to left up to its first untrusted
+hop. Untrusted clients cannot choose a bucket through forged headers. `ClientIP`
+exports this same policy to other services. Limits are process-local for the
+single-node deployment; the ingress should add connection/body limits. A scaled
+deployment needs a shared
 limiter before increasing replicas. Registration and mail requests use generic
 responses for existing and absent accounts; only correct password authentication
 reveals account verification/restriction state.

@@ -55,7 +55,7 @@ func (s *State) finishWin(winner, source int, tile Tile, self, rob bool) error {
 		deltas[p.ParticipantID] = -amount
 		deltas[winnerID] += amount
 	}
-	s.Result = &Result{Method: method, Winner: winner, Source: source, WinningTile: &tile, WinningHand: append([]Tile(nil), s.Seats[winner].Hand...), FanItems: fan.Fans, NonFlower: fan.NonFlower, Flower: fan.Flower, Total: fan.Total, Scores: []rulesdk.Score{}}
+	s.Result = &Result{Method: method, Winner: winner, Source: source, WinningTile: &tile, WinningHand: append([]Tile(nil), s.Seats[winner].Hand...), FanItems: fan.Fans, WinningForm: fan.WinningForm, Decomposition: fan.Decomposition, Explanations: fan.Explanations, ExplanationCoverage: fan.ExplanationCoverage, NonFlower: fan.NonFlower, Flower: fan.Flower, Total: fan.Total, Scores: []rulesdk.Score{}}
 	for _, p := range s.Config.Participants {
 		s.Totals[p.ID] += deltas[p.ID]
 		s.Result.Scores = append(s.Result.Scores, rulesdk.Score{ParticipantID: p.ID, Delta: deltas[p.ID], Total: s.Totals[p.ID]})

@@ -25,7 +25,7 @@ jobs:
           - arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 35
+    timeout-minutes: 50
     services:
       postgres:
         image: postgres:17-bookworm
@@ -72,6 +72,15 @@ jobs:
           npm run typecheck
           npm test
           npm run build
+      - name: TypeScript Bot SDK protocol fixtures
+        working-directory: sdk/typescript
+        run: npm ci && npm test
+      - name: Python Bot SDK protocol fixtures
+        run: |
+          python3 -m venv .venv-sdk
+          .venv-sdk/bin/python -m pip install -r sdk/python/requirements.lock
+          cd sdk/python
+          ../../.venv-sdk/bin/python -m unittest discover -s tests -v
       - name: Formatting, analysis and tests
         run: |
           test -z "$(gofmt -l $(git ls-files '*.go'))"
@@ -95,6 +104,7 @@ jobs:
           push: false
           platforms: linux/${{ matrix.arch }}
           tags: openmajiang:verify
+          build-args: VCS_REF=${{ github.sha }}
           cache-from: type=gha,scope=verify-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=verify-${{ matrix.arch }}
       - name: Container migration and HTTP smoke
@@ -112,6 +122,10 @@ jobs:
       - name: Browser account, match, spectator and reconnect E2E
         working-directory: web
         run: npm run test:e2e
+      - name: PostgreSQL backup/restore and graceful SIGTERM/restart
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: ./deploy/ci-restore.sh
       - name: Browser failure artifacts
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -129,9 +143,105 @@ jobs:
         if: always()
         run: docker rm -f openmajiang-smoke 2>/dev/null || true
 
+  bot-wss:
+    name: 100-hand real WSS Bot integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+      mailpit:
+        image: axllent/mailpit:v1.29
+        ports: ["1025:1025", "8025:8025"]
+    env:
+      DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      AUTH_MAIL_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      TOKEN_HASH_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
+      SMTP_ADDR: 127.0.0.1:1025
+      SMTP_FROM: test@localhost
+      SMTP_STARTTLS: "false"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build tested-source runtime image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          push: false
+          platforms: linux/amd64
+          tags: openmajiang:verify
+          build-args: VCS_REF=${{ github.sha }}
+          cache-from: type=gha,scope=verify-amd64
+      - name: Install fixed Python SDK dependency
+        run: |
+          python3 -m venv .venv-sdk
+          .venv-sdk/bin/python -m pip install -r sdk/python/requirements.lock
+      - name: Four independent Bot owners over trusted TLS
+        run: ./deploy/ci-wss.sh
+      - name: WSS integration report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bot-wss-integration
+          path: test-results/bot-wss.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  capacity:
+    name: One-hour 50-table spectator and latency capacity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+    env:
+      CGO_ENABLED: "1"
+      TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      OMJ_CAPACITY_SECONDS: "3600"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.1"
+          cache: true
+      - name: Sustain production-clock capacity for a full hour
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          go test ./internal/platform -run '^TestCapacityOneHour$' -count=1 -v -timeout=80m 2>&1 | tee test-results/capacity.log
+      - name: Capacity evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: one-hour-capacity
+          path: test-results/capacity*
+          if-no-files-found: warn
+          retention-days: 7
+
   publish:
     name: Publish Docker Hub image
-    needs: verify
+    needs: [verify, bot-wss, capacity]
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 50
@@ -169,6 +279,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.metadata.outputs.tags }}
+          build-args: VCS_REF=${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

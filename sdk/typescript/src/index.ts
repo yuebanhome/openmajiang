@@ -11,6 +11,7 @@ export interface Decision extends Frame {
 }
 export interface StrategyContext { observation: Readonly<Frame>; decision: Readonly<Decision>; signal: AbortSignal; deadline: number }
 export type Strategy = (context: StrategyContext) => Promise<string> | string;
+export class ControlTransferredError extends Error { constructor(){super('BOT_CONTROL_TRANSFERRED')} }
 export interface EngineOptions { autoFlower?: boolean; deadlineMarginMs?: number; now?: () => number; onError?: (code: string) => void }
 
 const identity = (f: Frame) => `${f.match_id}/${f.hand_id}/${f.participant_id}/${f.decision_id}`;
@@ -103,6 +104,7 @@ export interface BotOptions extends EngineOptions {
   baseURL: string; apiKey: string; rulesets?: {id:string;version:string}[];
   queue?: {ruleset_id:string;ruleset_version:string;match_format:string;continuous:boolean};
   onState?: (state: string) => void;
+  onFrame?: (frame: Readonly<Frame>) => void;
 }
 
 /** Self-hosted runtime: secrets stay in this process, never in a URL or log. */
@@ -120,6 +122,7 @@ export class BotClient {
     if(!response.ok)throw new Error(`HTTP_${response.status}`);return response.json();
   }
   private async authenticate(signal:AbortSignal):Promise<void>{if(this.session&&Date.now()<this.expires-60000)return;const v=await this.request('/v1/bot-sessions','POST',{protocol_version:'1.0',rulesets:this.options.rulesets??[{id:'openmajiang.mcr',version:'1.0.0'}]},signal,true);this.session=v.session_token;this.expires=Date.parse(v.expires_at)}
+  reconnect():void {this.ws?.close()}
   async leaveQueue(signal?:AbortSignal):Promise<void>{await this.request('/v1/bot/queue','DELETE',{},signal)}
   async run(signal:AbortSignal):Promise<void>{
     let attempt=0,queued=false;
@@ -130,21 +133,21 @@ export class BotClient {
         if(this.options.queue&&!queued){await this.request('/v1/bot/queue','POST',this.options.queue,signal);queued=true}
         await sleep(1000,signal);continue;
       }
-      queued=false;this.options.onState?.('connected');await this.connect(active.room.id,signal);attempt=0;
-      if(this.options.queue&&!this.options.queue.continuous)return;
-    }catch{if(signal.aborted)break;this.options.onState?.('reconnecting');attempt++;await sleep(Math.min(30000,500*2**Math.min(attempt,6))*(0.75+Math.random()/2),signal)} }
+      queued=false;this.options.onState?.('connected');const completed=await this.connect(active.room.id,signal);attempt=0;
+      if(completed&&this.options.queue&&!this.options.queue.continuous)return;
+    }catch(error){if(signal.aborted)break;if(error instanceof ControlTransferredError){this.options.onState?.('control_transferred');throw error}this.options.onState?.('reconnecting');attempt++;await sleep(Math.min(30000,500*2**Math.min(attempt,6))*(0.75+Math.random()/2),signal)} }
     this.engine.disconnect();this.ws?.close();
   }
-  private connect(roomID:string,signal:AbortSignal):Promise<void>{return new Promise((resolve,reject)=>{
+  private connect(roomID:string,signal:AbortSignal):Promise<boolean>{return new Promise((resolve,reject)=>{
     const url=new URL('/v1/ws/bots',this.options.baseURL);url.protocol=url.protocol==='https:'?'wss:':'ws:';url.searchParams.set('room_id',roomID);
     const ws=new WebSocket(url,{headers:{Authorization:`Bearer ${this.session}`},maxPayload:1024*1024,handshakeTimeout:10000,followRedirects:false});this.ws=ws;
-    let completed=false;
+    let completed=false,plannedRefresh=false,transferred=false;
     const abort=()=>ws.close();signal.addEventListener('abort',abort,{once:true});
     const retry=setInterval(()=>this.engine.retryPending(),500);
-    const refresh=setTimeout(()=>ws.close(),Math.max(0,this.expires-Date.now()-30000));
-    ws.on('message',raw=>{try{const frame=JSON.parse(raw.toString());this.engine.receive(frame);if(frame.type==='snapshot'&&['completed','aborted','early_ended'].includes(frame.status)){completed=true;ws.close()}}catch{ws.close(1002,'invalid frame')}});
+    const refresh=setTimeout(()=>{plannedRefresh=true;ws.close()},Math.max(0,this.expires-Date.now()-30000));
+    ws.on('message',raw=>{try{const frame=JSON.parse(raw.toString());this.options.onFrame?.(freeze(structuredClone(frame)));this.engine.receive(frame);if(frame.type==='control_changed'){transferred=true;ws.close()}if(frame.type==='snapshot'&&frame.status&&frame.status!=='active'){completed=true;ws.close()}}catch{ws.close(1002,'invalid frame')}});
     ws.on('error',()=>{});
-    ws.on('close',()=>{clearInterval(retry);clearTimeout(refresh);signal.removeEventListener('abort',abort);this.engine.disconnect();if(completed||signal.aborted)resolve();else reject(new Error('CONNECTION_LOST'))});
+    ws.on('close',()=>{clearInterval(retry);clearTimeout(refresh);signal.removeEventListener('abort',abort);this.engine.disconnect();if(transferred)reject(new ControlTransferredError());else if(completed||signal.aborted||plannedRefresh)resolve(completed);else reject(new Error('CONNECTION_LOST'))});
   })}
 }
 

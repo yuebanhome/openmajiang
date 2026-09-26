@@ -55,7 +55,7 @@ func load(s rulesdk.Snapshot) (state, error) {
 	}
 	return x, e
 }
-func window(x state) string { return fmt.Sprintf("toy-%d", x.Hand) }
+func window(x state) string { return fmt.Sprintf("toy-%d-%t", x.Hand, x.Ended) }
 func (*Rule) Inspect(s rulesdk.Snapshot) (rulesdk.Flow, error) {
 	x, e := load(s)
 	if e != nil {
@@ -67,6 +67,23 @@ func (*Rule) Inspect(s rulesdk.Snapshot) (rulesdk.Flow, error) {
 		f.Scores = append(f.Scores, rulesdk.Score{ParticipantID: p.ID, Total: x.Scores[i]})
 	}
 	if x.Ended {
+		f.HandResult = &rulesdk.HandResult{HandIndex: x.Hand, Scores: []rulesdk.Score{}, Winners: []rulesdk.Winner{{ParticipantID: x.Players[0].ID}, {ParticipantID: x.Players[1].ID}}, DiscarderID: x.Players[2].ID}
+		for i, p := range x.Players {
+			delta := 5
+			if i == 2 {
+				delta = -10
+			}
+			f.HandResult.Scores = append(f.HandResult.Scores, rulesdk.Score{ParticipantID: p.ID, Delta: delta, Total: x.Scores[i]})
+		}
+		if f.MatchEnded {
+			for i, p := range x.Players {
+				rank := 1
+				if i == 2 {
+					rank = 3
+				}
+				f.Rankings = append(f.Rankings, rulesdk.Ranking{ParticipantID: p.ID, Rank: rank, RawScore: x.Scores[i]})
+			}
+		}
 		f.Phase = "settled"
 		f.WindowKind = "intermission"
 		if f.MatchEnded {

@@ -55,6 +55,7 @@ type command struct {
 }
 type envelope struct {
 	Type        string          `json:"type"`
+	Status      string          `json:"status"`
 	View        json.RawMessage `json:"view"`
 	Match       string          `json:"match_id"`
 	Hand        string          `json:"hand_id"`
@@ -82,6 +83,9 @@ type envelope struct {
 		Code string `json:"code"`
 	} `json:"error"`
 }
+
+var errMatchFinished = errors.New("match completed")
+var errMatchInterrupted = errors.New("match interrupted; explicitly restart matching to continue")
 
 func main() {
 	var c config
@@ -123,16 +127,29 @@ func runOnline(ctx context.Context, cfg config) error {
 	}
 	c := client{cfg: cfg, key: key, pending: map[string]command{}, http: &http.Client{Timeout: 15 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}
 	failures := 0
+	queued := false
 	for ctx.Err() == nil {
 		e = c.session(ctx)
-		if e == nil && cfg.queue {
+		if e == nil && cfg.queue && !queued {
 			e = c.request(ctx, http.MethodPost, "/v1/bot/queue", map[string]any{"ruleset_id": "openmajiang.mcr", "ruleset_version": "1.0.0", "match_format": cfg.format, "continuous": cfg.continuous}, nil, c.token)
+			queued = e == nil
 		}
 		if e == nil {
 			e = c.connect(ctx)
 		}
 		if ctx.Err() != nil {
 			break
+		}
+		if errors.Is(e, errMatchFinished) {
+			if !cfg.continuous {
+				return nil
+			}
+			c.cfg.room = ""
+			failures = 0
+			continue
+		}
+		if errors.Is(e, errMatchInterrupted) {
+			return e
 		}
 		failures++
 		delay := time.Second * time.Duration(1<<min(failures, 5))
@@ -245,6 +262,10 @@ func (c *client) connect(ctx context.Context) error {
 			return errors.New("invalid protocol frame")
 		}
 		switch msg.Type {
+		case "room_snapshot":
+			if e = send(map[string]any{"type": "ready", "ready": true}); e != nil {
+				return e
+			}
 		case "heartbeat":
 			if e = send(map[string]string{"type": "ping"}); e != nil {
 				return e
@@ -252,6 +273,13 @@ func (c *client) connect(ctx context.Context) error {
 		case "control_changed":
 			return errors.New("bot control taken over")
 		case "snapshot":
+			if msg.Status == "completed" {
+				c.pending = map[string]command{}
+				return errMatchFinished
+			}
+			if msg.Status != "" && msg.Status != "active" {
+				return errMatchInterrupted
+			}
 			if msg.Stream == snapshot.Stream && msg.Seq <= generation {
 				continue
 			}

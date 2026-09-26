@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -17,21 +18,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yuebanhome/openmajiang/internal/auth"
 	"github.com/yuebanhome/openmajiang/pkg/rulesdk"
+	"golang.org/x/sync/singleflight"
 )
 
 type Config struct {
-	Rules        map[string]rulesdk.Rule
-	Auth         *auth.Service
-	BaseURL      string
-	TokenHashKey []byte
+	ObserveTimerLag func(time.Duration) // optional nonblocking measurement hook; no state or private data
+	Rules           map[string]rulesdk.Rule
+	Auth            *auth.Service
+	BaseURL         string
+	TokenHashKey    []byte
 }
 type Service struct {
-	pool   *pgxpool.Pool
-	cfg    Config
-	id     string
-	stop   context.CancelFunc
-	mu     sync.Mutex
-	limits map[string]rateEntry
+	publicMu        sync.Mutex
+	publicSnapshots map[string]publicCacheEntry
+	publicLoads     singleflight.Group
+	pool            *pgxpool.Pool
+	cfg             Config
+	id              string
+	stop            context.CancelFunc
+	mu              sync.Mutex
+	limits          map[string]rateEntry
+	sockets         map[string]int
 }
 type rateEntry struct {
 	start time.Time
@@ -100,7 +107,7 @@ func New(pool *pgxpool.Pool, cfg Config) (*Service, error) {
 	if pool == nil || len(cfg.Rules) == 0 || len(cfg.TokenHashKey) < 32 {
 		return nil, errors.New("platform requires database, rules and 32-byte token hash key")
 	}
-	return &Service{pool: pool, cfg: cfg, id: id("node"), limits: map[string]rateEntry{}}, nil
+	return &Service{pool: pool, cfg: cfg, id: id("node"), limits: map[string]rateEntry{}, sockets: map[string]int{}}, nil
 }
 func (s *Service) SetAuth(a *auth.Service) { s.cfg.Auth = a }
 func id(prefix string) string {
@@ -135,6 +142,9 @@ func decode(w http.ResponseWriter, r *http.Request, v any) error {
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
 	if err := d.Decode(v); err != nil {
+		return api(400, "INVALID_REQUEST")
+	}
+	if d.Decode(&struct{}{}) != io.EOF {
 		return api(400, "INVALID_REQUEST")
 	}
 	return nil
@@ -190,7 +200,7 @@ func (s *Service) mutation(next http.HandlerFunc) http.HandlerFunc {
 			failure(w, api(403, "CSRF_FAILED"))
 			return
 		}
-		if !s.limit("write:"+r.RemoteAddr, 120) {
+		if !s.limit("write:"+s.clientIP(r), 120) {
 			failure(w, api(429, "RATE_LIMITED"))
 			return
 		}

@@ -1,18 +1,17 @@
 package platform
 
-import (
-	"context"
-)
+import "context"
 
-// Controller grants and account/session revocation share the auth user row lock.
-func (s *Service) acquireControl(ctx context.Context, p Seat, session string, bot bool) (int64, error) {
+// Controller grants share the auth-user lock with credential revocation. A
+// controller token belongs to one browser tab / runner, never to a whole cookie.
+func (s *Service) acquireControl(ctx context.Context, p Seat, session string, bot, force bool) (string, int64, bool, error) {
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
-		return 0, e
+		return "", 0, false, e
 	}
 	defer tx.Rollback(ctx)
 	if e = lockEligible(ctx, tx, p.UserID); e != nil {
-		return 0, e
+		return "", 0, false, e
 	}
 	var valid bool
 	if bot {
@@ -21,15 +20,24 @@ func (s *Service) acquireControl(ctx context.Context, p Seat, session string, bo
 		e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM auth_sessions WHERE id=$1 AND user_id=$2 AND expires_at>now() AND revoked_at IS NULL)`, session, p.UserID).Scan(&valid)
 	}
 	if e != nil {
-		return 0, e
+		return "", 0, false, e
 	}
 	if !valid {
-		return 0, api(401, "AUTH_EXPIRED")
+		return "", 0, false, api(401, "AUTH_EXPIRED")
 	}
+	var occupied bool
 	var epoch int64
-	e = tx.QueryRow(ctx, `UPDATE platform_seats SET control_epoch=control_epoch+1,controller=$2,connected_until=now()+interval '30 seconds' WHERE participant_id=$1 AND active RETURNING control_epoch`, p.ParticipantID, session).Scan(&epoch)
+	e = tx.QueryRow(ctx, `SELECT controller<>'' AND COALESCE(connected_until>now(),false),control_epoch FROM platform_seats WHERE participant_id=$1 AND active FOR UPDATE`, p.ParticipantID).Scan(&occupied, &epoch)
 	if e != nil {
-		return 0, api(403, "FORBIDDEN_SEAT")
+		return "", 0, false, api(403, "FORBIDDEN_SEAT")
 	}
-	return epoch, tx.Commit(ctx)
+	if occupied && !force && !bot {
+		return "", epoch, false, tx.Commit(ctx)
+	}
+	control := id("controller")
+	e = tx.QueryRow(ctx, `UPDATE platform_seats SET control_epoch=control_epoch+1,controller=$2,controller_session=$3,connected_until=now()+interval '30 seconds' WHERE participant_id=$1 RETURNING control_epoch`, p.ParticipantID, control, session).Scan(&epoch)
+	if e != nil {
+		return "", 0, false, e
+	}
+	return control, epoch, true, tx.Commit(ctx)
 }

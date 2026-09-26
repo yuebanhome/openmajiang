@@ -9,12 +9,14 @@ RUN npm run build
 # Build on the target architecture. The MCR evaluator uses CGO/C++, so a
 # GOARCH-only cross compile would be incorrect without a matching C++ toolchain.
 FROM golang:1.27.1-bookworm AS backend
+ARG VCS_REF=unknown
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 COPY --from=frontend /src/web/dist ./web/dist
-RUN CGO_ENABLED=1 go build -trimpath -ldflags='-s -w' -o /out/openmajiang ./cmd/openmajiang \
+RUN app_version="$(cat VERSION)" \
+    && CGO_ENABLED=1 go build -trimpath -ldflags="-s -w -X main.Version=$app_version -X main.Commit=$VCS_REF" -o /out/openmajiang ./cmd/openmajiang \
     && CGO_ENABLED=1 go build -trimpath -ldflags='-s -w' -o /out/bot-runner ./cmd/bot-runner
 
 FROM debian:bookworm-slim AS runtime

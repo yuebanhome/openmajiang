@@ -41,6 +41,8 @@
 
 两个架构都用原生 GitHub runner 跑测试，发布构建使用 Buildx/QEMU 生成 `linux/amd64,linux/arm64`。发布附带 SBOM 和 provenance。workflow 中第三方 Actions 固定为从官方仓库核对的完整提交 SHA。当前文件提供两架构验证路径，只有对应 CI 实际成功后才能宣称双架构已验证；本地没有 Docker 时不能据此宣称镜像冒烟通过。
 
+规则 10,000 手模拟使用独立的 `MCR_SOAK_MATCHES=625` 步骤；普通 `go test ./...` 不代表已运行这项重型检查。两个架构还运行 SDK 共享协议样例、真实数据库备份到隔离库恢复、迁移重入、SIGTERM 正常退出和重新启动。独立 amd64 `bot-wss` job 使用临时 CA 与真实 TLS 代理，让四个独立账号/Bot 经 WSS 按默认时钟完成至少 100 手；按 16 手场次预计跨过 100 到 112 手。该项可运行约两小时，发布同时依赖它成功，不能以加速模拟替代线上连接验收。
+
 发布不自动部署服务器，也不自动移动 `latest`。`promote.yml` 从 main 手动触发，填写已成功发布的稳定版本和该次构建的完整 digest。它核对 tag 可从 main 到达、版本文件、成功的 tag workflow、registry digest、两架构 OCI 源仓库/版本/提交元数据，再把同一 digest 晋升为 `latest`，不重新构建。预发布不能晋升。
 
 示例发版流程：更新 `VERSION` 并合并通过测试的 PR，随后在 main 对应提交创建 `v0.1.0`。SemVer 不接受数字段前导零；Docker tag 不能直接表示 `+build` 元数据，因此当前发布入口明确不接受该形式。已有版本标签绝不覆盖；修正后的版本使用新的补丁版本。

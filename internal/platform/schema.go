@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS platform_rooms (
 CREATE TABLE IF NOT EXISTS platform_seats (
  participant_id text PRIMARY KEY, room_id text NOT NULL REFERENCES platform_rooms(id),
  user_id text NOT NULL, bot_id text NOT NULL DEFAULT '', name text NOT NULL, kind text NOT NULL,
- bot_version text NOT NULL DEFAULT '', builtin_strategy text NOT NULL DEFAULT 'random_legal', continuous boolean NOT NULL DEFAULT false, seat_order integer NOT NULL, ready boolean NOT NULL DEFAULT false, active boolean NOT NULL DEFAULT true,
- control_epoch bigint NOT NULL DEFAULT 0, controller text NOT NULL DEFAULT '',
+ self_timeouts integer NOT NULL DEFAULT 0, reaction_timeouts integer NOT NULL DEFAULT 0, bot_version text NOT NULL DEFAULT '', builtin_strategy text NOT NULL DEFAULT 'random_legal', continuous boolean NOT NULL DEFAULT false, seat_order integer NOT NULL, ready boolean NOT NULL DEFAULT false, active boolean NOT NULL DEFAULT true,
+ control_epoch bigint NOT NULL DEFAULT 0, controller text NOT NULL DEFAULT '', controller_session text NOT NULL DEFAULT '',
  connected_until timestamptz, leave_after_hand boolean NOT NULL DEFAULT false,
  UNIQUE(room_id,seat_order)
 );
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS platform_matches (
  id text PRIMARY KEY, room_id text NOT NULL REFERENCES platform_rooms(id),
  ruleset_id text NOT NULL, ruleset_version text NOT NULL, match_format text NOT NULL,
  artifact_hash text NOT NULL, manifest jsonb NOT NULL, config jsonb NOT NULL, state jsonb NOT NULL, seq bigint NOT NULL DEFAULT 1, status text NOT NULL DEFAULT 'active',
- window_id text NOT NULL DEFAULT '', deadline_at timestamptz,
+ window_id text NOT NULL DEFAULT '', deadline_at timestamptz, next_run_at timestamptz NOT NULL DEFAULT now(),
  choices jsonb NOT NULL DEFAULT '{}', owner_id text NOT NULL, owner_epoch bigint NOT NULL DEFAULT 1,
  owner_until timestamptz NOT NULL, interrupted boolean NOT NULL DEFAULT false,
  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
@@ -81,7 +81,13 @@ CREATE TABLE IF NOT EXISTS platform_audit (
 
 func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	_, err := pool.Exec(ctx, Schema)
-	return err
+	if err != nil {
+		return err
+	}
+	if err = AdminMigrate(ctx, pool); err != nil {
+		return err
+	}
+	return StatsMigrate(ctx, pool)
 }
 
 // CheckSchema fails readiness until the required migration is present.

@@ -11,6 +11,13 @@ import (
 )
 
 func (s *Service) snapshot(r *http.Request, roomID, pid string) (map[string]any, error) {
+	if pid == "" {
+		return s.cachedPublicSnapshot(r, roomID)
+	}
+	return s.snapshotUncached(r, roomID, pid)
+}
+
+func (s *Service) snapshotUncached(r *http.Request, roomID, pid string) (map[string]any, error) {
 	room, e := loadRoom(r.Context(), s.pool, roomID)
 	if e != nil {
 		return nil, e
@@ -28,6 +35,14 @@ func (s *Service) snapshot(r *http.Request, roomID, pid string) (map[string]any,
 	if e != nil {
 		return nil, e
 	}
+	deleted, e := s.deletedParticipants(r.Context(), m.ID)
+	if e != nil {
+		return nil, e
+	}
+	view, e = anonymizeView(view, deleted)
+	if e != nil {
+		return nil, e
+	}
 	result := map[string]any{"type": "snapshot", "room": room, "view": view, "match_id": m.ID, "hand_id": handID(m.ID, index), "hand_index": index, "seq": m.Seq, "status": m.Status, "deadline_at": m.Deadline, "platform_interrupted": m.Interrupted, "ruleset": map[string]string{"id": m.RulesetID, "version": m.RulesetVersion}, "match_format": m.Format}
 	if pid == "" {
 		result["type"] = "spectator_snapshot"
@@ -36,6 +51,10 @@ func (s *Service) snapshot(r *http.Request, roomID, pid string) (map[string]any,
 	}
 	var epoch int64
 	_ = s.pool.QueryRow(r.Context(), `SELECT control_epoch FROM platform_seats WHERE participant_id=$1`, pid).Scan(&epoch)
+	var selfTimeouts, reactionTimeouts int
+	_ = s.pool.QueryRow(r.Context(), `SELECT self_timeouts,reaction_timeouts FROM platform_seats WHERE participant_id=$1`, pid).Scan(&selfTimeouts, &reactionTimeouts)
+	result["self_timeout_count"] = selfTimeouts
+	result["reaction_timeout_count"] = reactionTimeouts
 	result["participant_id"] = pid
 	result["control_epoch"] = epoch
 	result["seat_assignment_version"] = index
@@ -103,15 +122,25 @@ func (s *Service) takeControl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	session, e := s.cfg.Auth.SessionID(r)
-	if e == nil {
-		_, e = s.acquireControl(r.Context(), p, session, false)
+	if e != nil {
+		failure(w, api(401, "AUTH_EXPIRED"))
+		return
 	}
+	control, _, _, e := s.acquireControl(r.Context(), p, session, false, true)
 	if e != nil {
 		failure(w, e)
 		return
 	}
-	s.playerView(w, r)
+	v, e := s.snapshot(r, r.PathValue("id"), p.ParticipantID)
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	v["control_token"] = control
+	v["control_status"] = "owner"
+	write(w, 200, v)
 }
+
 func (s *Service) actionHTTP(w http.ResponseWriter, r *http.Request) {
 	u, e := s.user(r, true)
 	if e != nil {
@@ -123,7 +152,7 @@ func (s *Service) actionHTTP(w http.ResponseWriter, r *http.Request) {
 		failure(w, e)
 		return
 	}
-	session, e := s.cfg.Auth.SessionID(r)
+	_, e = s.cfg.Auth.SessionID(r)
 	if e != nil {
 		failure(w, api(401, "AUTH_EXPIRED"))
 		return
@@ -133,7 +162,7 @@ func (s *Service) actionHTTP(w http.ResponseWriter, r *http.Request) {
 		failure(w, e)
 		return
 	}
-	response, e := s.Submit(r.Context(), p.ParticipantID, session, a)
+	response, e := s.Submit(r.Context(), p.ParticipantID, r.Header.Get("X-Control-Token"), a)
 	if e != nil {
 		failure(w, e)
 		return
@@ -253,6 +282,15 @@ func (s *Service) privateReplay(w http.ResponseWriter, r *http.Request) {
 	s.replayFor(w, r, p.ParticipantID)
 }
 func (s *Service) replayFor(w http.ResponseWriter, r *http.Request, pid string) {
+	if _, e := loadMatch(r.Context(), s.pool, r.PathValue("id"), false); e != nil {
+		failure(w, e)
+		return
+	}
+	deleted, err := s.deletedParticipants(r.Context(), r.PathValue("id"))
+	if err != nil {
+		failure(w, err)
+		return
+	}
 	after, _ := strconv.ParseInt(r.URL.Query().Get("after"), 10, 64)
 	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 	if limit <= 0 || limit > 200 {
@@ -283,8 +321,17 @@ func (s *Service) replayFor(w http.ResponseWriter, r *http.Request, pid string) 
 			failure(w, e)
 			return
 		}
+		view, e = anonymizeView(view, deleted)
+		if e != nil {
+			failure(w, e)
+			return
+		}
 		frames = append(frames, map[string]any{"seq": seq, "hand_index": idx, "hand_id": handID(r.PathValue("id"), idx), "view": view, "at": at})
 		last = seq
+	}
+	if e = rows.Err(); e != nil {
+		failure(w, e)
+		return
 	}
 	write(w, 200, map[string]any{"frames": frames, "next_after": last, "view_policy": map[bool]string{true: "spectator_discard_only@1", false: "participant_private"}[pid == ""]})
 }

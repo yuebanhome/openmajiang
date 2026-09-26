@@ -89,16 +89,20 @@ type Standing struct {
 	StandardPoints *Rational `json:"standard_points,omitempty"`
 }
 type Result struct {
-	Method      string          `json:"method"`
-	Winner      int             `json:"winner_seat"`
-	Source      int             `json:"source_seat"`
-	WinningTile *Tile           `json:"winning_tile,omitempty"`
-	WinningHand []Tile          `json:"winning_hand,omitempty"`
-	FanItems    []scoring.Fan   `json:"fan_items,omitempty"`
-	NonFlower   int             `json:"non_flower_fan"`
-	Flower      int             `json:"flower_points"`
-	Total       int             `json:"total_fan"`
-	Scores      []rulesdk.Score `json:"score_deltas"`
+	Method              string                `json:"method"`
+	Winner              int                   `json:"winner_seat"`
+	Source              int                   `json:"source_seat"`
+	WinningTile         *Tile                 `json:"winning_tile,omitempty"`
+	WinningHand         []Tile                `json:"winning_hand,omitempty"`
+	FanItems            []scoring.Fan         `json:"fan_items,omitempty"`
+	WinningForm         string                `json:"winning_form,omitempty"`
+	Decomposition       []scoring.Group       `json:"decomposition,omitempty"`
+	Explanations        []scoring.Explanation `json:"explanations,omitempty"`
+	ExplanationCoverage string                `json:"explanation_coverage,omitempty"`
+	NonFlower           int                   `json:"non_flower_fan"`
+	Flower              int                   `json:"flower_points"`
+	Total               int                   `json:"total_fan"`
+	Scores              []rulesdk.Score       `json:"score_deltas"`
 }
 type State struct {
 	Schema              string         `json:"schema"`
@@ -171,6 +175,20 @@ func load(raw rulesdk.Snapshot) (*State, error) {
 	}
 	if (s.Phase == "intermission" || s.Phase == "ended") != (s.Result != nil) {
 		return nil, errors.New("invalid hand settlement phase")
+	}
+	if result := s.Result; result != nil {
+		switch result.Method {
+		case "exhaustive_draw":
+			if result.Winner != -1 || result.Source != -1 {
+				return nil, errors.New("invalid draw settlement")
+			}
+		case "self_draw", "discard_win", "rob_kong":
+			if result.Winner < 0 || result.Winner > 3 || result.Source < 0 || result.Source > 3 {
+				return nil, errors.New("invalid winner settlement")
+			}
+		default:
+			return nil, errors.New("invalid settlement method")
+		}
 	}
 	if s.Phase == "reaction" && (s.Pending == nil || s.Pending.Seat < 0 || s.Pending.Seat > 3 || (s.Pending.Type != "discard" && s.Pending.Type != "rob_kong") || (s.Pending.Type == "discard" && (s.Pending.DiscardIndex < 0 || s.Pending.DiscardIndex >= len(s.Discards))) || (s.Pending.Type == "rob_kong" && (s.Pending.MeldIndex < 0 || s.Pending.MeldIndex >= len(s.Seats[s.Pending.Seat].Melds)))) {
 		return nil, errors.New("invalid reaction source")

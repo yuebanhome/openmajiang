@@ -18,6 +18,26 @@ func (r Rule) Inspect(raw rulesdk.Snapshot) (rulesdk.Flow, error) {
 		return rulesdk.Flow{}, err
 	}
 	f := rulesdk.Flow{Phase: s.Phase, HandIndex: s.HandIndex, WindowID: s.windowID(), WindowKind: s.Phase, HandEnded: s.Phase == "intermission" || s.Phase == "ended", MatchEnded: s.Phase == "ended", Assignments: []rulesdk.Assignment{}, Decisions: []rulesdk.Decision{}, Scores: s.scores()}
+	f.PreserveDeadline = s.Phase == "self" && s.LastAction.Type == "replace_flower"
+	if f.HandEnded && s.Result != nil {
+		f.HandResult = &rulesdk.HandResult{HandIndex: s.HandIndex, Scores: s.Result.Scores, Winners: []rulesdk.Winner{}}
+		if s.Result.Winner >= 0 {
+			points := s.Result.NonFlower
+			f.HandResult.Winners = append(f.HandResult.Winners, rulesdk.Winner{ParticipantID: s.Seats[s.Result.Winner].ParticipantID, SelfDraw: s.Result.Method == "self_draw", NonFlowerPoints: &points})
+			if s.Result.Method != "self_draw" {
+				f.HandResult.DiscarderID = s.Seats[s.Result.Source].ParticipantID
+			}
+		}
+	}
+	if f.MatchEnded {
+		for _, standing := range s.Standings {
+			ranking := rulesdk.Ranking{ParticipantID: standing.ParticipantID, Rank: standing.Rank, RawScore: standing.Score}
+			if standing.StandardPoints != nil {
+				ranking.StandardPoints = &rulesdk.Rational{Numerator: standing.StandardPoints.Numerator, Denominator: standing.StandardPoints.Denominator}
+			}
+			f.Rankings = append(f.Rankings, ranking)
+		}
+	}
 	for i, p := range s.Seats {
 		f.Assignments = append(f.Assignments, rulesdk.Assignment{ParticipantID: p.ParticipantID, Seat: i})
 	}
@@ -140,7 +160,7 @@ func (s *State) reactionOptions(seat int) []rulesdk.Option {
 	return opts
 }
 func fanSummary(r scoring.Result) json.RawMessage {
-	b, _ := json.Marshal(map[string]any{"non_flower_fan": r.NonFlower, "flower_points": r.Flower, "total_fan": r.Total, "fan_items": r.Fans})
+	b, _ := json.Marshal(map[string]any{"non_flower_fan": r.NonFlower, "flower_points": r.Flower, "total_fan": r.Total, "fan_items": r.Fans, "winning_form": r.WinningForm, "decomposition": r.Decomposition, "explanations": r.Explanations, "explanation_coverage": r.ExplanationCoverage})
 	return b
 }
 func tileIDs(tiles []Tile) []string {

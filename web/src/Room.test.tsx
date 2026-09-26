@@ -1,0 +1,9 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { RoomPage } from './Room';
+const mock=vi.hoisted(()=>({post:vi.fn(),navigate:vi.fn(),room:{id:'r1',name:'四 Bot 测试',mode:'bot_only',status:'waiting',owner_id:'owner',capacity:4,match_format:'practice_1',ruleset_id:'openmajiang.mcr',ruleset_version:'1.0.0',seats:Array.from({length:4},(_,i)=>({participant_id:`p${i}`,bot_id:`b${i}`,name:`Bot ${i}`,kind:'bot',ready:true}))}}));
+vi.mock('./hooks',()=>({navigate:mock.navigate,useResource:(path:string)=>({data:path==='/v1/bots'?{bots:[]}:{room:mock.room},loading:false,error:'',reload:vi.fn()})}));
+vi.mock('./api',async importOriginal=>({...await importOriginal<typeof import('./api')>(),post:mock.post}));
+beforeEach(()=>{mock.post.mockReset().mockResolvedValue({match_id:'m1'});mock.navigate.mockReset();mock.room.seats.forEach(s=>s.ready=true);});
+describe('Bot-only room ownership',()=>{it('lets the owner start a ready full Bot table without taking a human seat',async()=>{render(<RoomPage id="r1" user={{id:'owner',display_name:'房主',email:'owner@example.test',email_verified:true}}/>);expect(screen.queryByRole('button',{name:'加入这张牌桌'})).toBeNull();const start=screen.getByRole('button',{name:'开始对局'});expect((start as HTMLButtonElement).disabled).toBe(false);await userEvent.click(start);expect(mock.post).toHaveBeenCalledWith('/v1/rooms/r1/start',{});expect(mock.navigate).toHaveBeenCalledWith('/watch/r1');});it('keeps start disabled until every Bot is ready',()=>{mock.room.seats[2].ready=false;render(<RoomPage id="r1" user={{id:'owner',display_name:'房主',email:'owner@example.test',email_verified:true}}/>);expect((screen.getByRole('button',{name:'开始对局'}) as HTMLButtonElement).disabled).toBe(true);});});

@@ -354,6 +354,9 @@ func (s *Service) limit(w http.ResponseWriter, r *http.Request, operation, email
 	return true
 }
 
+// ClientIP applies the configured trusted-proxy chain policy for all services.
+func (s *Service) ClientIP(r *http.Request) string { return s.clientIP(r) }
+
 func (s *Service) clientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {

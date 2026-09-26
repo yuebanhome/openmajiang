@@ -28,6 +28,10 @@ class StrategyContext:
 Strategy = Callable[[StrategyContext], str | Awaitable[str]]
 
 
+class ControlTransferredError(RuntimeError):
+    """Another controller owns this Bot; this process must not steal it back."""
+
+
 def _identity(frame: Frame) -> tuple:
     return tuple(frame.get(k) for k in ("match_id", "hand_id", "participant_id", "decision_id"))
 
@@ -206,17 +210,19 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 class BotClient:
     def __init__(self, base_url: str, api_key: str, strategy: Strategy, *, rulesets: list[dict] | None = None,
-                 queue: Frame | None = None, auto_flower: bool = True, on_state: Callable[[str], None] | None = None):
+                 queue: Frame | None = None, auto_flower: bool = True, on_state: Callable[[str], None] | None = None,
+                 on_frame: Callable[[Frame], None] | None = None, on_error: Callable[[str], None] | None = None):
         parsed = urllib.parse.urlsplit(base_url)
         if parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.username or parsed.password:
             raise ValueError("invalid base URL")
         if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
             raise ValueError("remote Bot connections require HTTPS")
         self.base_url, self.api_key, self.queue, self.on_state = base_url, api_key, queue, on_state
+        self.on_frame, self.socket = on_frame, None
         self.rulesets = rulesets or [{"id": "openmajiang.mcr", "version": "1.0.0"}]
         self.session, self.expires = "", 0.0
         self.outgoing: asyncio.Queue[Frame] = asyncio.Queue(maxsize=64)
-        self.engine = DecisionEngine(strategy, self._send, auto_flower=auto_flower)
+        self.engine = DecisionEngine(strategy, self._send, auto_flower=auto_flower, on_error=on_error)
 
     def _send(self, frame: Frame) -> None:
         try:
@@ -246,6 +252,11 @@ class BotClient:
         data = await self._request("/v1/bot-sessions", "POST", {"protocol_version": "1.0", "rulesets": self.rulesets}, long_key=True)
         self.session, self.expires = data["session_token"], _timestamp(data["expires_at"])
 
+    async def reconnect(self) -> None:
+        """Close the transport; run() resumes discovery and restores the snapshot."""
+        if self.socket is not None:
+            await self.socket.close()
+
     async def leave_queue(self) -> None:
         await self._request("/v1/bot/queue", "DELETE", {})
 
@@ -263,11 +274,15 @@ class BotClient:
                         await _sleep(1, stop)
                         continue
                     queued = False
-                    await self._connect(active["room"]["id"], stop)
+                    completed = await self._connect(active["room"]["id"], stop)
                     attempt = 0
-                    if self.queue and not self.queue.get("continuous"):
+                    if completed and self.queue and not self.queue.get("continuous"):
                         return
                 except asyncio.CancelledError:
+                    raise
+                except ControlTransferredError:
+                    if self.on_state:
+                        self.on_state("control_transferred")
                     raise
                 except Exception:
                     if stop.is_set():
@@ -279,7 +294,7 @@ class BotClient:
         finally:
             self.engine.disconnect()
 
-    async def _connect(self, room_id: str, stop: asyncio.Event) -> None:
+    async def _connect(self, room_id: str, stop: asyncio.Event) -> bool:
         from websockets.asyncio.client import connect
         url = urllib.parse.urlsplit(urllib.parse.urljoin(self.base_url, "/v1/ws/bots"))
         target = urllib.parse.urlunsplit(("wss" if url.scheme == "https" else "ws", url.netloc, url.path, urllib.parse.urlencode({"room_id": room_id}), ""))
@@ -288,9 +303,12 @@ class BotClient:
             self.outgoing.get_nowait()
         async with connect(target, additional_headers={"Authorization": "Bearer " + self.session},
                            max_size=1024 * 1024, open_timeout=10, proxy=None) as socket:
+            self.socket = socket
             if self.on_state:
                 self.on_state("connected")
             completed = False
+            planned_refresh = False
+            transferred = False
 
             async def sender():
                 while True:
@@ -302,15 +320,23 @@ class BotClient:
                     self.engine.retry_pending()
 
             async def closer():
+                nonlocal planned_refresh
                 await _sleep(max(0, self.expires - time.time() - 30), stop)
+                planned_refresh = not stop.is_set()
                 await socket.close()
 
             tasks = [asyncio.create_task(sender()), asyncio.create_task(retry()), asyncio.create_task(closer())]
             try:
                 async for raw in socket:
                     frame = json.loads(raw)
+                    if self.on_frame:
+                        self.on_frame(copy.deepcopy(frame))
                     self.engine.receive(frame)
-                    if frame.get("type") == "snapshot" and frame.get("status") in ("completed", "aborted", "early_ended"):
+                    if frame.get("type") == "control_changed":
+                        transferred = True
+                        await socket.close()
+                        break
+                    if frame.get("type") == "snapshot" and frame.get("status") and frame["status"] != "active":
                         completed = True
                         await socket.close()
                         break
@@ -319,8 +345,12 @@ class BotClient:
                     task.cancel()
                 await asyncio.gather(*tasks, return_exceptions=True)
                 self.engine.disconnect()
-            if not completed and not stop.is_set():
+                self.socket = None
+            if transferred:
+                raise ControlTransferredError("BOT_CONTROL_TRANSFERRED")
+            if not completed and not stop.is_set() and not planned_refresh:
                 raise RuntimeError("CONNECTION_LOST")
+            return completed
 
 
 async def _sleep(seconds: float, stop: asyncio.Event) -> None:

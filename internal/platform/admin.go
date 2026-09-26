@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -71,13 +72,61 @@ func (s *Service) requireAdmissions(ctx context.Context) error {
 func (s *Service) adminRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/public/status", s.publicStatus)
 	m.HandleFunc("GET /v1/admin/status", s.adminStatus)
-	m.HandleFunc("POST /v1/admin/maintenance", s.mutation(s.adminMaintenance))
-	m.HandleFunc("POST /v1/admin/users/{id}/status", s.mutation(s.adminUser))
-	m.HandleFunc("POST /v1/admin/bots/{id}/disable", s.mutation(s.adminBot))
-	m.HandleFunc("POST /v1/admin/bots/{id}/restore", s.mutation(s.adminRestoreBot))
-	m.HandleFunc("POST /v1/admin/rulesets/{id}/versions/{version}/status", s.mutation(s.adminRule))
+	m.HandleFunc("POST /v1/admin/maintenance", s.adminMutation(s.adminMaintenance))
+	m.HandleFunc("POST /v1/admin/users/{id}/status", s.adminMutation(s.adminUser))
+	m.HandleFunc("POST /v1/admin/bots/{id}/disable", s.adminMutation(s.adminBot))
+	m.HandleFunc("POST /v1/admin/bots/{id}/restore", s.adminMutation(s.adminRestoreBot))
+	m.HandleFunc("POST /v1/admin/rulesets/{id}/versions/{version}/status", s.adminMutation(s.adminRule))
+	m.HandleFunc("POST /v1/admin/matches/{id}/abort", s.adminMutation(s.adminAbortMatch))
 	m.HandleFunc("GET /v1/admin/audit", s.adminAudit)
 	m.HandleFunc("POST /v1/rooms/{id}/invite-rotate", s.mutation(s.rotateInvite))
+}
+
+type adminResponse struct {
+	http.ResponseWriter
+	status int
+}
+
+func (w *adminResponse) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+func (w *adminResponse) Write(body []byte) (int, error) {
+	if w.status == 0 {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(body)
+}
+func (s *Service) adminMutation(next http.HandlerFunc) http.HandlerFunc {
+	return s.mutation(func(w http.ResponseWriter, r *http.Request) {
+		actor, ok := s.admin(w, r)
+		if !ok {
+			return
+		}
+		body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 8<<10))
+		if err != nil {
+			failure(w, api(400, "INVALID_REQUEST"))
+			return
+		}
+		r.Body = io.NopCloser(bytes.NewReader(body))
+		var input struct {
+			Reason string `json:"reason"`
+		}
+		_ = json.Unmarshal(body, &input)
+		if !adminText(input.Reason, 200) {
+			input.Reason = "invalid request"
+		}
+		response := &adminResponse{ResponseWriter: w}
+		next(response, r)
+		if response.status < 400 {
+			return
+		}
+		// Success is audited in the mutation transaction. A rejected authorized
+		// request is recorded separately, without retaining its arbitrary body.
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), time.Second)
+		defer cancel()
+		_, _ = s.pool.Exec(ctx, `INSERT INTO platform_audit(actor_id,action,target_id,reason,outcome) VALUES($1,$2,$3,$4,$5)`, actor, "rejected:"+r.Pattern, r.PathValue("id"), input.Reason, "http_"+strconv.Itoa(response.status))
+	})
 }
 func (s *Service) admin(w http.ResponseWriter, r *http.Request) (string, bool) {
 	u, err := s.user(r, true)
@@ -257,7 +306,7 @@ func (s *Service) adminUser(w http.ResponseWriter, r *http.Request) {
 			`UPDATE platform_bot_credentials SET revoked_at=now() WHERE bot_id IN(SELECT id FROM platform_bots WHERE owner_id=$1) AND revoked_at IS NULL`,
 			`UPDATE platform_bot_sessions SET revoked_at=now() WHERE bot_id IN(SELECT id FROM platform_bots WHERE owner_id=$1) AND revoked_at IS NULL`,
 			`DELETE FROM platform_queue WHERE user_id=$1`,
-			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',connected_until=NULL,leave_after_hand=true WHERE user_id=$1 AND active`,
+			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL,leave_after_hand=true WHERE user_id=$1 AND active`,
 			`DELETE FROM platform_seats s USING platform_rooms r WHERE s.room_id=r.id AND r.status='waiting' AND s.user_id=$1`,
 		} {
 			if _, err = tx.Exec(r.Context(), q, target); err != nil {
@@ -307,7 +356,7 @@ func (s *Service) setBotSuspended(w http.ResponseWriter, r *http.Request, suspen
 		return
 	}
 	defer tx.Rollback(r.Context())
-	result, err := tx.Exec(r.Context(), `UPDATE platform_bots SET suspended=$2,enabled=CASE WHEN $2 THEN false ELSE enabled END WHERE id=$1`, target, suspended)
+	result, err := tx.Exec(r.Context(), `UPDATE platform_bots SET suspended=$2,enabled=false WHERE id=$1`, target, suspended)
 	if err != nil {
 		failure(w, err)
 		return
@@ -316,11 +365,18 @@ func (s *Service) setBotSuspended(w http.ResponseWriter, r *http.Request, suspen
 		failure(w, api(404, "BOT_NOT_FOUND"))
 		return
 	}
+	for _, q := range []string{
+		`UPDATE platform_bot_credentials SET revoked_at=now() WHERE bot_id=$1 AND revoked_at IS NULL`,
+		`UPDATE platform_bot_sessions SET revoked_at=now() WHERE bot_id=$1 AND revoked_at IS NULL`,
+	} {
+		if _, err = tx.Exec(r.Context(), q, target); err != nil {
+			failure(w, err)
+			return
+		}
+	}
 	if suspended {
 		for _, q := range []string{
-			`UPDATE platform_bot_credentials SET revoked_at=now() WHERE bot_id=$1 AND revoked_at IS NULL`,
-			`UPDATE platform_bot_sessions SET revoked_at=now() WHERE bot_id=$1 AND revoked_at IS NULL`,
-			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',connected_until=NULL,leave_after_hand=true WHERE bot_id=$1 AND active`,
+			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL,leave_after_hand=true WHERE bot_id=$1 AND active`,
 			`DELETE FROM platform_queue WHERE bot_id=$1`,
 			`DELETE FROM platform_seats s USING platform_rooms r WHERE s.room_id=r.id AND r.status='waiting' AND s.bot_id=$1`,
 		} {
@@ -425,6 +481,59 @@ func (s *Service) adminAudit(w http.ResponseWriter, r *http.Request) {
 	write(w, 200, map[string]any{"entries": entries, "next_before": next})
 }
 
+func (s *Service) adminAbortMatch(w http.ResponseWriter, r *http.Request) {
+	actor, ok := s.admin(w, r)
+	if !ok {
+		return
+	}
+	var body struct {
+		Reason string `json:"reason"`
+	}
+	if err := decodeAdmin(w, r, &body); err != nil {
+		failure(w, err)
+		return
+	}
+	if !adminText(body.Reason, 200) {
+		failure(w, api(400, "REASON_REQUIRED"))
+		return
+	}
+	tx, err := s.beginAdmin(r.Context(), r, actor)
+	if err != nil {
+		failure(w, err)
+		return
+	}
+	defer tx.Rollback(r.Context())
+	m, err := loadMatch(r.Context(), tx, r.PathValue("id"), true)
+	if err != nil {
+		failure(w, err)
+		return
+	}
+	if m.Status != "active" {
+		failure(w, api(409, "MATCH_NOT_ACTIVE"))
+		return
+	}
+	// Keep the entire engine state and already-settled score untouched. The
+	// unfinished hand is not adjudicated as a win or a loss by an operator.
+	_, err = tx.Exec(r.Context(), `UPDATE platform_matches SET status='aborted_by_operator',deadline_at=NULL,choices='{}',owner_epoch=owner_epoch+1,interrupted=true,updated_at=now() WHERE id=$1`, m.ID)
+	if err == nil {
+		_, err = tx.Exec(r.Context(), `UPDATE platform_rooms SET status='ended' WHERE id=$1`, m.RoomID)
+	}
+	if err == nil {
+		_, err = tx.Exec(r.Context(), `UPDATE platform_seats SET active=false,control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL,leave_after_hand=true WHERE room_id=$1`, m.RoomID)
+	}
+	if err == nil {
+		err = auditTx(r.Context(), tx, actor, "match_abort", m.ID, body.Reason, "succeeded")
+	}
+	if err == nil {
+		err = tx.Commit(r.Context())
+	}
+	if err != nil {
+		failure(w, err)
+		return
+	}
+	write(w, 200, map[string]any{"match_id": m.ID, "status": "aborted_by_operator"})
+}
+
 // GrantOperator is an explicit deployment-CLI operation, never a public HTTP route.
 func GrantOperator(ctx context.Context, pool *pgxpool.Pool, email, reason string) error {
 	if !adminText(reason, 200) {
@@ -491,6 +600,6 @@ func (s *Service) BeforeDeleteTx(ctx context.Context, tx pgx.Tx, userID string) 
 	if e != nil {
 		return e
 	}
-	_, e = tx.Exec(ctx, `UPDATE platform_seats SET name='已注销用户',control_epoch=control_epoch+1,controller='',connected_until=NULL WHERE user_id=$1`, userID)
+	_, e = tx.Exec(ctx, `UPDATE platform_seats SET name='已注销用户',control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL WHERE user_id=$1`, userID)
 	return e
 }
