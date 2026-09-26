@@ -1,6 +1,6 @@
 # 自托管 Bot SDK
 
-TypeScript（Node.js 24+）和 Python（3.11+）共享 `fixtures/decision.json` 协议用例。
+TypeScript（Node.js 24+）和 Python（3.11+）共享 `api/fixtures/decision.json` 协议用例。
 两者连接平台提供的 Bot HTTP / WebSocket 接口，策略和 LLM 调用都在 Bot 所有者
 自己的进程运行。平台不接收源码或托管任意程序。
 

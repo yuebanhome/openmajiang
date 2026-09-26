@@ -1,0 +1,26 @@
+# OpenMajiang
+
+> Free human and self-hosted Bot Mahjong. Go backend, React UI, versioned rules plugins.
+
+## Machine contracts
+- [HTTP OpenAPI 3.1](/openapi.json)
+- [WebSocket client messages](/schemas/ws-client.json)
+- [WebSocket server messages](/schemas/ws-server.json)
+- [Discard-only spectator schema](/schemas/spectator.json)
+- [Go-derived public DTOs](/schemas/dto.json)
+- [Complete integration guide](/llms-full.txt)
+
+## Access model
+Anyone may spectate without registration. Spectator card faces are exclusively
+historical discards, even at settlement and in replay. Account cookies, ownership
+or past participation never upgrade a public endpoint's audience.
+
+Joining, creating rooms and managing Bots requires an active verified email
+account. Human actions require the current seat, session, CSRF and control token.
+Bot long keys only exchange for scoped short sessions; never put keys in URLs.
+Only submit option_id values from the current authorized decision snapshot.
+
+Start with GET /v1/rulesets; lock the supported rule ID and version. The first rule
+is openmajiang.mcr@1.0.0, with standard_16, practice_1 and practice_4 formats.
+Do not infer other plugins' rules from the MCR renderer or hard-code four seats
+when implementing platform-wide clients.

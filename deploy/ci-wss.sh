@@ -53,6 +53,8 @@ for attempt in $(seq 1 60); do
 done
 test "$ready" = true
 mkdir -p test-results
-SSL_CERT_FILE="$cert_dir/ca.pem" .venv-sdk/bin/python sdk/integration/wss-smoke.py \
+SSL_CERT_FILE="$cert_dir/ca.pem" NODE_EXTRA_CA_CERTS="$cert_dir/ca.pem" \
+  .venv-sdk/bin/python sdk/integration/wss-smoke.py \
   --base-url https://localhost:18443 --mailpit-url http://127.0.0.1:8025 \
   --hands 100 --format standard_16 --timeout 6900 --report test-results/bot-wss.json
+.venv-sdk/bin/python -c 'import json; r=json.load(open("test-results/bot-wss.json")); assert r.get("passed") is True and r.get("completed_hands", 0) >= 100, "100 completed hands over real WSS are required"'

@@ -14,13 +14,19 @@
 - GitHub Actions 的发布 job 绑定 Environment `DOCKERHUB`，读取 `secrets.USER`、`secrets.TOKEN`；PR 不读取发布凭据。
 - 无支付、充值、钱包、房卡、兑换或付费配额。
 
-## 完成清单
+## 实施与验收
 
-- [ ] M0：规格、插件 SDK、协议与仓库骨架
-- [ ] M1：国标规则、完整算番、四圈赛程与重放
-- [ ] M2：注册与账号、房间、邀请、匹配
-- [ ] M3：React 牌桌、匿名弃牌观战、重连与历史
-- [ ] M4：内置和外部 Bot、两语言接入、统计
-- [ ] M5：Docker/Actions、迁移、恢复、权限和端到端验收
+追踪目标：[Issue #1](https://github.com/yuebanhome/openmajiang/issues/1)。首个实现：[PR #2](https://github.com/yuebanhome/openmajiang/pull/2)。
+
+| 里程碑 | 实现位置 | 验收状态 |
+| --- | --- | --- |
+| M0 规格、插件 SDK、协议、骨架 | `pkg/rulesdk`、`rules/registry`、`api`、`docs` | 85 HTTP 操作及强 Schema 已落地，共同样例、生成一致性和离线校验通过 |
+| M1 国标裁判、算番、赛程、重放 | `rules/mcr`、`rules/mcr/scoring` | 两种架构规则回归及 10,000 手已通过；保留线上裁决解释与专家复核边界 |
+| M2 账号、房间、邀请、匹配 | `internal/auth`、`internal/platform` | 真实 PostgreSQL 权限、并发、恢复通过；新增修复须再跑 |
+| M3 React、弃牌观战、重连、历史 | `web`、`internal/platform` | 构建和单测通过；39 前端单测通过；真实浏览器修复后待 CI |
+| M4 内置/外部 Bot、SDK、统计 | `internal/bots`、`sdk`、`internal/platform/stats.go` | 两语言 SDK 用例通过；3 Python+1 TypeScript 的 100 手 WSS、统计数据库新用例待 CI |
+| M5 Docker、CI、运维、完整验收 | `Dockerfile`、`deploy`、`.github/workflows` | 双架构容器构建/冒烟通过；一小时容量、备份恢复待通过 |
+
+实现落地与发布门槛分开记录。以上通过项只适用于验收记录标明的提交；后续变更由同一工作流重跑。
 
 未通过的检查、未运行的环境验证和已知限制必须保留在 `docs/ACCEPTANCE.md`；不能用缩减规则替代完整国标。

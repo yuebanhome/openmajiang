@@ -7,14 +7,17 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/yuebanhome/openmajiang/internal/apidocs"
 	"github.com/yuebanhome/openmajiang/internal/auth"
 	"github.com/yuebanhome/openmajiang/internal/platform"
 	"github.com/yuebanhome/openmajiang/rules/registry"
@@ -136,11 +139,18 @@ func run() error {
 			}
 		}
 	}
-	p, e := platform.New(pool, platform.Config{Rules: ruleMap, BaseURL: base, TokenHashKey: token})
+	p, e := platform.New(pool, platform.Config{Rules: ruleMap, BaseURL: base, TokenHashKey: token, MaxWaitingRooms: envInt("MAX_WAITING_ROOMS", 2048), MaxActiveMatches: envInt("MAX_ACTIVE_MATCHES", 200), MaxOwnerWaitingRooms: envInt("MAX_OWNER_WAITING_ROOMS", 4), MaxQueuedParticipants: envInt("MAX_QUEUED_PARTICIPANTS", 4096)})
 	if e != nil {
 		return e
 	}
-	a, e := auth.New(pool, auth.Config{BaseURL: base, CookieSecure: strings.HasPrefix(base, "https://"), TrustedProxyCIDRs: splitNonempty(os.Getenv("TRUSTED_PROXY_CIDRS")), MailEncryptionKey: mailKey, SMTP: auth.SMTPConfig{Address: os.Getenv("SMTP_ADDR"), Username: os.Getenv("SMTP_USER"), Password: os.Getenv("SMTP_PASSWORD"), From: os.Getenv("SMTP_FROM"), StartTLS: env("SMTP_STARTTLS", "true") != "false"}, OnRevoke: p.OnRevoke, BeforeDeleteTx: p.BeforeDeleteTx, OnDelete: p.OnDelete})
+	cookieSecure := strings.HasPrefix(base, "https://")
+	if raw, exists := os.LookupEnv("COOKIE_SECURE"); exists {
+		configured, err := strconv.ParseBool(raw)
+		if err != nil || configured != cookieSecure {
+			return errors.New("COOKIE_SECURE must match PUBLIC_BASE_URL scheme")
+		}
+	}
+	a, e := auth.New(pool, auth.Config{BaseURL: base, CookieSecure: cookieSecure, TrustedProxyCIDRs: splitNonempty(os.Getenv("TRUSTED_PROXY_CIDRS")), MailEncryptionKey: mailKey, SMTP: auth.SMTPConfig{Address: os.Getenv("SMTP_ADDR"), Username: os.Getenv("SMTP_USER"), Password: os.Getenv("SMTP_PASSWORD"), From: os.Getenv("SMTP_FROM"), StartTLS: env("SMTP_STARTTLS", "true") != "false"}, OnRevoke: p.OnRevoke, BeforeDeleteTx: p.BeforeDeleteTx, OnDelete: p.OnDelete})
 	if e != nil {
 		return e
 	}
@@ -148,6 +158,7 @@ func run() error {
 	mux := http.NewServeMux()
 	a.RegisterRoutes(mux)
 	p.RegisterRoutes(mux)
+	apidocs.RegisterRoutes(mux)
 	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"alive"}`))
@@ -175,7 +186,7 @@ func run() error {
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'")
 		p.Middleware(mux).ServeHTTP(w, r)
 	})
-	server := http.Server{Addr: env("HTTP_ADDR", ":8080"), Handler: handler, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
+	server := http.Server{BaseContext: func(net.Listener) context.Context { return ctx }, Addr: env("HTTP_ADDR", ":8080"), Handler: handler, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
 	go p.Run(ctx)
 	go a.StartMailWorker(ctx)
 	errCh := make(chan error, 1)
@@ -204,4 +215,14 @@ func splitNonempty(raw string) []string {
 		}
 	}
 	return r
+}
+
+func envInt(name string, fallback int) int {
+	if v := os.Getenv(name); v != "" {
+		n, e := strconv.Atoi(v)
+		if e == nil && n > 0 {
+			return n
+		}
+	}
+	return fallback
 }

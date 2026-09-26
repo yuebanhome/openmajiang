@@ -1,0 +1,4828 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "OpenMajiang public client API",
+    "version": "0.1.0",
+    "description": "Email accounts, human/Bot rooms and discard-only spectators. HTTP schemas describe the current Go wire contract; WebSocket schemas are separate. Errors never grant a hidden-card audience."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/v1/bot/queue": {
+      "delete": {
+        "operationId": "delete_v1_bot_queue",
+        "summary": "DELETE /v1/bot/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "BotSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_bot_queue",
+        "summary": "POST /v1/bot/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "BotSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/QueueRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/credentials/{credential}": {
+      "delete": {
+        "operationId": "delete_v1_bots_id_credentials_credential",
+        "summary": "DELETE /v1/bots/{id}/credentials/{credential}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "credential",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Ok"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/queue": {
+      "delete": {
+        "operationId": "delete_v1_bots_id_queue",
+        "summary": "DELETE /v1/bots/{id}/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_bots_id_queue",
+        "summary": "POST /v1/bots/{id}/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/QueueRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/sessions/{id}": {
+      "delete": {
+        "operationId": "delete_v1_me_sessions_id",
+        "summary": "DELETE /v1/me/sessions/{id}",
+        "description": "Use id=others to preserve this session and revoke other devices.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Revoked"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/queue": {
+      "delete": {
+        "operationId": "delete_v1_queue",
+        "summary": "DELETE /v1/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "get_v1_queue",
+        "summary": "GET /v1/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/HumanQueue"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_queue",
+        "summary": "POST /v1/queue",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/QueueStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/QueueRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "operationId": "get_health_live",
+        "summary": "GET /health/live",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "get_health_ready",
+        "summary": "GET /health/ready",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database or migration readiness failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/audit": {
+      "get": {
+        "operationId": "get_v1_admin_audit",
+        "summary": "GET /v1/admin/audit",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Audit"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/status": {
+      "get": {
+        "operationId": "get_v1_admin_status",
+        "summary": "GET /v1/admin/status",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/AdminStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/bot/active-match": {
+      "get": {
+        "operationId": "get_v1_bot_active_match",
+        "summary": "GET /v1/bot/active-match",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "BotSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/ActiveMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots": {
+      "get": {
+        "operationId": "get_v1_bots",
+        "summary": "GET /v1/bots",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Bots"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_bots",
+        "summary": "POST /v1/bots",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/BotEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/BotName"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/credentials": {
+      "get": {
+        "operationId": "get_v1_bots_id_credentials",
+        "summary": "GET /v1/bots/{id}/credentials",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Credentials"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_bots_id_credentials",
+        "summary": "POST /v1/bots/{id}/credentials",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/CredentialCreated"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/statistics": {
+      "get": {
+        "operationId": "get_v1_bots_id_statistics",
+        "summary": "GET /v1/bots/{id}/statistics",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "online_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clock_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "config_hash",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bot_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participant_kind",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queue_pool",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "self_test",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "platform_interrupted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "group_after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Statistics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/status": {
+      "get": {
+        "operationId": "get_v1_bots_id_status",
+        "summary": "GET /v1/bots/{id}/status",
+        "description": "Owner-only runtime presence, current room and queue state, and bounded recent error codes. Presence does not expose card observations or credentials.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/dto.json#/$defs/BotRuntimeStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}/versions": {
+      "get": {
+        "operationId": "get_v1_bots_id_versions",
+        "summary": "GET /v1/bots/{id}/versions",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Versions"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_v1_bots_id_versions",
+        "summary": "POST /v1/bots/{id}/versions",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/VersionEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/BotVersionCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "get_v1_me",
+        "summary": "GET /v1/me",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/LoginResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patch_v1_me",
+        "summary": "PATCH /v1/me",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/UserEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/NameRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/active-match": {
+      "get": {
+        "operationId": "get_v1_me_active_match",
+        "summary": "GET /v1/me/active-match",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/ActiveMatch"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/email-delivery": {
+      "get": {
+        "operationId": "get_v1_me_email_delivery",
+        "summary": "GET /v1/me/email-delivery",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/EmailDelivery"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/hands/{id}/replay": {
+      "get": {
+        "operationId": "get_v1_me_hands_id_replay",
+        "summary": "GET /v1/me/hands/{id}/replay",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "hand_index",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "bot_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Explicitly select an owned Bot perspective; omitted selects own human perspective."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PrivateReplay"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/matches": {
+      "get": {
+        "operationId": "get_v1_me_matches",
+        "summary": "GET /v1/me/matches",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "bot_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "before is the opaque next_before cursor from the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Matches"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/matches/{id}": {
+      "get": {
+        "operationId": "get_v1_me_matches_id",
+        "summary": "GET /v1/me/matches/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bot_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Explicitly select an owned Bot perspective; omitted selects own human perspective."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PrivateSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/matches/{id}/replay": {
+      "get": {
+        "operationId": "get_v1_me_matches_id_replay",
+        "summary": "GET /v1/me/matches/{id}/replay",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "hand_index",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "bot_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Explicitly select an owned Bot perspective; omitted selects own human perspective."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PrivateReplay"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/sessions": {
+      "get": {
+        "operationId": "get_v1_me_sessions",
+        "summary": "GET /v1/me/sessions",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/SessionList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/statistics": {
+      "get": {
+        "operationId": "get_v1_me_statistics",
+        "summary": "GET /v1/me/statistics",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "online_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clock_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "config_hash",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bot_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participant_kind",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queue_pool",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "self_test",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "platform_interrupted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "group_after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Statistics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/hands/{id}/replay": {
+      "get": {
+        "operationId": "get_v1_public_hands_id_replay",
+        "summary": "GET /v1/public/hands/{id}/replay",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "hand_index",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicReplay"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/matches": {
+      "get": {
+        "operationId": "get_v1_public_matches",
+        "summary": "GET /v1/public/matches",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "bot_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exact filter. On private history bot_id must belong to the authenticated owner."
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "before is the opaque next_before cursor from the previous page."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Matches"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/matches/{id}": {
+      "get": {
+        "operationId": "get_v1_public_matches_id",
+        "summary": "GET /v1/public/matches/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicMatchInfo"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/matches/{id}/replay": {
+      "get": {
+        "operationId": "get_v1_public_matches_id_replay",
+        "summary": "GET /v1/public/matches/{id}/replay",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          },
+          {
+            "name": "hand_index",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "limit is capped at 200; after is the previous next_after."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicReplay"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/matches/{id}/snapshot": {
+      "get": {
+        "operationId": "get_v1_public_matches_id_snapshot",
+        "summary": "GET /v1/public/matches/{id}/snapshot",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/profiles/{id}": {
+      "get": {
+        "operationId": "get_v1_public_profiles_id",
+        "summary": "GET /v1/public/profiles/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "online_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clock_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "config_hash",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bot_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participant_kind",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queue_pool",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "self_test",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "platform_interrupted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "group_after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Statistics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/rooms": {
+      "get": {
+        "operationId": "get_v1_public_rooms",
+        "summary": "GET /v1/public/rooms",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Rooms"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/rooms/{id}": {
+      "get": {
+        "operationId": "get_v1_public_rooms_id",
+        "summary": "GET /v1/public/rooms/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/rooms/{id}/spectator": {
+      "get": {
+        "operationId": "get_v1_public_rooms_id_spectator",
+        "summary": "GET /v1/public/rooms/{id}/spectator",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/rules": {
+      "get": {
+        "operationId": "get_v1_public_rules",
+        "summary": "GET /v1/public/rules",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RuleList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/statistics": {
+      "get": {
+        "operationId": "get_v1_public_statistics",
+        "summary": "GET /v1/public/statistics",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "ruleset_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleset_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "online_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "match_format",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "clock_profile",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "config_hash",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bot_version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "participant_kind",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queue_pool",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "self_test",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "platform_interrupted",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "group_after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Statistics"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/status": {
+      "get": {
+        "operationId": "get_v1_public_status",
+        "summary": "GET /v1/public/status",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PublicStatus"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}": {
+      "get": {
+        "operationId": "get_v1_rooms_id",
+        "summary": "GET /v1/rooms/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/view": {
+      "get": {
+        "operationId": "get_v1_rooms_id_view",
+        "summary": "GET /v1/rooms/{id}/view",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PrivateSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rulesets": {
+      "get": {
+        "operationId": "get_v1_rulesets",
+        "summary": "GET /v1/rulesets",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RuleList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rulesets/{id}/versions/{version}": {
+      "get": {
+        "operationId": "get_v1_rulesets_id_versions_version",
+        "summary": "GET /v1/rulesets/{id}/versions/{version}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RuleEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ws/bots": {
+      "get": {
+        "operationId": "get_v1_ws_bots",
+        "summary": "GET /v1/ws/bots",
+        "description": "WebSocket upgrade. Schemas: /schemas/ws-client.json and /schemas/ws-server.json. Spectators must send authenticate(ticket) within 5 seconds before any data. Players may receive a read-only control lease; explicitly take-control for commands.",
+        "security": [
+          {
+            "BotSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ws/players": {
+      "get": {
+        "operationId": "get_v1_ws_players",
+        "summary": "GET /v1/ws/players",
+        "description": "WebSocket upgrade. Schemas: /schemas/ws-client.json and /schemas/ws-server.json. Spectators must send authenticate(ticket) within 5 seconds before any data. Players may receive a read-only control lease; explicitly take-control for commands.",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ws/spectators": {
+      "get": {
+        "operationId": "get_v1_ws_spectators",
+        "summary": "GET /v1/ws/spectators",
+        "description": "WebSocket upgrade. Schemas: /schemas/ws-client.json and /schemas/ws-server.json. Spectators must send authenticate(ticket) within 5 seconds before any data. Players may receive a read-only control lease; explicitly take-control for commands.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Success"
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bots/{id}": {
+      "patch": {
+        "operationId": "patch_v1_bots_id",
+        "summary": "PATCH /v1/bots/{id}",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Ok"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/BotPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/bots/{id}/disable": {
+      "post": {
+        "operationId": "post_v1_admin_bots_id_disable",
+        "summary": "POST /v1/admin/bots/{id}/disable",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/BotSuspended"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/Reason"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/bots/{id}/restore": {
+      "post": {
+        "operationId": "post_v1_admin_bots_id_restore",
+        "summary": "POST /v1/admin/bots/{id}/restore",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/BotSuspended"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/Reason"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/maintenance": {
+      "post": {
+        "operationId": "post_v1_admin_maintenance",
+        "summary": "POST /v1/admin/maintenance",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/MaintenanceResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/MaintenanceRequest"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/matches/{id}/abort": {
+      "post": {
+        "operationId": "post_v1_admin_matches_id_abort",
+        "summary": "POST /v1/admin/matches/{id}/abort",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/AbortResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/Reason"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/rulesets/{id}/versions/{version}/status": {
+      "post": {
+        "operationId": "post_v1_admin_rulesets_id_versions_version_status",
+        "summary": "POST /v1/admin/rulesets/{id}/versions/{version}/status",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RuleStatusResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/RuleStatusRequest"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/admin/users/{id}/status": {
+      "post": {
+        "operationId": "post_v1_admin_users_id_status",
+        "summary": "POST /v1/admin/users/{id}/status",
+        "description": "Verified active operator role required; reason and outcome are audited. No scoring override or omniscient view exists.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Ok"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/UserStatusRequest"
+              }
+            }
+          }
+        },
+        "x-required-role": "operator"
+      }
+    },
+    "/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "post_v1_auth_forgot_password",
+        "summary": "POST /v1/auth/forgot-password",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Accepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/EmailRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "post_v1_auth_login",
+        "summary": "POST /v1/auth/login",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/LoginResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/LoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "post_v1_auth_logout",
+        "summary": "POST /v1/auth/logout",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/LoggedOut"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "operationId": "post_v1_auth_register",
+        "summary": "POST /v1/auth/register",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Accepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/RegisterRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/resend-verification": {
+      "post": {
+        "operationId": "post_v1_auth_resend_verification",
+        "summary": "POST /v1/auth/resend-verification",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Accepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/EmailRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/reset-password": {
+      "post": {
+        "operationId": "post_v1_auth_reset_password",
+        "summary": "POST /v1/auth/reset-password",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Reset"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/ResetRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/verify-email": {
+      "post": {
+        "operationId": "post_v1_auth_verify_email",
+        "summary": "POST /v1/auth/verify-email",
+        "description": "Mail links use fragments; GET never consumes a token. Generic unauthenticated responses prevent account enumeration.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Verified"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/TokenRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bot-sessions": {
+      "post": {
+        "operationId": "post_v1_bot_sessions",
+        "summary": "POST /v1/bot-sessions",
+        "description": "Long key only here; exchange returns a 30-minute scoped runtime session. Never place tokens in URLs.",
+        "security": [
+          {
+            "BotKey": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/BotSessionResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/BotSessionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/delete-account": {
+      "post": {
+        "operationId": "post_v1_me_delete_account",
+        "summary": "POST /v1/me/delete-account",
+        "description": "Sensitive changes reverify credentials; password/email changes and deletion revoke existing human sessions.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Deleted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/PasswordRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/email-change/confirm": {
+      "post": {
+        "operationId": "post_v1_me_email_change_confirm",
+        "summary": "POST /v1/me/email-change/confirm",
+        "description": "Sensitive changes reverify credentials; password/email changes and deletion revoke existing human sessions.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Changed"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/TokenRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/email-change/request": {
+      "post": {
+        "operationId": "post_v1_me_email_change_request",
+        "summary": "POST /v1/me/email-change/request",
+        "description": "Sensitive changes reverify credentials; password/email changes and deletion revoke existing human sessions.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Accepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/EmailChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/password": {
+      "post": {
+        "operationId": "post_v1_me_password",
+        "summary": "POST /v1/me/password",
+        "description": "Sensitive changes reverify credentials; password/email changes and deletion revoke existing human sessions.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Changed"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/PasswordChange"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/practice": {
+      "post": {
+        "operationId": "post_v1_practice",
+        "summary": "POST /v1/practice",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/matches/{id}/spectator-tickets": {
+      "post": {
+        "operationId": "post_v1_public_matches_id_spectator_tickets",
+        "summary": "POST /v1/public/matches/{id}/spectator-tickets",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/SpectatorTicket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "MATCH_ARCHIVED: after 30 days the card-bearing replay and snapshot data are erased. Public match details retain typed settled-score summaries only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/rooms/{id}/spectator-ticket": {
+      "post": {
+        "operationId": "post_v1_public_rooms_id_spectator_ticket",
+        "summary": "POST /v1/public/rooms/{id}/spectator-ticket",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/SpectatorTicket"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms": {
+      "post": {
+        "operationId": "post_v1_rooms",
+        "summary": "POST /v1/rooms",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomCreated"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/CreateRoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/join": {
+      "post": {
+        "operationId": "post_v1_rooms_join",
+        "summary": "POST /v1/rooms/join",
+        "description": "See schema and authorization requirements. Public routes always retain the discard-only audience.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/InviteCode"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/actions": {
+      "post": {
+        "operationId": "post_v1_rooms_id_actions",
+        "summary": "POST /v1/rooms/{id}/actions",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          },
+          {
+            "name": "X-Control-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Current controller capability, separate from session and CSRF tokens."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/CommandAck"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/dto.json#/$defs/Action"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/bots": {
+      "post": {
+        "operationId": "post_v1_rooms_id_bots",
+        "summary": "POST /v1/rooms/{id}/bots",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/AddBot"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/close": {
+      "post": {
+        "operationId": "post_v1_rooms_id_close",
+        "summary": "POST /v1/rooms/{id}/close",
+        "description": "Only the waiting-room owner may close the room and release its capacity reservation.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Ok"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/invite-rotate": {
+      "post": {
+        "operationId": "post_v1_rooms_id_invite_rotate",
+        "summary": "POST /v1/rooms/{id}/invite-rotate",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/InviteCode"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/join": {
+      "post": {
+        "operationId": "post_v1_rooms_id_join",
+        "summary": "POST /v1/rooms/{id}/join",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/JoinRoom"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/leave": {
+      "post": {
+        "operationId": "post_v1_rooms_id_leave",
+        "summary": "POST /v1/rooms/{id}/leave",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/LeftRoom"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/ready": {
+      "post": {
+        "operationId": "post_v1_rooms_id_ready",
+        "summary": "POST /v1/rooms/{id}/ready",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/protocol.json#/$defs/Ready"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/rematch": {
+      "post": {
+        "operationId": "post_v1_rooms_id_rematch",
+        "summary": "POST /v1/rooms/{id}/rematch",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomCreated"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/start": {
+      "post": {
+        "operationId": "post_v1_rooms_id_start",
+        "summary": "POST /v1/rooms/{id}/start",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/RoomEnvelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rooms/{id}/take-control": {
+      "post": {
+        "operationId": "post_v1_rooms_id_take_control",
+        "summary": "POST /v1/rooms/{id}/take-control",
+        "description": "Verified active account and operation-specific seat/owner authority required. Actions also require X-Control-Token from take-control.",
+        "security": [
+          {
+            "CookieSession": [],
+            "CSRFToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Exactly the configured public origin."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/PrivateSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Rejected request. Authentication and Origin/CSRF checks precede domain authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/protocol.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "CookieSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "omj_session"
+      },
+      "CSRFToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      },
+      "BotKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Long Bot key, exchange-only."
+      },
+      "BotSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Short Bot runtime session, never an account cookie."
+      }
+    }
+  }
+}

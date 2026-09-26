@@ -9,6 +9,9 @@ concealed hand, private projection or rejected payload. The host consumes only
 * `GET /v1/public/statistics`: public aggregate cohorts; no participant identity or individual match results.
 * `GET /v1/me/statistics`: authenticated user's human seats only.
 * `GET /v1/bots/{id}/statistics`: authenticated Bot owner only; another owner gets `BOT_NOT_FOUND`.
+* `GET /v1/public/profiles/{id}`: current public identity (`profile.id`, `display_name`,
+  `kind`) and that human/Bot's grouped performance, without email, individual match
+  records or decision/invalid-action diagnostics. Unknown identities return `PROFILE_NOT_FOUND`.
 
 All three return `groups`, `next_group`, `statistics_version`, and
 `comparable_policy`. Each group has `dimensions`, `comparable`, and `metrics`.

@@ -20,6 +20,7 @@ func (s *Service) invalidatePublicSnapshots() {
 	s.publicMu.Lock()
 	defer s.publicMu.Unlock()
 	s.publicSnapshots = nil
+	s.publicGeneration++
 }
 
 // Only this explicitly public path is cached. The cached value is immutable JSON;
@@ -41,6 +42,9 @@ func (s *Service) cachedPublicSnapshot(r *http.Request, roomID string) (map[stri
 			if cached := read(); cached != nil {
 				return cached, nil
 			}
+			s.publicMu.Lock()
+			generation := s.publicGeneration
+			s.publicMu.Unlock()
 			ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 			defer cancel()
 			view, err := s.snapshotUncached(r.WithContext(ctx), roomID, "")
@@ -53,6 +57,9 @@ func (s *Service) cachedPublicSnapshot(r *http.Request, roomID string) (map[stri
 			}
 			s.publicMu.Lock()
 			defer s.publicMu.Unlock()
+			if generation != s.publicGeneration {
+				return nil, api(503, "VIEW_REFRESHING")
+			}
 			if s.publicSnapshots == nil {
 				s.publicSnapshots = map[string]publicCacheEntry{}
 			}

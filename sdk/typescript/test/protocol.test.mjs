@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {BotClient,ControlTransferredError,DecisionEngine,firstLegal} from '../dist/index.js';
-const fixture=JSON.parse(await readFile(new URL('../../fixtures/decision.json',import.meta.url),'utf8'));
+const fixture=JSON.parse(await readFile(new URL('../../../api/fixtures/decision.json',import.meta.url),'utf8'));
 const pair=()=>structuredClone(fixture);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 

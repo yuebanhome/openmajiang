@@ -133,7 +133,7 @@ export class BotClient {
         if(this.options.queue&&!queued){await this.request('/v1/bot/queue','POST',this.options.queue,signal);queued=true}
         await sleep(1000,signal);continue;
       }
-      queued=false;this.options.onState?.('connected');const completed=await this.connect(active.room.id,signal);attempt=0;
+      queued=false;const completed=await this.connect(active.room.id,signal);attempt=0;
       if(completed&&this.options.queue&&!this.options.queue.continuous)return;
     }catch(error){if(signal.aborted)break;if(error instanceof ControlTransferredError){this.options.onState?.('control_transferred');throw error}this.options.onState?.('reconnecting');attempt++;await sleep(Math.min(30000,500*2**Math.min(attempt,6))*(0.75+Math.random()/2),signal)} }
     this.engine.disconnect();this.ws?.close();
@@ -142,6 +142,7 @@ export class BotClient {
     const url=new URL('/v1/ws/bots',this.options.baseURL);url.protocol=url.protocol==='https:'?'wss:':'ws:';url.searchParams.set('room_id',roomID);
     const ws=new WebSocket(url,{headers:{Authorization:`Bearer ${this.session}`},maxPayload:1024*1024,handshakeTimeout:10000,followRedirects:false});this.ws=ws;
     let completed=false,plannedRefresh=false,transferred=false;
+    ws.on('open',()=>this.options.onState?.('connected'));
     const abort=()=>ws.close();signal.addEventListener('abort',abort,{once:true});
     const retry=setInterval(()=>this.engine.retryPending(),500);
     const refresh=setTimeout(()=>{plannedRefresh=true;ws.close()},Math.max(0,this.expires-Date.now()-30000));

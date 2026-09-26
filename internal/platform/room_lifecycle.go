@@ -77,3 +77,44 @@ func (s *Service) cancelQueue(ctx context.Context, uid, bid string) error {
 	}
 	return tx.Commit(ctx)
 }
+
+func (s *Service) closeRoom(w http.ResponseWriter, r *http.Request) {
+	u, e := s.user(r, false)
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	tx, e := s.pool.Begin(r.Context())
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	defer tx.Rollback(r.Context())
+	var owner, status string
+	e = tx.QueryRow(r.Context(), `SELECT owner_id,status FROM platform_rooms WHERE id=$1 FOR UPDATE`, r.PathValue("id")).Scan(&owner, &status)
+	if e != nil {
+		failure(w, api(404, "ROOM_NOT_FOUND"))
+		return
+	}
+	if owner != u.ID {
+		failure(w, api(403, "FORBIDDEN"))
+		return
+	}
+	if status != "waiting" {
+		failure(w, api(409, "ROOM_NOT_WAITING"))
+		return
+	}
+	_, e = tx.Exec(r.Context(), `UPDATE platform_rooms SET status='cancelled' WHERE id=$1`, r.PathValue("id"))
+	if e == nil {
+		_, e = tx.Exec(r.Context(), `UPDATE platform_seats SET active=false WHERE room_id=$1`, r.PathValue("id"))
+	}
+	if e == nil {
+		e = tx.Commit(r.Context())
+	}
+	if e != nil {
+		failure(w, e)
+		return
+	}
+	s.invalidatePublicSnapshots()
+	write(w, 200, map[string]any{"ok": true})
+}

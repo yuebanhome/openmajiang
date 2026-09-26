@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS platform_stat_matches (
  match_format text NOT NULL, mode text NOT NULL, clock_profile text NOT NULL,
  config_hash text NOT NULL, self_test boolean NOT NULL, queue_pool text NOT NULL
 );
+ALTER TABLE platform_stat_matches ADD COLUMN IF NOT EXISTS queue_pool text NOT NULL DEFAULT 'manual_room';
 CREATE TABLE IF NOT EXISTS platform_stat_participants (
  match_id text NOT NULL REFERENCES platform_stat_matches(match_id), participant_id text NOT NULL,
  user_id text NOT NULL, bot_id text NOT NULL, participant_kind text NOT NULL, bot_version text NOT NULL,
@@ -67,6 +68,7 @@ func StatsMigrate(ctx context.Context, pool *pgxpool.Pool) error {
 
 func (s *Service) statisticsRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/public/statistics", s.publicStatistics)
+	m.HandleFunc("GET /v1/public/profiles/{id}", s.publicProfile)
 	m.HandleFunc("GET /v1/me/statistics", s.myStatistics)
 	m.HandleFunc("GET /v1/bots/{id}/statistics", s.botStatistics)
 }
@@ -96,7 +98,10 @@ func (s *Service) freezeStatistics(ctx context.Context, tx pgx.Tx, m match) erro
 		return err
 	}
 	hash := sha256.Sum256(jsonBytes(map[string]any{"ruleset_id": m.RulesetID, "ruleset_version": m.RulesetVersion, "profile": profile, "format": m.Format, "mode": mode, "clock": clock, "options": canonicalOptions}))
-	_, err = tx.Exec(ctx, `INSERT INTO platform_stat_matches(match_id,ruleset_id,ruleset_version,online_profile,match_format,mode,clock_profile,config_hash,self_test,queue_pool) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING`, m.ID, m.RulesetID, m.RulesetVersion, profile, m.Format, mode, clock, hex.EncodeToString(hash[:]), selfTest, pool)
+	inserted, err := tx.Exec(ctx, `INSERT INTO platform_stat_matches(match_id,ruleset_id,ruleset_version,online_profile,match_format,mode,clock_profile,config_hash,self_test,queue_pool) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING`, m.ID, m.RulesetID, m.RulesetVersion, profile, m.Format, mode, clock, hex.EncodeToString(hash[:]), selfTest, pool)
+	if err == nil && inserted.RowsAffected() == 0 {
+		return nil
+	}
 	if err == nil {
 		_, err = tx.Exec(ctx, `INSERT INTO platform_stat_participants(match_id,participant_id,user_id,bot_id,participant_kind,bot_version) SELECT $1,participant_id,user_id,bot_id,kind,CASE WHEN kind='builtin' THEN builtin_strategy||'@1' ELSE bot_version END FROM platform_seats WHERE room_id=$2 AND active ON CONFLICT DO NOTHING`, m.ID, m.RoomID)
 	}
@@ -158,15 +163,55 @@ func (s *Service) recordInvalidAction(ctx context.Context, m match, pid, command
 	return err
 }
 
-type statisticMetric struct {
+type StatisticMetric struct {
 	Value   *float64 `json:"value"`
 	Samples int64    `json:"samples"`
 }
-type statisticGroup struct {
-	Dimensions map[string]any             `json:"dimensions"`
-	Comparable bool                       `json:"comparable"`
-	Metrics    map[string]statisticMetric `json:"metrics"`
+type StatisticDimensions struct {
+	RulesetID           string `json:"ruleset_id"`
+	RulesetVersion      string `json:"ruleset_version"`
+	OnlineProfile       string `json:"online_profile"`
+	MatchFormat         string `json:"match_format"`
+	Mode                string `json:"mode"`
+	ClockProfile        string `json:"clock_profile"`
+	ConfigHash          string `json:"config_hash"`
+	BotVersion          string `json:"bot_version"`
+	ParticipantKind     string `json:"participant_kind"`
+	QueuePool           string `json:"queue_pool"`
+	SelfTest            bool   `json:"self_test"`
+	PlatformInterrupted bool   `json:"platform_interrupted"`
+	Status              string `json:"status"`
+	TrusteeUsed         bool   `json:"trustee_used"`
 }
+type StatisticGroup struct {
+	Dimensions StatisticDimensions        `json:"dimensions"`
+	Comparable bool                       `json:"comparable"`
+	Metrics    map[string]StatisticMetric `json:"metrics"`
+}
+type StatisticProfile struct {
+	ID          string `json:"id"`
+	DisplayName string `json:"display_name"`
+	Kind        string `json:"kind"`
+}
+type StatisticMatch struct {
+	MatchID        string            `json:"match_id"`
+	CreatedAt      time.Time         `json:"created_at"`
+	Status         string            `json:"status"`
+	Rank           int               `json:"rank"`
+	RawScore       int               `json:"raw_score"`
+	StandardPoints *rulesdk.Rational `json:"standard_points"`
+}
+type StatisticResponse struct {
+	Groups            []StatisticGroup  `json:"groups"`
+	NextGroup         string            `json:"next_group"`
+	StatisticsVersion string            `json:"statistics_version"`
+	ComparablePolicy  string            `json:"comparable_policy"`
+	Matches           *[]StatisticMatch `json:"matches,omitempty"`
+	NextBefore        *string           `json:"next_before,omitempty"`
+	Profile           *StatisticProfile `json:"profile,omitempty"`
+}
+type statisticMetric = StatisticMetric
+type statisticGroup = StatisticGroup
 
 func metric(value float64, samples int64) statisticMetric {
 	if samples == 0 {
@@ -186,6 +231,23 @@ func optionalMetric(value *float64, samples int64) statisticMetric {
 
 func (s *Service) publicStatistics(w http.ResponseWriter, r *http.Request) {
 	s.statistics(w, r, "", "", false)
+}
+func (s *Service) publicProfile(w http.ResponseWriter, r *http.Request) {
+	var id, name, kind, uid string
+	err := s.pool.QueryRow(r.Context(), `SELECT id,name,'human',id FROM auth_users WHERE id=$1 UNION ALL SELECT id,name,'bot',owner_id FROM platform_bots WHERE id=$1 LIMIT 1`, r.PathValue("id")).Scan(&id, &name, &kind, &uid)
+	if errors.Is(err, pgx.ErrNoRows) {
+		failure(w, api(404, "PROFILE_NOT_FOUND"))
+		return
+	}
+	if err != nil {
+		failure(w, err)
+		return
+	}
+	bid := ""
+	if kind == "bot" {
+		bid = id
+	}
+	s.statisticsResponse(w, r, uid, bid, false, &StatisticProfile{ID: id, DisplayName: name, Kind: kind})
 }
 func (s *Service) myStatistics(w http.ResponseWriter, r *http.Request) {
 	u, err := s.user(r, false)
@@ -272,6 +334,9 @@ const statisticsBase = `SELECT p.*,m.status,m.interrupted,m.created_at,
  JOIN platform_matches m ON m.id=p.match_id WHERE `
 
 func (s *Service) statistics(w http.ResponseWriter, r *http.Request, uid, bid string, private bool) {
+	s.statisticsResponse(w, r, uid, bid, private, nil)
+}
+func (s *Service) statisticsResponse(w http.ResponseWriter, r *http.Request, uid, bid string, private bool, profile *StatisticProfile) {
 	where, args, err := statisticsFilter(r, uid, bid)
 	if err != nil {
 		failure(w, err)
@@ -329,13 +394,13 @@ func (s *Service) statistics(w http.ResponseWriter, r *http.Request, uid, bid st
 		if err != nil {
 			break
 		}
-		var dimensions map[string]any
+		var dimensions StatisticDimensions
 		if err = json.Unmarshal(raw, &dimensions); err != nil {
 			break
 		}
 		// jsonb output is already its stable PostgreSQL text ordering for cursors.
 		lastDimension = string(raw)
-		comparable := dimensions["status"] == "completed" && dimensions["match_format"] == "standard_16" && dimensions["mode"] == "bot_only" && dimensions["queue_pool"] == "public_bot_queue" && dimensions["self_test"] == false && dimensions["platform_interrupted"] == false && dimensions["trustee_used"] == false
+		comparable := dimensions.Status == "completed" && dimensions.MatchFormat == "standard_16" && dimensions.Mode == "bot_only" && dimensions.QueuePool == "public_bot_queue" && !dimensions.SelfTest && !dimensions.PlatformInterrupted && !dimensions.TrusteeUsed
 		groups = append(groups, statisticGroup{Dimensions: dimensions, Comparable: comparable, Metrics: map[string]statisticMetric{
 			"completed_hands": metric(float64(hands), hands), "win_rate": metricRate(wins, hands), "discard_loss_rate": metricRate(losses, hands), "self_draw_rate": metricRate(selfDraws, hands),
 			"average_net_points": optionalMetric(net, hands), "average_nonflower_points": optionalMetric(fan, fanSamples),
@@ -351,19 +416,29 @@ func (s *Service) statistics(w http.ResponseWriter, r *http.Request, uid, bid st
 		failure(w, err)
 		return
 	}
-	response := map[string]any{"groups": groups, "next_group": nextGroup, "statistics_version": "settled-facts@1", "comparable_policy": "completed-standard16-public-bot-no-interruption-no-trustee"}
+	response := StatisticResponse{Groups: groups, NextGroup: nextGroup, StatisticsVersion: "settled-facts@1", ComparablePolicy: "completed-standard16-public-bot-no-interruption-no-trustee"}
+	if profile != nil {
+		response.Profile = profile
+		// Public identity pages show performance aggregates, not this identity's
+		// operational decision or invalid-action diagnostics.
+		for i := range groups {
+			for _, key := range []string{"average_decision_ms", "p95_decision_ms", "illegal_action_rate", "timeout_rate", "trustee_rate"} {
+				delete(groups[i].Metrics, key)
+			}
+		}
+	}
 	if private {
 		results, cursor, e := s.statisticsMatches(r, base, args)
 		if e != nil {
 			failure(w, e)
 			return
 		}
-		response["matches"], response["next_before"] = results, cursor
+		response.Matches, response.NextBefore = &results, &cursor
 	}
 	write(w, 200, response)
 }
 
-func (s *Service) statisticsMatches(r *http.Request, base string, args []any) ([]any, string, error) {
+func (s *Service) statisticsMatches(r *http.Request, base string, args []any) ([]StatisticMatch, string, error) {
 	before := r.URL.Query().Get("before")
 	if len(before) > 200 {
 		return nil, "", api(400, "INVALID_CURSOR")
@@ -379,7 +454,7 @@ func (s *Service) statisticsMatches(r *http.Request, base string, args []any) ([
 		return nil, "", err
 	}
 	defer rows.Close()
-	result := []any{}
+	result := []StatisticMatch{}
 	next, last := "", ""
 	for rows.Next() {
 		if len(result) == 100 {
@@ -397,7 +472,7 @@ func (s *Service) statisticsMatches(r *http.Request, base string, args []any) ([
 		if numerator != nil && denominator != nil {
 			standard = &rulesdk.Rational{Numerator: *numerator, Denominator: *denominator}
 		}
-		result = append(result, map[string]any{"match_id": id, "created_at": at, "status": status, "rank": rank, "raw_score": score, "standard_points": standard})
+		result = append(result, StatisticMatch{MatchID: id, CreatedAt: at, Status: status, Rank: rank, RawScore: score, StandardPoints: standard})
 		last = id
 	}
 	return result, next, rows.Err()

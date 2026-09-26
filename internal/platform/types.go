@@ -22,23 +22,28 @@ import (
 )
 
 type Config struct {
-	ObserveTimerLag func(time.Duration) // optional nonblocking measurement hook; no state or private data
-	Rules           map[string]rulesdk.Rule
-	Auth            *auth.Service
-	BaseURL         string
-	TokenHashKey    []byte
+	MaxWaitingRooms       int
+	MaxActiveMatches      int
+	MaxOwnerWaitingRooms  int
+	MaxQueuedParticipants int
+	ObserveTimerLag       func(time.Duration) // optional nonblocking measurement hook; no state or private data
+	Rules                 map[string]rulesdk.Rule
+	Auth                  *auth.Service
+	BaseURL               string
+	TokenHashKey          []byte
 }
 type Service struct {
-	publicMu        sync.Mutex
-	publicSnapshots map[string]publicCacheEntry
-	publicLoads     singleflight.Group
-	pool            *pgxpool.Pool
-	cfg             Config
-	id              string
-	stop            context.CancelFunc
-	mu              sync.Mutex
-	limits          map[string]rateEntry
-	sockets         map[string]int
+	publicMu         sync.Mutex
+	publicGeneration uint64
+	publicSnapshots  map[string]publicCacheEntry
+	publicLoads      singleflight.Group
+	pool             *pgxpool.Pool
+	cfg              Config
+	id               string
+	stop             context.CancelFunc
+	mu               sync.Mutex
+	limits           map[string]rateEntry
+	sockets          map[string]int
 }
 type rateEntry struct {
 	start time.Time
@@ -73,6 +78,7 @@ type Seat struct {
 	Leave         bool   `json:"leave_after_hand"`
 }
 type match struct {
+	ArchivedAt                                                                       *time.Time
 	ID, RoomID, RulesetID, RulesetVersion, Format, Status, WindowID, Owner, Artifact string
 	State                                                                            json.RawMessage
 	Seq, OwnerEpoch                                                                  int64
@@ -106,6 +112,18 @@ func api(status int, code string) error { return &APIError{status, code, code} }
 func New(pool *pgxpool.Pool, cfg Config) (*Service, error) {
 	if pool == nil || len(cfg.Rules) == 0 || len(cfg.TokenHashKey) < 32 {
 		return nil, errors.New("platform requires database, rules and 32-byte token hash key")
+	}
+	if cfg.MaxWaitingRooms <= 0 {
+		cfg.MaxWaitingRooms = 2048
+	}
+	if cfg.MaxActiveMatches <= 0 {
+		cfg.MaxActiveMatches = 200
+	}
+	if cfg.MaxOwnerWaitingRooms <= 0 {
+		cfg.MaxOwnerWaitingRooms = 4
+	}
+	if cfg.MaxQueuedParticipants <= 0 {
+		cfg.MaxQueuedParticipants = 4096
 	}
 	return &Service{pool: pool, cfg: cfg, id: id("node"), limits: map[string]rateEntry{}, sockets: map[string]int{}}, nil
 }

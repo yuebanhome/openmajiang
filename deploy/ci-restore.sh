@@ -27,6 +27,7 @@ query="SELECT (SELECT count(*) FROM auth_users),(SELECT count(*) FROM platform_m
 source_counts="$(docker exec "$POSTGRES_CONTAINER" psql -At --username=openmajiang --dbname=openmajiang -c "$query")"
 restore_counts="$(docker exec "$POSTGRES_CONTAINER" psql -At --username=openmajiang --dbname="$restore_db" -c "$query")"
 test "$source_counts" = "$restore_counts"
+printf '%s' "$source_counts" | python3 -c 'import sys; counts=[int(v) for v in sys.stdin.read().split("|")]; assert all(v > 0 for v in counts[:4]), "restore drill requires real account, match, view and event rows"'
 restore_dsn="$(python3 - <<'PY'
 import os
 import urllib.parse

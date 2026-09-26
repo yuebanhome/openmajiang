@@ -70,6 +70,9 @@ func recoveryService(t *testing.T, rule rulesdk.Rule) *Service {
 }
 
 func recoveryRoom(t *testing.T, s *Service, rule rulesdk.Rule, format string) (Room, string) {
+	return recoveryRoomKinds(t, s, rule, format, 0)
+}
+func recoveryRoomKinds(t *testing.T, s *Service, rule rulesdk.Rule, format string, builtinSeats int) (Room, string) {
 	t.Helper()
 	ctx := context.Background()
 	manifest := rule.Manifest()
@@ -77,7 +80,11 @@ func recoveryRoom(t *testing.T, s *Service, rule rulesdk.Rule, format string) (R
 	if _, err := s.pool.Exec(ctx, `INSERT INTO auth_users(id,email,name,password_hash,verified) VALUES($1,$2,$3,'test-only',true)`, owner.ID, owner.ID+"@example.invalid", owner.Name); err != nil {
 		t.Fatal(err)
 	}
-	room, _, err := s.create(ctx, owner, createRequest{Name: "Recovery integration", Mode: "human_only", RuleID: manifest.ID, RuleVersion: manifest.Version, Format: format, Capacity: manifest.SeatCounts[0], InviteOnly: true})
+	mode := "human_only"
+	if builtinSeats > 0 {
+		mode = "mixed"
+	}
+	room, _, err := s.create(ctx, owner, createRequest{Name: "Recovery integration", Mode: mode, RuleID: manifest.ID, RuleVersion: manifest.Version, Format: format, Capacity: manifest.SeatCounts[0], InviteOnly: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +93,12 @@ func recoveryRoom(t *testing.T, s *Service, rule rulesdk.Rule, format string) (R
 		if _, err = s.pool.Exec(ctx, `INSERT INTO auth_users(id,email,name,password_hash,verified) VALUES($1,$2,$3,'test-only',true)`, uid, uid+"@example.invalid", fmt.Sprintf("Player %d", seat)); err != nil {
 			t.Fatal(err)
 		}
-		if _, err = s.pool.Exec(ctx, `INSERT INTO platform_seats(participant_id,room_id,user_id,name,kind,seat_order) VALUES($1,$2,$3,$4,'human',$5)`, pid, room.ID, uid, fmt.Sprintf("Player %d", seat), seat); err != nil {
+		kind := "human"
+		if seat >= room.Capacity-builtinSeats {
+			kind = "builtin"
+			uid = owner.ID
+		}
+		if _, err = s.pool.Exec(ctx, `INSERT INTO platform_seats(participant_id,room_id,user_id,name,kind,seat_order,builtin_strategy) VALUES($1,$2,$3,$4,$5,$6,'basic_heuristic')`, pid, room.ID, uid, fmt.Sprintf("Player %d", seat), kind, seat); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -529,6 +541,81 @@ func TestPGStandardSixteenHandsRotateIdentityAndRejectOldSeat(t *testing.T) {
 }
 
 type recoverySeededRule struct{ rulesdk.Rule }
+
+// Unlike the four-human logical-clock integration above, this exercises the
+// actual builtin strategy branch in tickMatch. Only expiry timestamps are
+// advanced by the test; production clock durations and rule transitions remain
+// unchanged. Human moves still pass through the authenticated-seat Submit path.
+func TestPGOneHumanThreeBuiltinsCompleteSixteenHands(t *testing.T) {
+	rule := mcr.New()
+	s := recoveryService(t, rule)
+	room, mid := recoveryRoomKinds(t, s, rule, "standard_16", 3)
+	human := ""
+	for _, seat := range room.Seats {
+		if seat.Kind == "human" {
+			human = seat.ParticipantID
+		}
+	}
+	if human == "" {
+		t.Fatal("mixed fixture has no human")
+	}
+	expire := func() {
+		if _, err := s.pool.Exec(context.Background(), `UPDATE platform_matches SET deadline_at=now()-interval '1 millisecond' WHERE id=$1`, mid); err != nil {
+			t.Fatal(err)
+		}
+		s.tickMatch(context.Background(), mid)
+	}
+	builtinActions := 0
+	humanActions := 0
+	for step := 0; step < 10000; step++ {
+		m := recoveryMatch(t, s, mid)
+		f := recoveryFlow(t, rule, m)
+		if f.MatchEnded {
+			if m.Status != "completed" || f.HandIndex != 16 || builtinActions == 0 || humanActions == 0 {
+				t.Fatal("mixed standard match did not finish through both controllers")
+			}
+			var hands int
+			if err := s.pool.QueryRow(context.Background(), `SELECT count(DISTINCT hand_index) FROM platform_views WHERE match_id=$1 AND participant_id=''`, mid).Scan(&hands); err != nil || hands != 16 {
+				t.Fatal("mixed replay lacks sixteen hands")
+			}
+			t.Logf("mixed sixteen hands: human actions=%d builtin self actions=%d", humanActions, builtinActions)
+			return
+		}
+		switch f.WindowKind {
+		case "intermission":
+			expire()
+		case "self":
+			d := f.Decisions[0]
+			if d.ParticipantID == human {
+				a := recoveryAction(t, s, m, f, d, "")
+				a.OptionID = fallback(d, "self")
+				recoverySubmit(t, s, a)
+				humanActions++
+			} else {
+				s.tickMatch(context.Background(), mid)
+				builtinActions++
+			}
+		case "reaction":
+			for _, d := range f.Decisions {
+				if d.ParticipantID == human {
+					a := recoveryAction(t, s, m, f, d, "")
+					a.OptionID = fallback(d, "reaction")
+					recoverySubmit(t, s, a)
+					humanActions++
+				}
+			}
+			s.tickMatch(context.Background(), mid)
+			expire()
+		default:
+			t.Fatalf("unexpected mixed phase %s", f.WindowKind)
+		}
+		next := recoveryMatch(t, s, mid)
+		if next.Seq <= m.Seq {
+			t.Fatalf("mixed Host made no progress at hand %d phase %s", f.HandIndex, f.WindowKind)
+		}
+	}
+	t.Fatal("mixed standard match exceeded step safety bound")
+}
 
 func (r recoverySeededRule) Init(c rulesdk.Config, _ []byte) (rulesdk.Snapshot, error) {
 	return r.Rule.Init(c, bytes.Repeat([]byte{7}, 32))

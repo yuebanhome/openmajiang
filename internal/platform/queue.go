@@ -56,6 +56,9 @@ func (s *Service) enqueue(ctx context.Context, uid, bid string, q queueRequest) 
 	if e = s.requireAdmissionsTx(ctx, tx, q.Rule, q.Version); e != nil {
 		return e
 	}
+	if e = lockQuota(ctx, tx); e != nil {
+		return e
+	}
 	if e = lockEligible(ctx, tx, uid); e != nil {
 		return e
 	}
@@ -77,6 +80,9 @@ func (s *Service) enqueue(ctx context.Context, uid, bid string, q queueRequest) 
 	key := "user:" + uid
 	if bid != "" {
 		key = "bot:" + bid
+	}
+	if e = s.queueQuota(ctx, tx, key); e != nil {
+		return e
 	}
 	_, e = tx.Exec(ctx, `INSERT INTO platform_queue(participant_key,user_id,bot_id,ruleset_id,ruleset_version,match_format,continuous) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(participant_key) DO UPDATE SET continuous=excluded.continuous`, key, uid, bid, q.Rule, q.Version, q.Format, q.Continuous)
 	if e != nil {
@@ -199,6 +205,12 @@ func (s *Service) matchQueues(ctx context.Context) {
 	if e = s.requireAdmissionsTx(ctx, tx, "", ""); e != nil {
 		return
 	}
+	if e = lockQuota(ctx, tx); e != nil {
+		return
+	}
+	if e = s.requeueCompleted(ctx, tx); e != nil {
+		return
+	}
 	var locked bool
 	if tx.QueryRow(ctx, `SELECT pg_try_advisory_xact_lock(918735034)`).Scan(&locked) != nil || !locked {
 		return
@@ -257,6 +269,12 @@ func (s *Service) matchQueues(ctx context.Context) {
 			}
 		}
 		if !valid {
+			continue
+		}
+		if e = s.waitingQuota(ctx, tx, items[0].uid); e != nil {
+			continue
+		}
+		if e = s.activeQuota(ctx, tx); e != nil {
 			continue
 		}
 		rid := id("room")
@@ -336,13 +354,56 @@ func firstProfile(v []string) string {
 	return ""
 }
 
-func (s *Service) requeueContinuous(ctx context.Context, tx pgx.Tx, m match) error {
-	if m.Status != "completed" {
+// Completion leaves a pending continuous seat; the matchmaker consumes it
+// under the admission lock. Never wait for that lock while holding a match row.
+func (s *Service) requeueContinuous(context.Context, pgx.Tx, match) error { return nil }
+func (s *Service) requeueCompleted(ctx context.Context, tx pgx.Tx) error {
+	var count int
+	if e := tx.QueryRow(ctx, `SELECT count(*) FROM platform_queue`).Scan(&count); e != nil {
+		return e
+	}
+	available := s.cfg.MaxQueuedParticipants - count
+	if available <= 0 {
 		return nil
 	}
-	_, e := tx.Exec(ctx, `INSERT INTO platform_queue(participant_key,user_id,bot_id,ruleset_id,ruleset_version,match_format,continuous)
- SELECT 'bot:'||s.bot_id,s.user_id,s.bot_id,$2,$3,$4,true FROM platform_seats s JOIN platform_bots b ON b.id=s.bot_id JOIN auth_users u ON u.id=s.user_id
- WHERE s.room_id=$1 AND s.continuous AND s.kind='bot' AND b.enabled AND NOT b.suspended AND u.status='active' AND u.verified AND EXISTS(SELECT 1 FROM platform_bot_sessions ss JOIN platform_bot_credentials c ON c.id=ss.credential_id WHERE ss.bot_id=b.id AND ss.expires_at>now() AND ss.revoked_at IS NULL AND c.revoked_at IS NULL)
- ON CONFLICT(participant_key) DO NOTHING`, m.RoomID, m.RulesetID, m.RulesetVersion, m.Format)
-	return e
+	if available > 100 {
+		available = 100
+	}
+	rows, e := tx.Query(ctx, `SELECT s.participant_id,s.user_id,s.bot_id,m.ruleset_id,m.ruleset_version,m.match_format FROM platform_seats s JOIN platform_matches m ON m.room_id=s.room_id JOIN platform_bots b ON b.id=s.bot_id JOIN auth_users u ON u.id=s.user_id WHERE u.status='active' AND u.verified AND NOT s.active AND s.continuous AND s.kind='bot' AND m.status='completed' AND b.enabled AND NOT b.suspended ORDER BY m.updated_at DESC,s.participant_id LIMIT $1`, available)
+	if e != nil {
+		return e
+	}
+	type candidate struct{ pid, uid, bid, rule, version, format string }
+	var pending []candidate
+	for rows.Next() {
+		var p candidate
+		if e = rows.Scan(&p.pid, &p.uid, &p.bid, &p.rule, &p.version, &p.format); e != nil {
+			rows.Close()
+			return e
+		}
+		pending = append(pending, p)
+	}
+	rows.Close()
+	sort.Slice(pending, func(i, j int) bool { return pending[i].uid < pending[j].uid })
+	for _, p := range pending {
+		if e = lockEligible(ctx, tx, p.uid); e != nil {
+			if code, ok := e.(*APIError); ok && code.Code == "ACCOUNT_NOT_ELIGIBLE" {
+				_, e = tx.Exec(ctx, `UPDATE platform_seats SET continuous=false WHERE participant_id=$1`, p.pid)
+				if e != nil {
+					return e
+				}
+				continue
+			}
+			return e
+		}
+		_, e = tx.Exec(ctx, `INSERT INTO platform_queue(participant_key,user_id,bot_id,ruleset_id,ruleset_version,match_format,continuous) SELECT 'bot:'||$1,$2,$1,$3,$4,$5,true WHERE NOT EXISTS(SELECT 1 FROM platform_seats WHERE user_id=$2 AND active AND kind<>'builtin') AND NOT EXISTS(SELECT 1 FROM platform_queue WHERE user_id=$2) AND EXISTS(SELECT 1 FROM platform_bot_sessions bs JOIN platform_bot_credentials bc ON bc.id=bs.credential_id WHERE bs.bot_id=$1 AND bs.revoked_at IS NULL AND bc.revoked_at IS NULL AND bs.expires_at>now() AND bs.last_seen_at>now()-interval '30 seconds') ON CONFLICT DO NOTHING`, p.bid, p.uid, p.rule, p.version, p.format)
+		if e != nil {
+			return e
+		}
+		_, e = tx.Exec(ctx, `UPDATE platform_seats SET continuous=false WHERE participant_id=$1`, p.pid)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
 }

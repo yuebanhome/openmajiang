@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"encoding/base64"
@@ -191,7 +192,7 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 	}()
 	stream := id("stream")
 	var sent int64
-	var previousMatch, previousHand string
+	var previousMatch, previousHand, previousStatus string
 	var lastSeq int64 = -1
 	var lastEpoch int64 = -1
 	var lastRoom string
@@ -210,6 +211,14 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		return c.Write(out, websocket.MessageText, jsonBytes(v)) == nil
 	}
 	snapshot := func(force bool) bool {
+		if !force && pid != "" && previousMatch != "" && lastSeq >= 0 {
+			var seq, epoch int64
+			var status string
+			err := s.pool.QueryRow(ctx, `SELECT m.seq,m.status,s.control_epoch FROM platform_matches m JOIN platform_seats s ON s.room_id=m.room_id WHERE m.id=$1 AND s.participant_id=$2`, previousMatch, pid).Scan(&seq, &status, &epoch)
+			if err == nil && seq == lastSeq && epoch == lastEpoch && status == previousStatus {
+				return true
+			}
+		}
 		if valid != nil && !valid() {
 			return false
 		}
@@ -217,12 +226,13 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		if e != nil {
 			return send(map[string]any{"type": "error", "error": map[string]string{"code": "SNAPSHOT_UNAVAILABLE"}})
 		}
-		seq, _ := v["seq"].(int64)
-		epoch, _ := v["control_epoch"].(int64)
+		seq := wireInt64(v["seq"])
+		epoch := wireInt64(v["control_epoch"])
 		matchID, _ := v["match_id"].(string)
 		hand, _ := v["hand_id"].(string)
 		roomHash := string(jsonBytes(v["room"]))
-		if !force && seq == lastSeq && epoch == lastEpoch && matchID == previousMatch && hand == previousHand && roomHash == lastRoom {
+		status, _ := v["status"].(string)
+		if !force && seq == lastSeq && epoch == lastEpoch && matchID == previousMatch && hand == previousHand && roomHash == lastRoom && status == previousStatus {
 			return true
 		}
 		if epoch != lastEpoch && lastEpoch >= 0 && pid != "" && !readonly {
@@ -242,6 +252,7 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		lastRoom = roomHash
 		previousMatch = matchID
 		previousHand = hand
+		previousStatus, _ = v["status"].(string)
 		sent++
 		v["stream_id"] = stream
 		v["view_seq"] = sent
@@ -249,7 +260,9 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		decision := v["decision"]
 		if readonly {
 			decision = nil
-			v["control_status"] = "readonly"
+			if pid != "" {
+				v["control_status"] = "readonly"
+			}
 		} else if pid != "" {
 			v["control_status"] = "owner"
 		}
@@ -287,6 +300,12 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 				if e != nil || res.RowsAffected() != 1 {
 					return
 				}
+			}
+			pingCtx, pingCancel := context.WithTimeout(ctx, 5*time.Second)
+			pingErr := c.Ping(pingCtx)
+			pingCancel()
+			if pingErr != nil {
+				return
 			}
 			if !send(map[string]any{"type": "heartbeat", "server_time": time.Now().UTC()}) {
 				return
@@ -345,11 +364,12 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 				if valid != nil && !valid() {
 					return
 				}
-				_, e := s.pool.Exec(ctx, `UPDATE platform_seats SET ready=true WHERE participant_id=$1 AND active AND EXISTS(SELECT 1 FROM platform_rooms WHERE id=$2 AND status='waiting')`, pid, rid)
-				if e != nil {
+				if e := s.readyCommand(ctx, pid, rid, controller, lastEpoch); e != nil {
+					_ = send(map[string]any{"type": "error", "error": map[string]string{"code": "STALE_CONTROL"}})
 					return
 				}
 				s.tryAutoStart(ctx, rid)
+
 			case "submit_action":
 				if readonly {
 					if !send(map[string]any{"type": "error", "error": map[string]string{"code": "READ_ONLY"}}) {
@@ -361,8 +381,13 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 					return
 				}
 				var a Action
-				if json.Unmarshal(raw, &a) != nil {
-					return
+				decoder := json.NewDecoder(bytes.NewReader(raw))
+				decoder.DisallowUnknownFields()
+				if decoder.Decode(&a) != nil {
+					if !send(map[string]any{"type": "command_error", "command_id": a.CommandID, "error": map[string]string{"code": "INVALID_REQUEST"}}) {
+						return
+					}
+					continue
 				}
 				response, e := s.Submit(ctx, pid, controller, a)
 				if e != nil {
@@ -370,6 +395,7 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 					if ae, ok := e.(*APIError); ok {
 						code = ae.Code
 					}
+					s.recordBotError(ctx, pid, a.MatchID, a.CommandID, code)
 					if !send(map[string]any{"type": "command_error", "command_id": a.CommandID, "error": map[string]string{"code": code}}) {
 						return
 					}
@@ -385,4 +411,19 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 			}
 		}
 	}
+}
+
+func wireInt64(v any) int64 {
+	switch n := v.(type) {
+	case int64:
+		return n
+	case int:
+		return int64(n)
+	case float64:
+		return int64(n)
+	case json.Number:
+		x, _ := n.Int64()
+		return x
+	}
+	return 0
 }

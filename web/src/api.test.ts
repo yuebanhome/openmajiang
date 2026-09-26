@@ -1,4 +1,48 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { api, clearAuthState, post } from './api';
-afterEach(()=>{vi.unstubAllGlobals();clearAuthState();});
-describe('authenticated HTTP transport',()=>{it('uses same-origin cookies and CSRF returned by /me, never putting tokens in URLs',async()=>{const fetch=vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({csrf_token:'csrf-example'}),{status:200})).mockResolvedValueOnce(new Response('{}',{status:200}));vi.stubGlobal('fetch',fetch);await api('/v1/me');await post('/v1/rooms',{name:'room'});expect(fetch.mock.calls[1][0]).toBe('/v1/rooms');expect(fetch.mock.calls[1][1].credentials).toBe('same-origin');expect(fetch.mock.calls[1][1].headers.get('X-CSRF-Token')).toBe('csrf-example');clearAuthState();fetch.mockResolvedValueOnce(new Response('{}'));await post('/v1/auth/login',{});expect(fetch.mock.calls[2][1].headers.has('X-CSRF-Token')).toBe(false);});it('keeps backend failure state distinct from successful recorded actions',async()=>{vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({error:{code:'STALE_CONTROL',message:'控制权已变更'}}),{status:409})));await expect(post('/v1/rooms/a/actions',{})).rejects.toMatchObject({status:409,code:'STALE_CONTROL',message:'当前控制权已变更。请接管控制后重新同步。'});});});
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { api, clearAuthState, post } from "./api";
+afterEach(() => {
+  vi.unstubAllGlobals();
+  clearAuthState();
+});
+describe("authenticated HTTP transport", () => {
+  it("uses same-origin cookies and CSRF returned by /me, never putting tokens in URLs", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ csrf_token: "csrf-example" }), {
+          status: 200,
+        }),
+      )
+      .mockResolvedValueOnce(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetch);
+    await api("/v1/me");
+    await post("/v1/rooms", { name: "room" });
+    expect(fetch.mock.calls[1][0]).toBe("/v1/rooms");
+    expect(fetch.mock.calls[1][1].credentials).toBe("same-origin");
+    expect(fetch.mock.calls[1][1].headers.get("X-CSRF-Token")).toBe(
+      "csrf-example",
+    );
+    clearAuthState();
+    fetch.mockResolvedValueOnce(new Response("{}"));
+    await post("/v1/auth/login", {});
+    expect(fetch.mock.calls[2][1].headers.has("X-CSRF-Token")).toBe(false);
+  });
+  it("keeps backend failure state distinct from successful recorded actions", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { code: "STALE_CONTROL", message: "控制权已变更" },
+          }),
+          { status: 409 },
+        ),
+      ),
+    );
+    await expect(post("/v1/rooms/a/actions", {})).rejects.toMatchObject({
+      status: 409,
+      code: "STALE_CONTROL",
+      message: "当前控制权已变更。请接管控制后重新同步。",
+    });
+  });
+});

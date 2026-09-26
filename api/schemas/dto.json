@@ -1,0 +1,1449 @@
+{
+  "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "description": "Retry the entire identical command with the same command_id. Recorded ACK is not adjudication. Human cookie or Bot short-session authentication remains mandatory.",
+      "properties": {
+        "command_id": {
+          "maxLength": 128,
+          "minLength": 8,
+          "type": "string"
+        },
+        "control_epoch": {
+          "type": "integer"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "hand_id": {
+          "type": "string"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "option_id": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "const": "1.0",
+          "default": "1.0"
+        },
+        "seat_assignment_version": {
+          "type": "integer"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "type": {
+          "const": "submit_action"
+        },
+        "window_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "match_id",
+        "hand_id",
+        "participant_id",
+        "seat_id",
+        "seat_assignment_version",
+        "control_epoch",
+        "decision_id",
+        "window_id",
+        "command_id",
+        "option_id"
+      ],
+      "type": "object"
+    },
+    "BotRecentError": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "match_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "at",
+        "match_id"
+      ],
+      "type": "object"
+    },
+    "BotRuntimeStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "active_match_id": {
+          "type": "string"
+        },
+        "active_room_id": {
+          "type": "string"
+        },
+        "connected": {
+          "type": "boolean"
+        },
+        "continuous": {
+          "type": "boolean"
+        },
+        "last_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_error_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "online": {
+          "type": "boolean"
+        },
+        "presence": {
+          "type": "string"
+        },
+        "queued": {
+          "type": "boolean"
+        },
+        "recent_errors": {
+          "items": {
+            "$ref": "#/$defs/BotRecentError"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "online",
+        "connected",
+        "presence",
+        "active_room_id",
+        "active_match_id",
+        "queued",
+        "continuous",
+        "last_error",
+        "last_error_at",
+        "recent_errors"
+      ],
+      "type": "object"
+    },
+    "MCRParticipantView": {
+      "additionalProperties": false,
+      "properties": {
+        "active_seat": {
+          "type": "integer"
+        },
+        "dealer_seat": {
+          "type": "integer"
+        },
+        "discards": {
+          "items": {
+            "$ref": "#/$defs/McrDiscard"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "draw_context": {
+          "type": "string"
+        },
+        "drawn_tile_id": {
+          "type": "string"
+        },
+        "evaluator_version": {
+          "type": "string"
+        },
+        "hand": {
+          "items": {
+            "$ref": "#/$defs/McrTile"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "hand_index": {
+          "type": "integer"
+        },
+        "last_action": {
+          "$ref": "#/$defs/McrLastAction"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "online_profile": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McrResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round_wind": {
+          "type": "integer"
+        },
+        "ruleset": {
+          "$ref": "#/$defs/McrRuleIdentity"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/Score"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "seats": {
+          "items": {
+            "$ref": "#/$defs/McrParticipantSeat"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "source_edition": {
+          "type": "string"
+        },
+        "standings": {
+          "items": {
+            "$ref": "#/$defs/McrStanding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McrTriggerView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "view_policy": {
+          "type": "string"
+        },
+        "wall_remaining": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "view_policy",
+        "ruleset",
+        "source_edition",
+        "evaluator_version",
+        "online_profile",
+        "match_format",
+        "phase",
+        "hand_index",
+        "participant_id",
+        "seat_id",
+        "active_seat",
+        "dealer_seat",
+        "round_wind",
+        "wall_remaining",
+        "hand",
+        "seats",
+        "discards",
+        "last_action",
+        "scores"
+      ],
+      "type": "object"
+    },
+    "MCRSpectatorView": {
+      "additionalProperties": false,
+      "description": "Strict discard-only projection at every phase, including final settlement and replay. The only card faces are discards[].kind. Never attach raw rule state, hidden hands, flower faces, meld faces, scoring explanations or tile entity IDs.",
+      "properties": {
+        "active_seat": {
+          "type": "integer"
+        },
+        "dealer_seat": {
+          "type": "integer"
+        },
+        "discards": {
+          "items": {
+            "$ref": "#/$defs/McrPublicDiscard"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "hand_index": {
+          "type": "integer"
+        },
+        "last_action": {
+          "$ref": "#/$defs/McrLastAction"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McrPublicResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round_wind": {
+          "type": "integer"
+        },
+        "ruleset": {
+          "$ref": "#/$defs/McrRuleIdentity"
+        },
+        "scores": {
+          "items": {
+            "$ref": "#/$defs/Score"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "seats": {
+          "items": {
+            "$ref": "#/$defs/McrPublicSeat"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "standings": {
+          "items": {
+            "$ref": "#/$defs/McrStanding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "view_policy": {
+          "const": "spectator_discard_only@1"
+        },
+        "wall_remaining": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "view_policy",
+        "ruleset",
+        "phase",
+        "hand_index",
+        "active_seat",
+        "dealer_seat",
+        "round_wind",
+        "wall_remaining",
+        "seats",
+        "discards",
+        "last_action",
+        "scores"
+      ],
+      "type": "object"
+    },
+    "Manifest": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_hash": {
+          "type": "string"
+        },
+        "build": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RulesdkBuildIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "formats": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "online_profiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "plugin_api_version": {
+          "type": "string"
+        },
+        "renderer_id": {
+          "type": "string"
+        },
+        "seat_counts": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "source_edition": {
+          "type": "string"
+        },
+        "source_hash": {
+          "type": "string"
+        },
+        "state_schema": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "view_schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "name",
+        "plugin_api_version",
+        "state_schema",
+        "view_schema",
+        "renderer_id",
+        "seat_counts",
+        "formats",
+        "capabilities"
+      ],
+      "type": "object"
+    },
+    "McrDiscard": {
+      "additionalProperties": false,
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "discard_id": {
+          "type": "string"
+        },
+        "from_seat": {
+          "type": "integer"
+        },
+        "tile": {
+          "$ref": "#/$defs/McrTile"
+        }
+      },
+      "required": [
+        "discard_id",
+        "from_seat",
+        "tile",
+        "claimed"
+      ],
+      "type": "object"
+    },
+    "McrLastAction": {
+      "additionalProperties": false,
+      "properties": {
+        "by_seat": {
+          "type": "integer"
+        },
+        "source_discard_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "by_seat"
+      ],
+      "type": "object"
+    },
+    "McrMeldView": {
+      "additionalProperties": false,
+      "properties": {
+        "concealed": {
+          "type": "boolean"
+        },
+        "from_seat": {
+          "type": "integer"
+        },
+        "tile_count": {
+          "type": "integer"
+        },
+        "tiles": {
+          "items": {
+            "$ref": "#/$defs/McrTile"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "tile_count",
+        "concealed",
+        "from_seat"
+      ],
+      "type": "object"
+    },
+    "McrParticipantSeat": {
+      "additionalProperties": false,
+      "properties": {
+        "flowers": {
+          "items": {
+            "$ref": "#/$defs/McrTile"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "hand_count": {
+          "type": "integer"
+        },
+        "melds": {
+          "items": {
+            "$ref": "#/$defs/McrMeldView"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "participant_kind": {
+          "type": "string"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "seat_wind": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seat_id",
+        "participant_id",
+        "name",
+        "participant_kind",
+        "seat_wind",
+        "hand_count",
+        "melds",
+        "flowers"
+      ],
+      "type": "object"
+    },
+    "McrPublicDiscard": {
+      "additionalProperties": false,
+      "properties": {
+        "claimed": {
+          "type": "boolean"
+        },
+        "discard_id": {
+          "type": "string"
+        },
+        "from_seat": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "discard_id",
+        "from_seat",
+        "kind",
+        "claimed"
+      ],
+      "type": "object"
+    },
+    "McrPublicResult": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "score_deltas": {
+          "items": {
+            "$ref": "#/$defs/Score"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "source_seat": {
+          "type": "integer"
+        },
+        "winner_seat": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "method",
+        "winner_seat",
+        "source_seat",
+        "score_deltas"
+      ],
+      "type": "object"
+    },
+    "McrPublicSeat": {
+      "additionalProperties": false,
+      "properties": {
+        "hand_count": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "participant_kind": {
+          "type": "string"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "seat_wind": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seat_id",
+        "participant_id",
+        "name",
+        "participant_kind",
+        "seat_wind",
+        "hand_count"
+      ],
+      "type": "object"
+    },
+    "McrRational": {
+      "additionalProperties": false,
+      "properties": {
+        "denominator": {
+          "type": "integer"
+        },
+        "numerator": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "type": "object"
+    },
+    "McrResult": {
+      "additionalProperties": false,
+      "properties": {
+        "decomposition": {
+          "items": {
+            "$ref": "#/$defs/ScoringGroup"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "explanation_coverage": {
+          "type": "string"
+        },
+        "explanations": {
+          "items": {
+            "$ref": "#/$defs/ScoringExplanation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "fan_items": {
+          "items": {
+            "$ref": "#/$defs/ScoringFan"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "flower_points": {
+          "type": "integer"
+        },
+        "method": {
+          "type": "string"
+        },
+        "non_flower_fan": {
+          "type": "integer"
+        },
+        "score_deltas": {
+          "items": {
+            "$ref": "#/$defs/Score"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "source_seat": {
+          "type": "integer"
+        },
+        "total_fan": {
+          "type": "integer"
+        },
+        "winner_seat": {
+          "type": "integer"
+        },
+        "winning_form": {
+          "type": "string"
+        },
+        "winning_hand": {
+          "items": {
+            "$ref": "#/$defs/McrTile"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "winning_tile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McrTile"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "method",
+        "winner_seat",
+        "source_seat",
+        "non_flower_fan",
+        "flower_points",
+        "total_fan",
+        "score_deltas"
+      ],
+      "type": "object"
+    },
+    "McrRuleIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "McrStanding": {
+      "additionalProperties": false,
+      "properties": {
+        "participant_id": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "score": {
+          "type": "integer"
+        },
+        "standard_points": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McrRational"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "participant_id",
+        "rank",
+        "score"
+      ],
+      "type": "object"
+    },
+    "McrTile": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "tile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tile_id",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "McrTriggerView": {
+      "additionalProperties": false,
+      "properties": {
+        "discard_id": {
+          "type": "string"
+        },
+        "from_seat": {
+          "type": "integer"
+        },
+        "tile": {
+          "$ref": "#/$defs/McrTile"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "from_seat",
+        "tile"
+      ],
+      "type": "object"
+    },
+    "Option": {
+      "additionalProperties": false,
+      "properties": {
+        "consume_tile_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "details": {
+          "description": "Ruleset-defined JSON extension value; consult the locked plugin version for this field's schema."
+        },
+        "kind": {
+          "type": "string"
+        },
+        "option_id": {
+          "type": "string"
+        },
+        "tile_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "option_id",
+        "type"
+      ],
+      "type": "object"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "capacity": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "invite_only": {
+          "type": "boolean"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "online_profile": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "seats": {
+          "items": {
+            "$ref": "#/$defs/Seat"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "self_test": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "owner_id",
+        "mode",
+        "ruleset_id",
+        "ruleset_version",
+        "match_format",
+        "online_profile",
+        "capacity",
+        "invite_only",
+        "self_test",
+        "status",
+        "match_id",
+        "seats"
+      ],
+      "type": "object"
+    },
+    "RulesdkBuildIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture": {
+          "type": "string"
+        },
+        "go_version": {
+          "type": "string"
+        },
+        "os": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "go_version",
+        "os",
+        "architecture"
+      ],
+      "type": "object"
+    },
+    "RulesdkRational": {
+      "additionalProperties": false,
+      "properties": {
+        "denominator": {
+          "type": "integer"
+        },
+        "numerator": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "type": "object"
+    },
+    "Score": {
+      "additionalProperties": false,
+      "properties": {
+        "delta": {
+          "type": "integer"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "total": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "participant_id",
+        "delta",
+        "total"
+      ],
+      "type": "object"
+    },
+    "ScoringExplanation": {
+      "additionalProperties": false,
+      "properties": {
+        "excluded_fan_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "fan_id": {
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fan_id",
+        "source",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "ScoringFan": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "points",
+        "count"
+      ],
+      "type": "object"
+    },
+    "ScoringGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "concealed": {
+          "type": "boolean"
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "tiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "tiles",
+        "declared",
+        "concealed"
+      ],
+      "type": "object"
+    },
+    "Seat": {
+      "additionalProperties": false,
+      "properties": {
+        "bot_id": {
+          "type": "string"
+        },
+        "connected": {
+          "type": "boolean"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "leave_after_hand": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "seat_id": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "participant_id",
+        "name",
+        "kind",
+        "seat_id",
+        "ready",
+        "connected",
+        "leave_after_hand"
+      ],
+      "type": "object"
+    },
+    "StatisticDimensions": {
+      "additionalProperties": false,
+      "properties": {
+        "bot_version": {
+          "type": "string"
+        },
+        "clock_profile": {
+          "type": "string"
+        },
+        "config_hash": {
+          "type": "string"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "online_profile": {
+          "type": "string"
+        },
+        "participant_kind": {
+          "type": "string"
+        },
+        "platform_interrupted": {
+          "type": "boolean"
+        },
+        "queue_pool": {
+          "type": "string"
+        },
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "self_test": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
+        },
+        "trustee_used": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ruleset_id",
+        "ruleset_version",
+        "online_profile",
+        "match_format",
+        "mode",
+        "clock_profile",
+        "config_hash",
+        "bot_version",
+        "participant_kind",
+        "queue_pool",
+        "self_test",
+        "platform_interrupted",
+        "status",
+        "trustee_used"
+      ],
+      "type": "object"
+    },
+    "StatisticGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "comparable": {
+          "type": "boolean"
+        },
+        "dimensions": {
+          "$ref": "#/$defs/StatisticDimensions"
+        },
+        "metrics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/StatisticMetric"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "dimensions",
+        "comparable",
+        "metrics"
+      ],
+      "type": "object"
+    },
+    "StatisticMatch": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "raw_score": {
+          "type": "integer"
+        },
+        "standard_points": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RulesdkRational"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "match_id",
+        "created_at",
+        "status",
+        "rank",
+        "raw_score",
+        "standard_points"
+      ],
+      "type": "object"
+    },
+    "StatisticMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "samples": {
+          "type": "integer"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "samples"
+      ],
+      "type": "object"
+    },
+    "StatisticProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "display_name",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "StatisticResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "comparable_policy": {
+          "type": "string"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/StatisticGroup"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "matches": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/StatisticMatch"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_before": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_group": {
+          "type": "string"
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StatisticProfile"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "statistics_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "groups",
+        "next_group",
+        "statistics_version",
+        "comparable_policy"
+      ],
+      "type": "object"
+    },
+    "User": {
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "verified",
+        "role",
+        "status"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://openmajiang.invalid/schemas/dto.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

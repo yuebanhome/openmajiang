@@ -1,0 +1,263 @@
+{
+  "snapshot": {
+    "type": "snapshot",
+    "stream_id": "stream_fixture",
+    "view_seq": 1,
+    "match_id": "match_fixture",
+    "hand_id": "hand_1",
+    "participant_id": "participant_bot",
+    "seat_id": 0,
+    "seat_assignment_version": 1,
+    "control_epoch": 7,
+    "status": "active",
+    "view": {
+      "view_policy": "participant_private@1",
+      "ruleset": {
+        "id": "openmajiang.mcr",
+        "version": "1.0.0"
+      },
+      "source_edition": "wmo-mcr-2014-2nd",
+      "evaluator_version": "mcr-2014",
+      "online_profile": "om-mcr-1",
+      "match_format": "practice_1",
+      "phase": "self",
+      "hand_index": 1,
+      "participant_id": "participant_bot",
+      "seat_id": 0,
+      "active_seat": 0,
+      "dealer_seat": 0,
+      "round_wind": 0,
+      "wall_remaining": 83,
+      "hand": [
+        {
+          "tile_id": "tile_1",
+          "kind": "1m"
+        },
+        {
+          "tile_id": "tile_2",
+          "kind": "1m"
+        },
+        {
+          "tile_id": "tile_3",
+          "kind": "2m"
+        },
+        {
+          "tile_id": "tile_4",
+          "kind": "2m"
+        },
+        {
+          "tile_id": "tile_5",
+          "kind": "3m"
+        },
+        {
+          "tile_id": "tile_6",
+          "kind": "3m"
+        },
+        {
+          "tile_id": "tile_7",
+          "kind": "4p"
+        },
+        {
+          "tile_id": "tile_8",
+          "kind": "4p"
+        },
+        {
+          "tile_id": "tile_9",
+          "kind": "5p"
+        },
+        {
+          "tile_id": "tile_10",
+          "kind": "5p"
+        },
+        {
+          "tile_id": "tile_11",
+          "kind": "6s"
+        },
+        {
+          "tile_id": "tile_12",
+          "kind": "7s"
+        },
+        {
+          "tile_id": "tile_13",
+          "kind": "8s"
+        },
+        {
+          "tile_id": "tile_14",
+          "kind": "9s"
+        }
+      ],
+      "drawn_tile_id": "tile_14",
+      "draw_context": "normal",
+      "seats": [
+        {
+          "seat_id": 0,
+          "participant_id": "participant_bot",
+          "name": "Fixture 0",
+          "participant_kind": "bot",
+          "seat_wind": 0,
+          "hand_count": 14,
+          "melds": [],
+          "flowers": []
+        },
+        {
+          "seat_id": 1,
+          "participant_id": "participant_b",
+          "name": "Fixture 1",
+          "participant_kind": "bot",
+          "seat_wind": 1,
+          "hand_count": 13,
+          "melds": [],
+          "flowers": []
+        },
+        {
+          "seat_id": 2,
+          "participant_id": "participant_c",
+          "name": "Fixture 2",
+          "participant_kind": "bot",
+          "seat_wind": 2,
+          "hand_count": 13,
+          "melds": [],
+          "flowers": []
+        },
+        {
+          "seat_id": 3,
+          "participant_id": "participant_d",
+          "name": "Fixture 3",
+          "participant_kind": "bot",
+          "seat_wind": 3,
+          "hand_count": 13,
+          "melds": [],
+          "flowers": []
+        }
+      ],
+      "discards": [],
+      "last_action": {
+        "type": "deal",
+        "by_seat": 0
+      },
+      "scores": [
+        {
+          "participant_id": "participant_bot",
+          "delta": 0,
+          "total": 0
+        },
+        {
+          "participant_id": "participant_b",
+          "delta": 0,
+          "total": 0
+        },
+        {
+          "participant_id": "participant_c",
+          "delta": 0,
+          "total": 0
+        },
+        {
+          "participant_id": "participant_d",
+          "delta": 0,
+          "total": 0
+        }
+      ]
+    },
+    "hand_index": 1,
+    "ruleset": {
+      "id": "openmajiang.mcr",
+      "version": "1.0.0"
+    },
+    "match_format": "practice_1",
+    "deadline_at": "2030-01-01T00:00:02Z",
+    "platform_interrupted": false,
+    "self_timeout_count": 0,
+    "reaction_timeout_count": 0,
+    "room": {
+      "id": "room_fixture",
+      "name": "Protocol fixture",
+      "owner_id": "user_fixture",
+      "mode": "bot_only",
+      "ruleset_id": "openmajiang.mcr",
+      "ruleset_version": "1.0.0",
+      "match_format": "practice_1",
+      "online_profile": "om-mcr-1",
+      "capacity": 4,
+      "invite_only": false,
+      "self_test": false,
+      "status": "playing",
+      "match_id": "match_fixture",
+      "seats": [
+        {
+          "participant_id": "participant_bot",
+          "bot_id": "bot_0",
+          "name": "Fixture 0",
+          "kind": "bot",
+          "seat_id": 0,
+          "ready": true,
+          "connected": true,
+          "leave_after_hand": false
+        },
+        {
+          "participant_id": "participant_b",
+          "bot_id": "bot_1",
+          "name": "Fixture 1",
+          "kind": "bot",
+          "seat_id": 1,
+          "ready": true,
+          "connected": true,
+          "leave_after_hand": false
+        },
+        {
+          "participant_id": "participant_c",
+          "bot_id": "bot_2",
+          "name": "Fixture 2",
+          "kind": "bot",
+          "seat_id": 2,
+          "ready": true,
+          "connected": true,
+          "leave_after_hand": false
+        },
+        {
+          "participant_id": "participant_d",
+          "bot_id": "bot_3",
+          "name": "Fixture 3",
+          "kind": "bot",
+          "seat_id": 3,
+          "ready": true,
+          "connected": true,
+          "leave_after_hand": false
+        }
+      ]
+    }
+  },
+  "decision": {
+    "type": "decision_request",
+    "protocol_version": "1.0",
+    "stream_id": "stream_fixture",
+    "view_seq": 2,
+    "observation_ref": {
+      "stream_id": "stream_fixture",
+      "view_seq": 1
+    },
+    "match_id": "match_fixture",
+    "hand_id": "hand_1",
+    "participant_id": "participant_bot",
+    "seat_id": 0,
+    "seat_assignment_version": 1,
+    "control_epoch": 7,
+    "decision_id": "decision_1",
+    "window_id": "window_1",
+    "phase": "self",
+    "server_time": "2030-01-01T00:00:00Z",
+    "deadline_at": "2030-01-01T00:00:02Z",
+    "legal_actions": [
+      {
+        "option_id": "discard_1",
+        "type": "discard",
+        "tile_id": "tile_1",
+        "kind": "1m"
+      }
+    ],
+    "ruleset": {
+      "id": "openmajiang.mcr",
+      "version": "1.0.0"
+    },
+    "match_format": "practice_1"
+  }
+}

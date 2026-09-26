@@ -16,19 +16,29 @@ type Config struct {
 	Options      json.RawMessage `json:"options,omitempty"`
 }
 type Manifest struct {
-	ID             string   `json:"id"`
-	Version        string   `json:"version"`
-	Name           string   `json:"name"`
-	APIVersion     string   `json:"plugin_api_version"`
-	StateSchema    string   `json:"state_schema"`
-	ViewSchema     string   `json:"view_schema"`
-	Renderer       string   `json:"renderer_id"`
-	SeatCounts     []int    `json:"seat_counts"`
-	Formats        []string `json:"formats"`
-	Capabilities   []string `json:"capabilities"`
-	ArtifactHash   string   `json:"artifact_hash,omitempty"`
-	SourceEdition  string   `json:"source_edition,omitempty"`
-	OnlineProfiles []string `json:"online_profiles,omitempty"`
+	ID             string         `json:"id"`
+	Version        string         `json:"version"`
+	Name           string         `json:"name"`
+	APIVersion     string         `json:"plugin_api_version"`
+	StateSchema    string         `json:"state_schema"`
+	ViewSchema     string         `json:"view_schema"`
+	Renderer       string         `json:"renderer_id"`
+	SeatCounts     []int          `json:"seat_counts"`
+	Formats        []string       `json:"formats"`
+	Capabilities   []string       `json:"capabilities"`
+	ArtifactHash   string         `json:"artifact_hash,omitempty"`
+	SourceHash     string         `json:"source_hash,omitempty"`
+	Build          *BuildIdentity `json:"build,omitempty"`
+	SourceEdition  string         `json:"source_edition,omitempty"`
+	OnlineProfiles []string       `json:"online_profiles,omitempty"`
+}
+
+// BuildIdentity describes the host executable that contains the compiled rule.
+// It is build metadata, never a hash of a match, wall or private observation.
+type BuildIdentity struct {
+	GoVersion    string `json:"go_version"`
+	OS           string `json:"os"`
+	Architecture string `json:"architecture"`
 }
 type Option struct {
 	ID      string          `json:"option_id"`

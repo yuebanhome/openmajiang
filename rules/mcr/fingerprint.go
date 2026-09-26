@@ -5,14 +5,18 @@ import (
 	"embed"
 	"encoding/hex"
 	"io/fs"
+	pathutil "path"
 	"sort"
+	"strings"
 	"sync"
+
+	"github.com/yuebanhome/openmajiang/pkg/rulesdk"
 )
 
 // Include the evaluator, its patches and the rule implementation in the build.
-// Persisting this digest prevents a restarted host from silently loading changed
-// adjudication code under an existing ruleset version. Tests and source notices
-// are deliberately included, making the compatibility check conservative.
+// The source identity includes the actual SDK contract. Tests, documentation
+// and generated measurement reports are excluded. The host registry separately
+// binds the rule to the SHA256 of the loaded Go/CGO executable.
 //
 //go:embed *.go scoring
 var ruleSource embed.FS
@@ -23,7 +27,8 @@ var fingerprint = sync.OnceValue(func() string {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() {
+		ext := pathutil.Ext(d.Name())
+		if !d.IsDir() && !strings.HasSuffix(d.Name(), "_test.go") && d.Name() != "unit_test.cpp" && (ext == ".go" || ext == ".cpp" || ext == ".h" || ext == ".c" || ext == ".hpp") {
 			paths = append(paths, path)
 		}
 		return nil
@@ -33,6 +38,7 @@ var fingerprint = sync.OnceValue(func() string {
 	sort.Strings(paths)
 	h := sha256.New()
 	h.Write([]byte("openmajiang.rule-sdk@1\x00"))
+	h.Write([]byte(rulesdk.ContractHash() + "\x00"))
 	for _, path := range paths {
 		b, err := ruleSource.ReadFile(path)
 		if err != nil {

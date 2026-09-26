@@ -6,7 +6,7 @@ import unittest
 
 from openmajiang import BotClient, ControlTransferredError, DecisionEngine, first_legal
 
-FIXTURE = json.loads((Path(__file__).resolve().parents[2] / "fixtures" / "decision.json").read_text())
+FIXTURE = json.loads((Path(__file__).resolve().parents[3] / "api" / "fixtures" / "decision.json").read_text())
 
 
 class ProtocolTests(unittest.IsolatedAsyncioTestCase):

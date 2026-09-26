@@ -13,6 +13,7 @@ type botIdentity struct{ ID, Owner, Name, Session string }
 
 func (s *Service) botRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /v1/bots", s.listBots)
+	m.HandleFunc("GET /v1/bots/{id}/status", s.botStatus)
 	m.HandleFunc("POST /v1/bots", s.mutation(s.createBot))
 	m.HandleFunc("PATCH /v1/bots/{id}", s.mutation(s.updateBot))
 	m.HandleFunc("GET /v1/bots/{id}/versions", s.botVersions)
@@ -43,7 +44,7 @@ func (s *Service) listBots(w http.ResponseWriter, r *http.Request) {
 		failure(w, e)
 		return
 	}
-	rows, e := s.pool.Query(r.Context(), `SELECT b.id,b.name,b.enabled,b.current_version,b.suspended,EXISTS(SELECT 1 FROM platform_bot_sessions bs WHERE bs.bot_id=b.id AND bs.revoked_at IS NULL AND bs.expires_at>now()) FROM platform_bots b WHERE owner_id=$1 ORDER BY created_at`, u.ID)
+	rows, e := s.pool.Query(r.Context(), `SELECT b.id,b.name,b.enabled,b.current_version,b.suspended,EXISTS(SELECT 1 FROM platform_bot_sessions bs WHERE bs.bot_id=b.id AND bs.revoked_at IS NULL AND bs.expires_at>now() AND bs.last_seen_at>now()-interval '30 seconds') FROM platform_bots b WHERE owner_id=$1 ORDER BY created_at`, u.ID)
 	if e != nil {
 		failure(w, e)
 		return
@@ -345,9 +346,13 @@ func (s *Service) botSession(w http.ResponseWriter, r *http.Request) {
 
 func (s *Service) authenticateBot(r *http.Request) (botIdentity, error) {
 	var b botIdentity
-	e := s.pool.QueryRow(r.Context(), `SELECT b.id,b.owner_id,b.name,ss.id FROM platform_bot_sessions ss JOIN platform_bot_credentials c ON c.id=ss.credential_id JOIN platform_bots b ON b.id=ss.bot_id JOIN auth_users u ON u.id=b.owner_id WHERE ss.secret_hash=$1 AND ss.expires_at>now() AND ss.revoked_at IS NULL AND c.revoked_at IS NULL AND b.enabled AND NOT b.suspended AND u.status='active' AND u.verified`, s.hash(bearer(r))).Scan(&b.ID, &b.Owner, &b.Name, &b.Session)
+	var lastSeen *time.Time
+	e := s.pool.QueryRow(r.Context(), `SELECT b.id,b.owner_id,b.name,ss.id,ss.last_seen_at FROM platform_bot_sessions ss JOIN platform_bot_credentials c ON c.id=ss.credential_id JOIN platform_bots b ON b.id=ss.bot_id JOIN auth_users u ON u.id=b.owner_id WHERE ss.secret_hash=$1 AND ss.expires_at>now() AND ss.revoked_at IS NULL AND c.revoked_at IS NULL AND b.enabled AND NOT b.suspended AND u.status='active' AND u.verified`, s.hash(bearer(r))).Scan(&b.ID, &b.Owner, &b.Name, &b.Session, &lastSeen)
 	if e != nil {
 		return b, api(401, "AUTH_EXPIRED")
+	}
+	if lastSeen == nil || time.Since(*lastSeen) > 5*time.Second {
+		_, _ = s.pool.Exec(r.Context(), `UPDATE platform_bot_sessions SET last_seen_at=now() WHERE id=$1`, b.Session)
 	}
 	return b, nil
 }

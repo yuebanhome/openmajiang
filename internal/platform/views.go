@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -23,11 +24,25 @@ func (s *Service) snapshotUncached(r *http.Request, roomID, pid string) (map[str
 		return nil, e
 	}
 	if room.MatchID == "" {
-		return map[string]any{"type": "room_snapshot", "room": room, "view": nil}, nil
+		result := map[string]any{"type": "room_snapshot", "room": room, "view": nil, "status": room.Status}
+		if pid != "" {
+			for _, seat := range room.Seats {
+				if seat.ParticipantID == pid {
+					result["participant_id"] = pid
+					result["control_epoch"] = seat.Epoch
+					result["seat_id"] = seat.Order
+					break
+				}
+			}
+		}
+		return result, nil
 	}
 	m, e := loadMatch(r.Context(), s.pool, room.MatchID, false)
 	if e != nil {
 		return nil, e
+	}
+	if m.ArchivedAt != nil {
+		return nil, api(410, "MATCH_ARCHIVED")
 	}
 	var view json.RawMessage
 	var index int
@@ -197,14 +212,62 @@ func (s *Service) myMatches(w http.ResponseWriter, r *http.Request) {
 	}
 	s.listMatches(w, r, u.ID)
 }
+
+type matchCursor struct {
+	Created time.Time `json:"created"`
+	ID      string    `json:"id"`
+}
+
 func (s *Service) listMatches(w http.ResponseWriter, r *http.Request, uid string) {
-	q := `SELECT m.id,m.room_id,m.status,m.ruleset_id,m.ruleset_version,m.match_format,m.interrupted,m.created_at FROM platform_matches m`
+	q := `SELECT m.id,m.room_id,m.status,m.ruleset_id,m.ruleset_version,m.match_format,m.interrupted,m.created_at,m.archived_at,m.public_summary,r.mode FROM platform_matches m JOIN platform_rooms r ON r.id=m.room_id WHERE true`
 	args := []any{}
-	if uid != "" {
-		q += ` WHERE EXISTS(SELECT 1 FROM platform_seats s WHERE s.room_id=m.room_id AND s.user_id=$1)`
-		args = append(args, uid)
+	add := func(fragment string, value any) {
+		args = append(args, value)
+		q += " AND " + strings.ReplaceAll(fragment, "?", "$"+strconv.Itoa(len(args)))
 	}
-	q += ` ORDER BY m.created_at DESC LIMIT 100`
+	bid := r.URL.Query().Get("bot_id")
+	if uid != "" {
+		add(`EXISTS(SELECT 1 FROM platform_seats s WHERE s.room_id=m.room_id AND s.user_id=?)`, uid)
+		if bid != "" {
+			var owned bool
+			if e := s.pool.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM platform_bots WHERE id=$1 AND owner_id=$2)`, bid, uid).Scan(&owned); e != nil {
+				failure(w, e)
+				return
+			}
+			if !owned {
+				failure(w, api(403, "BOT_NOT_OWNED"))
+				return
+			}
+			add(`EXISTS(SELECT 1 FROM platform_seats s WHERE s.room_id=m.room_id AND s.bot_id=?)`, bid)
+		}
+	} else if bid != "" {
+		add(`EXISTS(SELECT 1 FROM platform_seats s WHERE s.room_id=m.room_id AND s.bot_id=?)`, bid)
+	}
+	for _, f := range []struct{ key, col string }{{"mode", "r.mode"}, {"ruleset_id", "m.ruleset_id"}, {"ruleset_version", "m.ruleset_version"}, {"match_format", "m.match_format"}, {"status", "m.status"}} {
+		if value := r.URL.Query().Get(f.key); value != "" {
+			add(f.col+"=?", value)
+		}
+	}
+	if before := r.URL.Query().Get("before"); before != "" {
+		var cursor matchCursor
+		raw, e := base64.RawURLEncoding.DecodeString(before)
+		if e != nil || json.Unmarshal(raw, &cursor) != nil || cursor.ID == "" || cursor.Created.IsZero() {
+			failure(w, api(400, "INVALID_CURSOR"))
+			return
+		}
+		args = append(args, cursor.Created, cursor.ID)
+		q += " AND (m.created_at,m.id)<($" + strconv.Itoa(len(args)-1) + ",$" + strconv.Itoa(len(args)) + ")"
+	}
+	limit := 25
+	if raw := r.URL.Query().Get("limit"); raw != "" {
+		n, e := strconv.Atoi(raw)
+		if e != nil || n < 1 || n > 100 {
+			failure(w, api(400, "INVALID_LIMIT"))
+			return
+		}
+		limit = n
+	}
+	q += " ORDER BY m.created_at DESC,m.id DESC LIMIT " + strconv.Itoa(limit+1)
 	rows, e := s.pool.Query(r.Context(), q, args...)
 	if e != nil {
 		failure(w, e)
@@ -212,22 +275,45 @@ func (s *Service) listMatches(w http.ResponseWriter, r *http.Request, uid string
 	}
 	defer rows.Close()
 	result := []any{}
+	next := ""
+	var last matchCursor
 	for rows.Next() {
-		var id, rid, status, rule, version, format string
+		var id, rid, status, rule, version, format, mode string
 		var interrupted bool
 		var created time.Time
-		if e = rows.Scan(&id, &rid, &status, &rule, &version, &format, &interrupted, &created); e != nil {
+		var archived *time.Time
+		var summary json.RawMessage
+		if e = rows.Scan(&id, &rid, &status, &rule, &version, &format, &interrupted, &created, &archived, &summary, &mode); e != nil {
 			failure(w, e)
 			return
 		}
-		result = append(result, map[string]any{"id": id, "room_id": rid, "status": status, "ruleset_id": rule, "ruleset_version": version, "match_format": format, "platform_interrupted": interrupted, "created_at": created})
+		if len(result) == limit {
+			next = base64.RawURLEncoding.EncodeToString(jsonBytes(last))
+			break
+		}
+		last = matchCursor{created, id}
+		result = append(result, map[string]any{"id": id, "room_id": rid, "status": status, "ruleset_id": rule, "ruleset_version": version, "match_format": format, "mode": mode, "platform_interrupted": interrupted, "created_at": created, "archived_at": archived, "public_summary": summary})
 	}
-	write(w, 200, map[string]any{"matches": result})
+	if e = rows.Err(); e != nil {
+		failure(w, e)
+		return
+	}
+	write(w, 200, map[string]any{"matches": result, "next_before": next})
 }
+
 func (s *Service) matchInfo(w http.ResponseWriter, r *http.Request) {
 	m, e := loadMatch(r.Context(), s.pool, r.PathValue("id"), false)
 	if e != nil {
 		failure(w, e)
+		return
+	}
+	if m.ArchivedAt != nil {
+		summary, err := s.archivedSummary(r.Context(), m.ID)
+		if err != nil {
+			failure(w, err)
+			return
+		}
+		write(w, 200, map[string]any{"archived": true, "archived_at": m.ArchivedAt, "summary": summary, "match": map[string]any{"id": m.ID, "room_id": m.RoomID, "status": m.Status, "match_format": m.Format}})
 		return
 	}
 	v, e := s.snapshot(r, m.RoomID, "")
@@ -238,7 +324,13 @@ func (s *Service) matchInfo(w http.ResponseWriter, r *http.Request) {
 	v["match"] = map[string]any{"id": m.ID, "room_id": m.RoomID, "status": m.Status, "match_format": m.Format}
 	write(w, 200, v)
 }
-func (s *Service) matchSnapshot(w http.ResponseWriter, r *http.Request) { s.matchInfo(w, r) }
+func (s *Service) matchSnapshot(w http.ResponseWriter, r *http.Request) {
+	if e := requireNotArchived(r.Context(), s.pool, r.PathValue("id")); e != nil {
+		failure(w, e)
+		return
+	}
+	s.matchInfo(w, r)
+}
 func (s *Service) privateMatch(w http.ResponseWriter, r *http.Request) {
 	u, e := s.user(r, false)
 	if e != nil {
@@ -283,6 +375,10 @@ func (s *Service) privateReplay(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Service) replayFor(w http.ResponseWriter, r *http.Request, pid string) {
 	if _, e := loadMatch(r.Context(), s.pool, r.PathValue("id"), false); e != nil {
+		failure(w, e)
+		return
+	}
+	if e := requireNotArchived(r.Context(), s.pool, r.PathValue("id")); e != nil {
 		failure(w, e)
 		return
 	}

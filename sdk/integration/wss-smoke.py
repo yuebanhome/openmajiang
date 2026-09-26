@@ -18,7 +18,9 @@ from pathlib import Path
 import queue
 import re
 import secrets
+import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -97,6 +99,8 @@ def register_bot(base, mailpit, prefix, index):
 
 
 def bot_process(index, base, key, match_format, output, stop_process):
+    if index == 3:
+        return typescript_process(index, base, key, match_format, output, stop_process)
     async def run():
         stop = asyncio.Event()
         decisions, acks, errors, states = set(), set(), Counter(), Counter()
@@ -163,13 +167,58 @@ def bot_process(index, base, key, match_format, output, stop_process):
         output.put({"type": "worker_error", "bot": index, "error": type(exc).__name__})
 
 
+def typescript_process(index, base, key, match_format, output, stop_process):
+    """One independently running Node.js SDK Bot supervised by the harness."""
+    entry = Path(__file__).with_name("ts-worker.mjs")
+    process = subprocess.Popen(["node", str(entry)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE, text=True, bufsize=1)
+    def read_events():
+        for line in process.stdout:
+            try:
+                event = json.loads(line)
+                if event.get("bot") != index:
+                    raise ValueError("wrong worker")
+                output.put(event)
+            except Exception:
+                output.put({"type": "worker_error", "bot": index, "error": "TS_INVALID_OUTPUT"})
+    def discard_stderr():
+        # Dependencies may print warnings; never forward raw process text that
+        # could include a credential or transport frame into CI artifacts.
+        for _ in process.stderr:
+            pass
+    reader = threading.Thread(target=read_events, daemon=True)
+    reader.start()
+    threading.Thread(target=discard_stderr, daemon=True).start()
+    try:
+        process.stdin.write(json.dumps({"index": index, "base_url": base, "api_key": key, "match_format": match_format})+"\n")
+        process.stdin.flush()
+        while process.poll() is None and not stop_process.wait(0.1):
+            pass
+        if process.poll() is None:
+            process.stdin.write('{"type":"stop"}\n')
+            process.stdin.flush()
+            try:
+                process.wait(timeout=12)
+            except subprocess.TimeoutExpired:
+                process.terminate()
+                process.wait(timeout=3)
+        elif process.returncode != 0:
+            output.put({"type": "worker_error", "bot": index, "error": "TS_RUNTIME_FAILED"})
+    finally:
+        if process.poll() is None:
+            process.kill()
+        reader.join(timeout=2)
+
+
 def assert_discard_only(value, path=()):
     if isinstance(value, dict):
         for key, child in value.items():
             if key in {"hand", "own_hand", "flowers", "melds", "winning_hand", "winning_tile", "fan_items",
                        "decomposition", "trigger", "seed", "wall", "drawn_tile_id", "legal_actions", "tile_id", "tiles"}:
                 raise RuntimeError("anonymous view contains forbidden field: " + key)
-            if key == "kind" and "discards" not in path:
+            # Room seat identity uses kind=human|bot; it is not a card face.
+            identity_kind = path == ("room", "seats") and child in ("human", "bot")
+            if key == "kind" and "discards" not in path and not identity_kind:
                 raise RuntimeError("anonymous card face occurs outside discard history")
             assert_discard_only(child, path + (key,))
     elif isinstance(value, list):
@@ -191,9 +240,12 @@ def main():
         parser.error("this gate requires HTTPS/WSS; use a trusted test CA rather than disabling verification")
     if args.hands < 1:
         parser.error("hands must be positive")
+    if not (Path(__file__).resolve().parents[1]/"typescript/dist/index.js").exists():
+        parser.error("build the TypeScript SDK first: cd sdk/typescript && npm ci && npm run build")
     report = {"passed": False, "build_sha": os.environ.get("GITHUB_SHA", "local-unidentified"),
         "ruleset": "openmajiang.mcr@1.0.0", "clock_profile": "production_defaults", "transport": "wss",
-        "match_format": args.format, "requested_hands": args.hands, "external_bot_processes": 4}
+        "match_format": args.format, "requested_hands": args.hands, "external_bot_processes": 4,
+        "sdk_runtimes": {"python": 3, "typescript": 1}}
     start = time.monotonic()
     processes, credentials = [], []
     context = mp.get_context("spawn")

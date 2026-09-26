@@ -79,8 +79,15 @@ jobs:
         run: |
           python3 -m venv .venv-sdk
           .venv-sdk/bin/python -m pip install -r sdk/python/requirements.lock
+          .venv-sdk/bin/python -m pip install -r api/requirements-test.lock
           cd sdk/python
           ../../.venv-sdk/bin/python -m unittest discover -s tests -v
+      - name: Generated API and WebSocket contracts remain in sync
+        run: |
+          go run ./api/generate
+          python3 api/generate_protocol.py
+          git diff --exit-code -- api
+          .venv-sdk/bin/python api/check_contracts.py
       - name: Formatting, analysis and tests
         run: |
           test -z "$(gofmt -l $(git ls-files '*.go'))"
@@ -94,7 +101,9 @@ jobs:
       - name: MCR 10,000-hand deterministic soak
         env:
           MCR_SOAK_MATCHES: "625"
-        run: go test ./rules/mcr -run '^TestSoak$' -count=1 -timeout=10m
+        run: |
+          go test ./rules/mcr -list '^TestSoak$' | python3 -c 'import sys; assert "TestSoak" in sys.stdin.read().splitlines(), "required soak test is missing"'
+          go test ./rules/mcr -run '^TestSoak$' -count=1 -timeout=10m
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Build native runtime image without credentials
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
@@ -116,9 +125,9 @@ jobs:
           ./deploy/smoke.sh
           docker exec openmajiang-smoke openmajiang healthcheck
           test "$(docker inspect --format '{{.Config.User}}' openmajiang-smoke)" = '10001:10001'
-      - name: Install browser for full account and table E2E
+      - name: Install browsers for desktop and mobile account/table E2E
         working-directory: web
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
       - name: Browser account, match, spectator and reconnect E2E
         working-directory: web
         run: npm run test:e2e
@@ -172,6 +181,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: sdk/typescript/package-lock.json
+      - name: Build TypeScript SDK for real WSS workers
+        working-directory: sdk/typescript
+        run: npm ci && npm run build
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       - name: Build tested-source runtime image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
@@ -217,6 +234,7 @@ jobs:
       CGO_ENABLED: "1"
       TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
       OMJ_CAPACITY_SECONDS: "3600"
+      OMJ_CAPACITY_REPORT: ${{ github.workspace }}/test-results/capacity-report.json
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -229,7 +247,10 @@ jobs:
         run: |
           mkdir -p test-results
           set -o pipefail
+          go test ./internal/platform -list '^TestCapacityOneHour$' | python3 -c 'import sys; assert "TestCapacityOneHour" in sys.stdin.read().splitlines(), "required capacity test is missing"'
           go test ./internal/platform -run '^TestCapacityOneHour$' -count=1 -v -timeout=80m 2>&1 | tee test-results/capacity.log
+          test -s "$OMJ_CAPACITY_REPORT"
+          python3 -c 'import json, os; r=json.load(open(os.environ["OMJ_CAPACITY_REPORT"])); assert r.get("passed") is True and r.get("elapsed_seconds", 0) >= 3600, "full-hour capacity evidence is required"'
       - name: Capacity evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

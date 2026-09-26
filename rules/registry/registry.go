@@ -40,13 +40,17 @@ func (r *Registry) Register(rule rulesdk.Rule) error {
 	if !watch {
 		return fmt.Errorf("rule %s must implement discard-only spectator policy", m.ID)
 	}
+	compiled, err := bindArtifact(rule, m)
+	if err != nil {
+		return err
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	k := Key(m.ID, m.Version)
 	if _, ok := r.rules[k]; ok {
 		return fmt.Errorf("rule version already registered: %s", k)
 	}
-	r.rules[k] = rule
+	r.rules[k] = compiled
 	return nil
 }
 func (r *Registry) Get(id, version string) (rulesdk.Rule, bool) {

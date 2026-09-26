@@ -23,6 +23,7 @@ func (s *Service) RegisterRoutes(m *http.ServeMux) {
 	m.HandleFunc("POST /v1/rooms/{id}/start", s.mutation(s.startRoom))
 	m.HandleFunc("POST /v1/rooms/{id}/leave", s.mutation(s.leaveRoom))
 	m.HandleFunc("POST /v1/rooms/{id}/rematch", s.mutation(s.rematch))
+	m.HandleFunc("POST /v1/rooms/{id}/close", s.mutation(s.closeRoom))
 	m.HandleFunc("POST /v1/rooms/{id}/actions", s.mutation(s.actionHTTP))
 	m.HandleFunc("GET /v1/rooms/{id}/view", s.playerView)
 	m.HandleFunc("POST /v1/rooms/{id}/take-control", s.mutation(s.takeControl))
@@ -183,6 +184,12 @@ func (s *Service) create(ctx context.Context, u auth.User, c createRequest) (Roo
 	if e = s.requireAdmissionsTx(ctx, tx, c.RuleID, c.RuleVersion); e != nil {
 		return r, "", e
 	}
+	if e = lockQuota(ctx, tx); e != nil {
+		return r, "", e
+	}
+	if e = s.waitingQuota(ctx, tx, u.ID); e != nil {
+		return r, "", e
+	}
 	if e = lockEligible(ctx, tx, u.ID); e != nil {
 		return r, "", e
 	}
@@ -239,7 +246,7 @@ func (s *Service) practice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i := 1; i < v.Capacity; i++ {
-		if e = s.addBotToRoom(r.Context(), v.ID, u.ID, "", "random_legal"); e != nil {
+		if e = s.addBotToRoom(r.Context(), v.ID, u.ID, "", "basic_heuristic"); e != nil {
 			failure(w, e)
 			return
 		}
@@ -409,6 +416,19 @@ func (s *Service) leaveRoom(w http.ResponseWriter, r *http.Request) {
 	e = tx.QueryRow(r.Context(), `SELECT status FROM platform_rooms WHERE id=$1 FOR UPDATE`, r.PathValue("id")).Scan(&status)
 	if e != nil {
 		failure(w, e)
+		return
+	}
+	if status != "waiting" && status != "playing" {
+		write(w, 200, map[string]any{"ok": true, "leave_after_hand": false})
+		return
+	}
+	var member bool
+	if e = tx.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM platform_seats WHERE room_id=$1 AND user_id=$2 AND kind='human' AND active)`, r.PathValue("id"), u.ID).Scan(&member); e != nil {
+		failure(w, e)
+		return
+	}
+	if !member {
+		failure(w, api(403, "FORBIDDEN_SEAT"))
 		return
 	}
 	if status == "playing" {

@@ -51,6 +51,8 @@ go run ./cmd/bot-runner -local -hands 16 -strategy basic_heuristic
 | `rules/mcr` | 国标状态机、144 张牌、8 分门槛、16 手赛程 |
 | `rules/mcr/scoring` | 固定版本的 81 番算分与 WMO 适配 |
 | `internal/bots`、`cmd/bot-runner` | 仅使用本人观测的基线策略和自托管客户端 |
+| `sdk/typescript`、`sdk/python` | 两种语言的 WSS 客户端、快照屏障、重试与重连 |
+| `api`、`internal/apidocs` | OpenAPI、JSON Schema、共同协议样例与公开接入文档 |
 | `web` | React / TypeScript 界面和视角隔离 |
 | `deploy`、`.github/workflows` | Docker、备份恢复、验证与 Docker Hub 发布 |
 
@@ -58,5 +60,10 @@ go run ./cmd/bot-runner -local -hands 16 -strategy basic_heuristic
 - [规则插件开发](docs/rule-plugins.md)
 - [规则来源、上游许可证与线上裁决](rules/mcr/scoring/NOTICE.md)
 - [国标引擎与确定性说明](rules/mcr/README.md)
+- [Bot SDK 与接入](sdk/README.md)
+- [HTTP / WebSocket 接口](docs/http-api.md) 与 [机器可读契约](api/README.md)
+- [统计口径](docs/statistics.md) 与 [管理员及数据保留](docs/operations.md)
+
+服务启动后可直接读取 `/openapi.json`、`/schemas/ws-server.json`、`/schemas/ws-client.json`、`/schemas/spectator.json`、`/llms.txt` 和 `/llms-full.txt`。这些公开文档只包含协议与合成样例。
 
 GitHub Actions 的发布 job 绑定已有 Environment **`DOCKERHUB`**，使用 **`USER` / `TOKEN`**。PR 只验证、不推送镜像；通过验证的 main / 版本标签才触发发布。仓库许可证为 MIT；引入的算番代码保留其原始 MIT 声明。

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -33,6 +34,9 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 	m, e := loadMatch(ctx, tx, a.MatchID, true)
 	if e != nil {
 		return nil, e
+	}
+	if m.ArchivedAt != nil {
+		return nil, api(410, "MATCH_ARCHIVED")
 	}
 	var epoch int64
 	var current string
@@ -134,6 +138,7 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 	return response, nil
 }
 func (s *Service) Run(ctx context.Context) {
+	go s.archiveWorker(ctx)
 	ticker := time.NewTicker(25 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -146,7 +151,7 @@ func (s *Service) Run(ctx context.Context) {
 	}
 }
 func (s *Service) tick(ctx context.Context) {
-	_, _ = s.pool.Exec(ctx, `UPDATE platform_matches SET owner_until=now()+interval '5 seconds' WHERE status='active' AND owner_id=$1 AND owner_until<now()+interval '3 seconds'`, s.id)
+	_, _ = s.pool.Exec(ctx, `UPDATE platform_matches SET owner_until=now()+interval '5 seconds' WHERE status='active' AND owner_id=$1 AND owner_until>=now() AND owner_until<now()+interval '3 seconds'`, s.id)
 	rows, e := s.pool.Query(ctx, `SELECT id FROM platform_matches WHERE status='active' AND ((owner_id=$1 AND (next_run_at<=now() OR deadline_at<=now())) OR owner_until<now()) ORDER BY LEAST(next_run_at,deadline_at) LIMIT 200`, s.id)
 	if e != nil {
 		return
@@ -159,9 +164,29 @@ func (s *Service) tick(ctx context.Context) {
 		}
 	}
 	rows.Close()
+	// Different tables may progress together; each table remains fenced by its
+	// PostgreSQL row lock. A bounded worker set prevents one busy table from
+	// making unrelated deadlines wait for a full sequential scan.
+	jobs := make(chan string, len(ids))
 	for _, mid := range ids {
-		s.tickMatch(ctx, mid)
+		jobs <- mid
 	}
+	close(jobs)
+	workers := 8
+	if len(ids) < workers {
+		workers = len(ids)
+	}
+	var group sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		group.Add(1)
+		go func() {
+			defer group.Done()
+			for mid := range jobs {
+				s.tickMatch(ctx, mid)
+			}
+		}()
+	}
+	group.Wait()
 	s.matchQueues(ctx)
 }
 func (s *Service) tickMatch(ctx context.Context, mid string) {
@@ -177,9 +202,14 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 	initialSeq := m.Seq
 	originalDeadline := m.Deadline
 	recovered := false
-	if m.Owner != s.id {
-		var expired bool
-		if tx.QueryRow(ctx, `SELECT owner_until<now() FROM platform_matches WHERE id=$1`, mid).Scan(&expired) != nil || !expired {
+	var leaseExpired bool
+	if tx.QueryRow(ctx, `SELECT owner_until<now() FROM platform_matches WHERE id=$1`, mid).Scan(&leaseExpired) != nil {
+		return
+	}
+	// A process that lost its database lease must recover explicitly too; it
+	// cannot silently renew an expired lease and call server downtime a client timeout.
+	if m.Owner != s.id || leaseExpired {
+		if !leaseExpired {
 			return
 		}
 		if time.Since(m.Updated) > 60*time.Second {
@@ -236,6 +266,9 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 					}
 					if recovered {
 						continue
+					}
+					if e = s.recordBotErrorTx(ctx, tx, d.ParticipantID, m.ID, "timeout:"+d.ID, "DECISION_TIMEOUT"); e != nil {
+						return
 					}
 					column := "self_timeouts"
 					if flow.WindowKind == "reaction" {

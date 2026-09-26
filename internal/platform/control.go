@@ -41,3 +41,30 @@ func (s *Service) acquireControl(ctx context.Context, p Seat, session string, bo
 	}
 	return control, epoch, true, tx.Commit(ctx)
 }
+
+// readyCommand shares the same authority fence as moves. A late ready frame
+// from a displaced connection must not prepare a seat or trigger auto-start.
+func (s *Service) readyCommand(ctx context.Context, pid, rid, controller string, epoch int64) error {
+	tx, e := s.pool.Begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback(ctx)
+	var status string
+	e = tx.QueryRow(ctx, `SELECT status FROM platform_rooms WHERE id=$1 FOR UPDATE`, rid).Scan(&status)
+	if e != nil {
+		return api(404, "ROOM_NOT_FOUND")
+	}
+	var found string
+	e = tx.QueryRow(ctx, `SELECT participant_id FROM platform_seats WHERE participant_id=$1 AND room_id=$2 AND active AND controller=$3 AND control_epoch=$4 AND ((kind='human' AND EXISTS(SELECT 1 FROM auth_sessions a WHERE a.id=controller_session AND a.revoked_at IS NULL AND a.expires_at>now())) OR (kind='bot' AND EXISTS(SELECT 1 FROM platform_bot_sessions bs JOIN platform_bot_credentials bc ON bc.id=bs.credential_id WHERE bs.id=controller_session AND bs.revoked_at IS NULL AND bs.expires_at>now() AND bc.revoked_at IS NULL))) FOR UPDATE`, pid, rid, controller, epoch).Scan(&found)
+	if e != nil {
+		return api(409, "STALE_CONTROL")
+	}
+	if status == "waiting" {
+		_, e = tx.Exec(ctx, `UPDATE platform_seats SET ready=true WHERE participant_id=$1`, pid)
+		if e != nil {
+			return e
+		}
+	}
+	return tx.Commit(ctx)
+}
