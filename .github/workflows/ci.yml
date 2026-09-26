@@ -258,6 +258,18 @@ jobs:
           go test ./internal/platform -run '^TestCapacityOneHour$' -count=1 -v -timeout=80m 2>&1 | tee test-results/capacity.log
           test -s "$OMJ_CAPACITY_REPORT"
           python3 -c 'import json, os; r=json.load(open(os.environ["OMJ_CAPACITY_REPORT"])); assert r.get("passed") is True and r.get("elapsed_seconds", 0) >= 3600, "full-hour capacity evidence is required"'
+      - name: Capacity profile summaries
+        if: always()
+        run: |
+          if [ -s "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof" ]; then
+            go tool pprof -top -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+            go tool pprof -top -cum -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+            go tool pprof -tags "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+          fi
+          if [ -s "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof" ]; then
+            go tool pprof -top -inuse_space -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof"
+            go tool pprof -top -alloc_space -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof"
+          fi
       - name: Capacity evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

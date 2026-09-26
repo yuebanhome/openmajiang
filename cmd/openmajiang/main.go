@@ -16,9 +16,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yuebanhome/openmajiang/internal/apidocs"
 	"github.com/yuebanhome/openmajiang/internal/auth"
+	"github.com/yuebanhome/openmajiang/internal/database"
 	"github.com/yuebanhome/openmajiang/internal/platform"
 	"github.com/yuebanhome/openmajiang/rules/registry"
 	"github.com/yuebanhome/openmajiang/web"
@@ -79,7 +79,7 @@ func run() error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-	pool, e := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	pool, e := database.New(ctx, os.Getenv("DATABASE_URL"))
 	if e != nil {
 		return errors.New("invalid database configuration")
 	}

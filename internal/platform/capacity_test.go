@@ -851,8 +851,9 @@ func TestCapacityOneHour(t *testing.T) {
 		if path == "" {
 			path = "test-results/capacity-report.json"
 		}
+		b, _ := json.MarshalIndent(report, "", "  ")
+		t.Logf("capacity report JSON:\n%s", b)
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err == nil {
-			b, _ := json.MarshalIndent(report, "", "  ")
 			if err = os.WriteFile(path, b, 0644); err != nil {
 				t.Errorf("write capacity report: %v", err)
 			}

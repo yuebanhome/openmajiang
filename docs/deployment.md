@@ -6,6 +6,8 @@
 
 本机开发需要 Go 1.27.1、C/C++ 编译器、Node 24、npm；容器部署需要 Docker Engine 与 Compose v2。数据库使用 PostgreSQL 17。执行 `make build` 会先构建前端，再把前端嵌入两个 Go 二进制。前端生产请求与 API 同源。构建参数没有 SMTP、数据库、Bot 或 Docker Hub 凭据。
 
+数据库连接池通过共享的 `internal/database` 配置：每个应用进程默认最多 8 个连接，生产程序与真实 PostgreSQL 容量测试使用同一默认值。可在 `DATABASE_URL` 中明确指定 `pool_max_conns` 覆盖（URL 和 PostgreSQL keyword DSN 都支持）；部署多个进程时须按进程数乘上限预留 PostgreSQL 连接。此配置不改变每桌事务、8 桌并发上限或正式计时。
+
 ## 首次启动
 
 1. 复制 `deploy/.env.example` 为 `deploy/.env`。数据库密码建议使用 `openssl rand -hex 32`，避免数据库 URL 中的保留字符；`AUTH_MAIL_KEY` 和 `TOKEN_HASH_KEY` 分别使用一次 `openssl rand -base64 32`，必须是不同的密钥。不要提交 `.env`。

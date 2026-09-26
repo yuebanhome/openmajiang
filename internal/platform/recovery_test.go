@@ -19,6 +19,7 @@ import (
 	"github.com/coder/websocket"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yuebanhome/openmajiang/internal/auth"
+	"github.com/yuebanhome/openmajiang/internal/database"
 	"github.com/yuebanhome/openmajiang/internal/testplugins/threeplayer"
 	"github.com/yuebanhome/openmajiang/pkg/rulesdk"
 	"github.com/yuebanhome/openmajiang/rules/mcr"
@@ -31,7 +32,7 @@ func recoveryService(t *testing.T, rule rulesdk.Rule) *Service {
 		t.Skip("TEST_DATABASE_URL is required for real PostgreSQL platform concurrency/recovery tests")
 	}
 	ctx := context.Background()
-	admin, err := pgxpool.New(ctx, dsn)
+	admin, err := database.New(ctx, dsn)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +42,7 @@ func recoveryService(t *testing.T, rule rulesdk.Rule) *Service {
 		admin.Close()
 		t.Fatal(err)
 	}
-	cfg, err := pgxpool.ParseConfig(dsn)
+	cfg, err := database.ParseConfig(dsn)
 	if err != nil {
 		t.Fatal(err)
 	}
