@@ -1,0 +1,18 @@
+{
+  "snapshot": {
+    "type":"snapshot", "stream_id":"stream_fixture", "view_seq":1,
+    "match_id":"match_fixture", "hand_id":"hand_1", "participant_id":"participant_bot",
+    "seat_id":0, "seat_assignment_version":1, "control_epoch":7,
+    "status":"active", "view":{"own_hand":[{"tile_id":"tile_1","kind":"1m"}],"discards":[]}
+  },
+  "decision": {
+    "type":"decision_request", "protocol_version":"1.0", "stream_id":"stream_fixture", "view_seq":2,
+    "observation_ref":{"stream_id":"stream_fixture","view_seq":1},
+    "match_id":"match_fixture", "hand_id":"hand_1", "participant_id":"participant_bot",
+    "seat_id":0, "seat_assignment_version":1, "control_epoch":7,
+    "decision_id":"decision_1", "window_id":"window_1", "phase":"self",
+    "server_time":"2030-01-01T00:00:00Z", "deadline_at":"2030-01-01T00:00:02Z",
+    "legal_actions":[{"option_id":"discard_1","type":"discard","tile_id":"tile_1","kind":"1m"}],
+    "ruleset":{"id":"openmajiang.mcr","version":"1.0.0"}, "match_format":"practice_1"
+  }
+}

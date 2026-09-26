@@ -1,0 +1,7609 @@
+[
+  {
+    "source_line": 162,
+    "notation": "[345m3]258m1488s369p7s",
+    "input": {
+      "hand": [
+        "2m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "8s",
+        "8s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "7s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 163,
+    "notation": "[345m3]258m1477s369p7s",
+    "input": {
+      "hand": [
+        "2m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "7s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "7s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 164,
+    "notation": "[345m3]258m1478s369p8s",
+    "input": {
+      "hand": [
+        "2m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "8s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "8s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 176,
+    "notation": "4445677m777s777p7m",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "7m",
+        "7s",
+        "7s",
+        "7s",
+        "7p",
+        "7p",
+        "7p"
+      ],
+      "win_tile": "7m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 177,
+    "notation": "4456777m444s444p4m",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "7m",
+        "7m",
+        "4s",
+        "4s",
+        "4s",
+        "4p",
+        "4p",
+        "4p"
+      ],
+      "win_tile": "4m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 180,
+    "notation": "[678s3]147m5888s369p2s",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "5s",
+        "8s",
+        "8s",
+        "8s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 181,
+    "notation": "147m258s3666789p6p",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "2s",
+        "5s",
+        "8s",
+        "3p",
+        "6p",
+        "6p",
+        "6p",
+        "7p",
+        "8p",
+        "9p"
+      ],
+      "win_tile": "6p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 182,
+    "notation": "[666p]147m258s3779p6p",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "2s",
+        "5s",
+        "8s",
+        "3p",
+        "7p",
+        "7p",
+        "9p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "6p",
+            "6p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 183,
+    "notation": "[666m]3556m147s258p9m",
+    "input": {
+      "hand": [
+        "3m",
+        "5m",
+        "5m",
+        "6m",
+        "1s",
+        "4s",
+        "7s",
+        "2p",
+        "5p",
+        "8p"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "6m",
+            "6m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 184,
+    "notation": "3569m258s122247p5m",
+    "input": {
+      "hand": [
+        "3m",
+        "5m",
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "2p",
+        "2p",
+        "2p",
+        "4p",
+        "7p"
+      ],
+      "win_tile": "5m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 187,
+    "notation": "2222444466688m3m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "2m",
+        "2m",
+        "4m",
+        "4m",
+        "4m",
+        "4m",
+        "6m",
+        "6m",
+        "6m",
+        "8m",
+        "8m"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 206,
+    "notation": "1233369m147s258p3m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "6m",
+        "9m",
+        "1s",
+        "4s",
+        "7s",
+        "2p",
+        "5p",
+        "8p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 207,
+    "notation": "2333469m147s258p3m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "4m",
+        "6m",
+        "9m",
+        "1s",
+        "4s",
+        "7s",
+        "2p",
+        "5p",
+        "8p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 208,
+    "notation": "3369m147s258pEEE3m",
+    "input": {
+      "hand": [
+        "3m",
+        "3m",
+        "6m",
+        "9m",
+        "1s",
+        "4s",
+        "7s",
+        "2p",
+        "5p",
+        "8p",
+        "1z",
+        "1z",
+        "1z"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 209,
+    "notation": "1223358m147s369p3m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 210,
+    "notation": "2233458m147s369p3m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 211,
+    "notation": "2358m147s369pEEE3m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "3p",
+        "6p",
+        "9p",
+        "1z",
+        "1z",
+        "1z"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 214,
+    "notation": "12233445667pWW8p",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "6p",
+        "6p",
+        "7p",
+        "3z",
+        "3z"
+      ],
+      "win_tile": "8p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 215,
+    "notation": "[456s2][234s3]1223678s2s",
+    "input": {
+      "hand": [
+        "1s",
+        "2s",
+        "2s",
+        "3s",
+        "6s",
+        "7s",
+        "8s"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 216,
+    "notation": "[789s3]33m34566778s5s",
+    "input": {
+      "hand": [
+        "3m",
+        "3m",
+        "3s",
+        "4s",
+        "5s",
+        "6s",
+        "6s",
+        "7s",
+        "7s",
+        "8s"
+      ],
+      "win_tile": "5s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 217,
+    "notation": "[234p3]1134557789p6p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "3p",
+        "4p",
+        "5p",
+        "5p",
+        "7p",
+        "7p",
+        "8p",
+        "9p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 218,
+    "notation": "[345m2][456m]1123468m7m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "3m",
+        "4m",
+        "6m",
+        "8m"
+      ],
+      "win_tile": "7m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 219,
+    "notation": "[678p3][234p3]1145678p9p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 220,
+    "notation": "[567m]2333445667m8m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "5m",
+        "6m",
+        "6m",
+        "7m"
+      ],
+      "win_tile": "8m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "5m",
+            "6m",
+            "7m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 221,
+    "notation": "1123445567789p3p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "5p",
+        "6p",
+        "7p",
+        "7p",
+        "8p",
+        "9p"
+      ],
+      "win_tile": "3p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 222,
+    "notation": "[789p3][678p2][567p]1134p2p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "3p",
+        "4p"
+      ],
+      "win_tile": "2p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5p",
+            "6p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 223,
+    "notation": "12333445678sFF2s",
+    "input": {
+      "hand": [
+        "1s",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "4s",
+        "4s",
+        "5s",
+        "6s",
+        "7s",
+        "8s",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "2s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 224,
+    "notation": "[678p]34556778pNN9p",
+    "input": {
+      "hand": [
+        "3p",
+        "4p",
+        "5p",
+        "5p",
+        "6p",
+        "7p",
+        "7p",
+        "8p",
+        "4z",
+        "4z"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 227,
+    "notation": "44556m445566s55p6m",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "4s",
+        "4s",
+        "5s",
+        "5s",
+        "6s",
+        "6s",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "6m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 228,
+    "notation": "445566m5s445566p5s",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "5s",
+        "4p",
+        "4p",
+        "5p",
+        "5p",
+        "6p",
+        "6p"
+      ],
+      "win_tile": "5s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 229,
+    "notation": "[678p]55s222333444p",
+    "input": {
+      "hand": [
+        "5s",
+        "5s",
+        "2p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "3p",
+        "4p",
+        "4p"
+      ],
+      "win_tile": "4p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 230,
+    "notation": "[CCC]11123444789p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "4p",
+        "4p",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 231,
+    "notation": "[CCC]11123444456p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "4p",
+        "4p",
+        "4p",
+        "5p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 232,
+    "notation": "[CCC]12366678999p",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "3p",
+        "6p",
+        "6p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 233,
+    "notation": "[CCC]45666678999p",
+    "input": {
+      "hand": [
+        "4p",
+        "5p",
+        "6p",
+        "6p",
+        "6p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 234,
+    "notation": "PPP11123444p231m",
+    "input": {
+      "hand": [
+        "7z",
+        "7z",
+        "7z",
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "4p",
+        "4p",
+        "2m",
+        "3m"
+      ],
+      "win_tile": "1m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 235,
+    "notation": "PPP66678999p789m",
+    "input": {
+      "hand": [
+        "7z",
+        "7z",
+        "7z",
+        "6p",
+        "6p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p",
+        "9p",
+        "7m",
+        "8m"
+      ],
+      "win_tile": "9m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 239,
+    "notation": "1112345678999p9p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 242,
+    "notation": "123456m45679p66s8p",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "4m",
+        "5m",
+        "6m",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "9p",
+        "6s",
+        "6s"
+      ],
+      "win_tile": "8p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 246,
+    "notation": "[234s][234s][234s][234s]6s6s",
+    "input": {
+      "hand": [
+        "6s"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": true,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 248,
+    "notation": "1122233334444s2s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "3s",
+        "4s",
+        "4s",
+        "4s",
+        "4s"
+      ],
+      "win_tile": "2s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 251,
+    "notation": "33469m258s147pWW2m",
+    "input": {
+      "hand": [
+        "3m",
+        "3m",
+        "4m",
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "4p",
+        "7p",
+        "3z",
+        "3z"
+      ],
+      "win_tile": "2m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 254,
+    "notation": "234s2233445678p8p",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 255,
+    "notation": "[123m][789p]789s1299p3p",
+    "input": {
+      "hand": [
+        "7s",
+        "8s",
+        "9s",
+        "1p",
+        "2p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "3p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 258,
+    "notation": "112233456789mEE",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "8m",
+        "9m",
+        "1z"
+      ],
+      "win_tile": "1z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 259,
+    "notation": "123445566789sSS",
+    "input": {
+      "hand": [
+        "1s",
+        "2s",
+        "3s",
+        "4s",
+        "4s",
+        "5s",
+        "5s",
+        "6s",
+        "6s",
+        "7s",
+        "8s",
+        "9s",
+        "2z"
+      ],
+      "win_tile": "2z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 260,
+    "notation": "123456778899pWW",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "7p",
+        "8p",
+        "8p",
+        "9p",
+        "9p",
+        "3z"
+      ],
+      "win_tile": "3z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 263,
+    "notation": "[2222s][3333s][5555p1]67mEE8m",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "1z",
+        "1z"
+      ],
+      "win_tile": "8m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3s",
+            "3s",
+            "3s",
+            "3s"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "5p",
+            "5p",
+            "5p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 265,
+    "notation": "EESSWWNNCCFFPP",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "2z",
+        "2z",
+        "3z",
+        "3z",
+        "4z",
+        "4z",
+        "5z",
+        "5z",
+        "6z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "7z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 267,
+    "notation": "[EEE][WWW][NNN]11sSS1s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "2z",
+        "2z"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4z",
+            "4z",
+            "4z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 269,
+    "notation": "1122355778899m3m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "5m",
+        "5m",
+        "7m",
+        "7m",
+        "8m",
+        "8m",
+        "9m",
+        "9m"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 270,
+    "notation": "1123355778899s2s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "2s",
+        "3s",
+        "3s",
+        "5s",
+        "5s",
+        "7s",
+        "7s",
+        "8s",
+        "8s",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "2s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 271,
+    "notation": "1122335778899p5p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "5p",
+        "7p",
+        "7p",
+        "8p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "5p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 273,
+    "notation": "445566m2277779s8s",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "2s",
+        "2s",
+        "7s",
+        "7s",
+        "7s",
+        "7s",
+        "9s"
+      ],
+      "win_tile": "8s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 296,
+    "notation": "445566m445566s5p5p",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "4s",
+        "4s",
+        "5s",
+        "5s",
+        "6s",
+        "6s",
+        "5p"
+      ],
+      "win_tile": "5p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 298,
+    "notation": "[EEEE]22233344m44s4m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "4s",
+        "4s"
+      ],
+      "win_tile": "4m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 299,
+    "notation": "[1111p1]23477m23457p6p",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "7m",
+        "7m",
+        "2p",
+        "3p",
+        "4p",
+        "5p",
+        "7p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 301,
+    "notation": "[222p][123m]456s78pFF9p",
+    "input": {
+      "hand": [
+        "4s",
+        "5s",
+        "6s",
+        "7p",
+        "8p",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 302,
+    "notation": "[222p][123m]456s78pFF6p",
+    "input": {
+      "hand": [
+        "4s",
+        "5s",
+        "6s",
+        "7p",
+        "8p",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 304,
+    "notation": "1112345678999p9p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 305,
+    "notation": "1122335578899s7s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "5s",
+        "5s",
+        "7s",
+        "8s",
+        "8s",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "7s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 306,
+    "notation": "1112223335589s7s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "5s",
+        "5s",
+        "8s",
+        "9s"
+      ],
+      "win_tile": "7s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 307,
+    "notation": "12389m123789s55p7m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "8m",
+        "9m",
+        "1s",
+        "2s",
+        "3s",
+        "7s",
+        "8s",
+        "9s",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "7m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 308,
+    "notation": "78899m123789s55p7m",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "8m",
+        "9m",
+        "9m",
+        "1s",
+        "2s",
+        "3s",
+        "7s",
+        "8s",
+        "9s",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "7m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 310,
+    "notation": "24m22s223344567p3m",
+    "input": {
+      "hand": [
+        "2m",
+        "4m",
+        "2s",
+        "2s",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "6p",
+        "7p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 312,
+    "notation": "1223334m445566p3m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "4m",
+        "4p",
+        "4p",
+        "5p",
+        "5p",
+        "6p",
+        "6p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 313,
+    "notation": "1122344556677s3s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "3s",
+        "4s",
+        "4s",
+        "5s",
+        "5s",
+        "6s",
+        "6s",
+        "7s",
+        "7s"
+      ],
+      "win_tile": "3s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 315,
+    "notation": "1112223344455p3p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "2p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "4p",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "3p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 316,
+    "notation": "69m258s17pEWNCFP3m",
+    "input": {
+      "hand": [
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "7p",
+        "1z",
+        "3z",
+        "4z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 317,
+    "notation": "69m258s1pESWNCFP3m",
+    "input": {
+      "hand": [
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "1z",
+        "2z",
+        "3z",
+        "4z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 318,
+    "notation": "69m258s147pWNCFP3m",
+    "input": {
+      "hand": [
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "4p",
+        "7p",
+        "3z",
+        "4z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 319,
+    "notation": "2358m369s145677p3m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "5m",
+        "8m",
+        "3s",
+        "6s",
+        "9s",
+        "1p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "7p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 320,
+    "notation": "12789m123789s77p3m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "7m",
+        "8m",
+        "9m",
+        "1s",
+        "2s",
+        "3s",
+        "7s",
+        "8s",
+        "9s",
+        "7p",
+        "7p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 322,
+    "notation": "2223344555667m4m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "7m"
+      ],
+      "win_tile": "4m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 323,
+    "notation": "2223344555667m4m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "7m"
+      ],
+      "win_tile": "4m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 325,
+    "notation": "[EEEE][CCCC][FFFF][PPPP]NN",
+    "input": {
+      "hand": [
+        "4z"
+      ],
+      "win_tile": "4z",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "7z",
+            "7z",
+            "7z",
+            "7z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": true,
+      "wall_last": true
+    }
+  },
+  {
+    "source_line": 326,
+    "notation": "[1111p][2222p][3333p]111s1m1m",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "1m"
+      ],
+      "win_tile": "1m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 327,
+    "notation": "445566m5566p556s6s",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "5p",
+        "5p",
+        "6p",
+        "6p",
+        "5s",
+        "5s",
+        "6s"
+      ],
+      "win_tile": "6s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 328,
+    "notation": "1111222233334s4s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "3s",
+        "4s"
+      ],
+      "win_tile": "4s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 329,
+    "notation": "12378m123pCCPPP9m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "7m",
+        "8m",
+        "1p",
+        "2p",
+        "3p",
+        "5z",
+        "5z",
+        "7z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "9m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": true,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 334,
+    "notation": "[EEE][WWW]SSSNNCCN",
+    "input": {
+      "hand": [
+        "2z",
+        "2z",
+        "2z",
+        "4z",
+        "4z",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "4z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 335,
+    "notation": "[EEE][WWW]99mSSSNNN",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "2z",
+        "2z",
+        "2z",
+        "4z",
+        "4z"
+      ],
+      "win_tile": "4z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 336,
+    "notation": "[EEE][WWW]33sSSSNNN",
+    "input": {
+      "hand": [
+        "3s",
+        "3s",
+        "2z",
+        "2z",
+        "2z",
+        "4z",
+        "4z"
+      ],
+      "win_tile": "4z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 339,
+    "notation": "[CCC][PPP]11m99pFFF1m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "9p",
+        "9p",
+        "6z",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "1m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7z",
+            "7z",
+            "7z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 340,
+    "notation": "[CCC][PPP]EEWWFFFE",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "3z",
+        "3z",
+        "6z",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "1z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7z",
+            "7z",
+            "7z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 341,
+    "notation": "[CCC][PPP]5556sFFF4s",
+    "input": {
+      "hand": [
+        "5s",
+        "5s",
+        "5s",
+        "6s",
+        "6z",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "4s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7z",
+            "7z",
+            "7z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 344,
+    "notation": "[234s]23466888sFF6s",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "6s",
+        "6s",
+        "8s",
+        "8s",
+        "8s",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 345,
+    "notation": "[234s]22334666sFF4s",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "4s",
+        "6s",
+        "6s",
+        "6s",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "4s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 346,
+    "notation": "[222s][444s]3366688s3s",
+    "input": {
+      "hand": [
+        "3s",
+        "3s",
+        "6s",
+        "6s",
+        "6s",
+        "8s",
+        "8s"
+      ],
+      "win_tile": "3s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 347,
+    "notation": "223344668888sFF",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "4s",
+        "4s",
+        "6s",
+        "6s",
+        "8s",
+        "8s",
+        "8s",
+        "8s",
+        "6z"
+      ],
+      "win_tile": "6z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 350,
+    "notation": "1112345678999m9m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "1m",
+        "2m",
+        "3m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "8m",
+        "9m",
+        "9m",
+        "9m"
+      ],
+      "win_tile": "9m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 353,
+    "notation": "[2222s1][5555m2][7777p3][EEEE]CC",
+    "input": {
+      "hand": [
+        "5z"
+      ],
+      "win_tile": "5z",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "5m",
+            "5m",
+            "5m",
+            "5m"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "7p",
+            "7p",
+            "7p",
+            "7p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 354,
+    "notation": "[1111m1][2222s2][3333p3][1111s1]4m4m",
+    "input": {
+      "hand": [
+        "4m"
+      ],
+      "win_tile": "4m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 355,
+    "notation": "[7777p1][NNNN2][CCCC3][3333p1]5p5p",
+    "input": {
+      "hand": [
+        "5p"
+      ],
+      "win_tile": "5p",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "7p",
+            "7p",
+            "7p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "4z",
+            "4z",
+            "4z",
+            "4z"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 358,
+    "notation": "1122334455667m7m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "6m",
+        "7m"
+      ],
+      "win_tile": "7m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 359,
+    "notation": "2233445566778p8p",
+    "input": {
+      "hand": [
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "5p",
+        "6p",
+        "6p",
+        "7p",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 362,
+    "notation": "19m19s19pESWNCFPN",
+    "input": {
+      "hand": [
+        "1m",
+        "9m",
+        "1s",
+        "9s",
+        "1p",
+        "9p",
+        "1z",
+        "2z",
+        "3z",
+        "4z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "4z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 365,
+    "notation": "[111m][111s][999m]99s1p1p9s",
+    "input": {
+      "hand": [
+        "9s",
+        "9s",
+        "1p",
+        "1p"
+      ],
+      "win_tile": "9s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9m",
+            "9m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 368,
+    "notation": "[EEE][WWW][NNN]23sSS1s",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "2z",
+        "2z"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4z",
+            "4z",
+            "4z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 369,
+    "notation": "[WWW][SSS][NNN]EEPPP",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "7z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4z",
+            "4z",
+            "4z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 372,
+    "notation": "[CCC][FFF]11199pPP9p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "1p",
+        "9p",
+        "9p",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 373,
+    "notation": "[CCC][FFF]23s111pPP1s",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "1p",
+        "1p",
+        "1p",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 374,
+    "notation": "[CCC][FFF]EEENNPPN",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "1z",
+        "4z",
+        "4z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "4z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 377,
+    "notation": "[CCC][PPP]EEESSNNS",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "1z",
+        "2z",
+        "2z",
+        "4z",
+        "4z"
+      ],
+      "win_tile": "2z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7z",
+            "7z",
+            "7z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 380,
+    "notation": "3444m222s222333p3m",
+    "input": {
+      "hand": [
+        "3m",
+        "4m",
+        "4m",
+        "4m",
+        "2s",
+        "2s",
+        "2s",
+        "2p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "3p"
+      ],
+      "win_tile": "3m",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 383,
+    "notation": "1223355778899s1s",
+    "input": {
+      "hand": [
+        "1s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "5s",
+        "5s",
+        "7s",
+        "7s",
+        "8s",
+        "8s",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "1s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 386,
+    "notation": "[123m][123m]1122334m4m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "4m"
+      ],
+      "win_tile": "4m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 389,
+    "notation": "[111p][222p][333p]22s44p4p",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "4p",
+        "4p"
+      ],
+      "win_tile": "4p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 392,
+    "notation": "[123m][234m][345m]1145m6m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "4m",
+        "5m"
+      ],
+      "win_tile": "6m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 393,
+    "notation": "[123s][345s][567s]78s55p9s",
+    "input": {
+      "hand": [
+        "7s",
+        "8s",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "9s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3s",
+            "4s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5s",
+            "6s",
+            "7s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 396,
+    "notation": "[2222m1][3333m2][4444m3]2233s2s",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "3s",
+        "3s"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3m",
+            "3m",
+            "3m",
+            "3m"
+          ],
+          "from_seat": 2,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "4m",
+            "4m",
+            "4m",
+            "4m"
+          ],
+          "from_seat": 3,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 399,
+    "notation": "[EEE][111m][999s]99pCC9p",
+    "input": {
+      "hand": [
+        "9p",
+        "9p",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9s",
+            "9s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 402,
+    "notation": "33m22s77pEENCCPPN",
+    "input": {
+      "hand": [
+        "3m",
+        "3m",
+        "2s",
+        "2s",
+        "7p",
+        "7p",
+        "1z",
+        "1z",
+        "4z",
+        "5z",
+        "5z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "4z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 403,
+    "notation": "33336688m22557s7s",
+    "input": {
+      "hand": [
+        "3m",
+        "3m",
+        "3m",
+        "3m",
+        "6m",
+        "6m",
+        "8m",
+        "8m",
+        "2s",
+        "2s",
+        "5s",
+        "5s",
+        "7s"
+      ],
+      "win_tile": "7s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 404,
+    "notation": "EESSWWNNCCFFPP",
+    "input": {
+      "hand": [
+        "1z",
+        "1z",
+        "2z",
+        "2z",
+        "3z",
+        "3z",
+        "4z",
+        "4z",
+        "5z",
+        "5z",
+        "6z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "7z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 405,
+    "notation": "1199m1199s11999p9p",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "9m",
+        "9m",
+        "1s",
+        "1s",
+        "9s",
+        "9s",
+        "1p",
+        "1p",
+        "9p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 408,
+    "notation": "17m36s25pESWNCFP9s",
+    "input": {
+      "hand": [
+        "1m",
+        "7m",
+        "3s",
+        "6s",
+        "2p",
+        "5p",
+        "1z",
+        "2z",
+        "3z",
+        "4z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "9s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 411,
+    "notation": "[222m][444s][666p]4488p8p",
+    "input": {
+      "hand": [
+        "4p",
+        "4p",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6p",
+            "6p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 412,
+    "notation": "[222m][222s][222p]44m44s4m",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "4s",
+        "4s"
+      ],
+      "win_tile": "4m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 413,
+    "notation": "[666m][666s][666p]88m22s8m",
+    "input": {
+      "hand": [
+        "8m",
+        "8m",
+        "2s",
+        "2s"
+      ],
+      "win_tile": "8m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "6m",
+            "6m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6s",
+            "6s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6p",
+            "6p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 416,
+    "notation": "[111m]2223334449m9m",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "2m",
+        "3m",
+        "3m",
+        "3m",
+        "4m",
+        "4m",
+        "4m",
+        "9m"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 417,
+    "notation": "[123s]1112223334s4s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "2s",
+        "2s",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "4s"
+      ],
+      "win_tile": "4s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 418,
+    "notation": "[789p]1234567899p9p",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 421,
+    "notation": "[456m][456m][456m]4556p5p",
+    "input": {
+      "hand": [
+        "4p",
+        "5p",
+        "5p",
+        "6p"
+      ],
+      "win_tile": "5p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 424,
+    "notation": "[222s][333s][444s]2233p3p",
+    "input": {
+      "hand": [
+        "2p",
+        "2p",
+        "3p",
+        "3p"
+      ],
+      "win_tile": "3p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3s",
+            "3s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 427,
+    "notation": "[789m][789s][789p]7899p9p",
+    "input": {
+      "hand": [
+        "7p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 428,
+    "notation": "[777s][888m][777p]99m88s9m",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "8s",
+        "8s"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "7s",
+            "7s",
+            "7s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8m",
+            "8m",
+            "8m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7p",
+            "7p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 429,
+    "notation": "[789m][789s][888s]88m88p8p",
+    "input": {
+      "hand": [
+        "8m",
+        "8m",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 432,
+    "notation": "[456s][444s][555s]66s66p6s",
+    "input": {
+      "hand": [
+        "6s",
+        "6s",
+        "6p",
+        "6p"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 435,
+    "notation": "[123p][123m][123s]2333s1s",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "3s",
+        "3s"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 438,
+    "notation": "[123m][456m][789m]2377m1m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "7m",
+        "7m"
+      ],
+      "win_tile": "1m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 439,
+    "notation": "[123s][456s][789s]6688p6p",
+    "input": {
+      "hand": [
+        "6p",
+        "6p",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 442,
+    "notation": "[123p][789p]12378m55s9m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "7m",
+        "8m",
+        "5s",
+        "5s"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 445,
+    "notation": "[123p][234p][345p]2234s2s",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "3s",
+        "4s"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 446,
+    "notation": "[123s][345s][567s]2345s2s",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "5s"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3s",
+            "4s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5s",
+            "6s",
+            "7s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 447,
+    "notation": "[123m]345567m77s88p8p",
+    "input": {
+      "hand": [
+        "3m",
+        "4m",
+        "5m",
+        "5m",
+        "6m",
+        "7m",
+        "7s",
+        "7s",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 450,
+    "notation": "[456p][456s][456m]4555m6m",
+    "input": {
+      "hand": [
+        "4m",
+        "5m",
+        "5m",
+        "5m"
+      ],
+      "win_tile": "6m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 451,
+    "notation": "[345m][456m][555p]55m55s5s",
+    "input": {
+      "hand": [
+        "5m",
+        "5m",
+        "5s",
+        "5s"
+      ],
+      "win_tile": "5s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5p",
+            "5p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 454,
+    "notation": "[333p][333m]44m23333s4s",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "2s",
+        "3s",
+        "3s",
+        "3s",
+        "3s"
+      ],
+      "win_tile": "4s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3m",
+            "3m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 455,
+    "notation": "[111m][111p][111s]99s99p9p",
+    "input": {
+      "hand": [
+        "9s",
+        "9s",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 458,
+    "notation": "999m11s99pEEECCC1s",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "9m",
+        "1s",
+        "1s",
+        "9p",
+        "9p",
+        "1z",
+        "1z",
+        "1z",
+        "5z",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "1s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 459,
+    "notation": "[123s]4445777888s5s",
+    "input": {
+      "hand": [
+        "4s",
+        "4s",
+        "4s",
+        "5s",
+        "7s",
+        "7s",
+        "7s",
+        "8s",
+        "8s",
+        "8s"
+      ],
+      "win_tile": "5s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 462,
+    "notation": "258m147s36pESWFPC",
+    "input": {
+      "hand": [
+        "2m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "7s",
+        "3p",
+        "6p",
+        "1z",
+        "2z",
+        "3z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "5z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 463,
+    "notation": "147m39s258pEWCFPN",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "3s",
+        "9s",
+        "2p",
+        "5p",
+        "8p",
+        "1z",
+        "3z",
+        "5z",
+        "6z",
+        "7z"
+      ],
+      "win_tile": "4z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 464,
+    "notation": "147m258s369pSWNCF",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "2s",
+        "5s",
+        "8s",
+        "3p",
+        "6p",
+        "9p",
+        "2z",
+        "3z",
+        "4z",
+        "5z"
+      ],
+      "win_tile": "6z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 467,
+    "notation": "23358m14447s369p4s",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "3m",
+        "5m",
+        "8m",
+        "1s",
+        "4s",
+        "4s",
+        "4s",
+        "7s",
+        "3p",
+        "6p",
+        "9p"
+      ],
+      "win_tile": "4s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 468,
+    "notation": "147m3669s122358p6s",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "3s",
+        "6s",
+        "6s",
+        "9s",
+        "1p",
+        "2p",
+        "2p",
+        "3p",
+        "5p",
+        "8p"
+      ],
+      "win_tile": "6s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 469,
+    "notation": "369m258s147pEEPPE",
+    "input": {
+      "hand": [
+        "3m",
+        "6m",
+        "9m",
+        "2s",
+        "5s",
+        "8s",
+        "1p",
+        "4p",
+        "7p",
+        "1z",
+        "1z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "1z",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 472,
+    "notation": "[789s][678p][777p]78m99s9m",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "7p",
+            "7p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 473,
+    "notation": "[789m][789s][789p]77s78p9p",
+    "input": {
+      "hand": [
+        "7s",
+        "7s",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 474,
+    "notation": "[666s][666p][666m]7788p7p",
+    "input": {
+      "hand": [
+        "7p",
+        "7p",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "7p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "6s",
+            "6s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6p",
+            "6p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6m",
+            "6m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 477,
+    "notation": "[123s][123m][123p]2333m1m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "3m",
+        "3m"
+      ],
+      "win_tile": "1m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 478,
+    "notation": "[111s][222s]22m33344s4s",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "3s",
+        "3s",
+        "3s",
+        "4s",
+        "4s"
+      ],
+      "win_tile": "4s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 481,
+    "notation": "[EEE][SSS][WWW]99m99s9m",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 482,
+    "notation": "[SSS][WWW][NNN]2345m5m",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "5m"
+      ],
+      "win_tile": "5m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4z",
+            "4z",
+            "4z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 483,
+    "notation": "[SSS][WWW]NNNCCFFC",
+    "input": {
+      "hand": [
+        "4z",
+        "4z",
+        "4z",
+        "5z",
+        "5z",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "5z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 486,
+    "notation": "[123s][456p]789m23s88p1s",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "2s",
+        "3s",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 487,
+    "notation": "[123m][456s][789p]77m45p6p",
+    "input": {
+      "hand": [
+        "7m",
+        "7m",
+        "4p",
+        "5p"
+      ],
+      "win_tile": "6p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 490,
+    "notation": "[123p][234p][345p]8899p8p",
+    "input": {
+      "hand": [
+        "8p",
+        "8p",
+        "9p",
+        "9p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 491,
+    "notation": "[234p][234p][234p]1123p4p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "2p",
+        "3p"
+      ],
+      "win_tile": "4p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 492,
+    "notation": "[345p][345p][456s]4555s6s",
+    "input": {
+      "hand": [
+        "4s",
+        "5s",
+        "5s",
+        "5s"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 493,
+    "notation": "[234p][456s][888p]88sPP8s",
+    "input": {
+      "hand": [
+        "8s",
+        "8s",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "8s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8p",
+            "8p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 494,
+    "notation": "[111p][222p][333p]4455p4p",
+    "input": {
+      "hand": [
+        "4p",
+        "4p",
+        "5p",
+        "5p"
+      ],
+      "win_tile": "4p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 495,
+    "notation": "[222s][456s]4555888s6s",
+    "input": {
+      "hand": [
+        "4s",
+        "5s",
+        "5s",
+        "5s",
+        "8s",
+        "8s",
+        "8s"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 496,
+    "notation": "[888p][999p][999s]88sPPP",
+    "input": {
+      "hand": [
+        "8s",
+        "8s",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "7z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "8p",
+            "8p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9p",
+            "9p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9s",
+            "9s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 497,
+    "notation": "1122334455889p9p",
+    "input": {
+      "hand": [
+        "1p",
+        "1p",
+        "2p",
+        "2p",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5p",
+        "5p",
+        "8p",
+        "8p",
+        "9p"
+      ],
+      "win_tile": "9p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 500,
+    "notation": "[345s][345p][345m]4456m4m",
+    "input": {
+      "hand": [
+        "4m",
+        "4m",
+        "5m",
+        "6m"
+      ],
+      "win_tile": "4m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3s",
+            "4s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 501,
+    "notation": "[678m][678s][678p]99s67p8p",
+    "input": {
+      "hand": [
+        "9s",
+        "9s",
+        "6p",
+        "7p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6m",
+            "7m",
+            "8m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 504,
+    "notation": "[222p][333s][444m]22m33p3p",
+    "input": {
+      "hand": [
+        "2m",
+        "2m",
+        "3p",
+        "3p"
+      ],
+      "win_tile": "3p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3s",
+            "3s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4m",
+            "4m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 505,
+    "notation": "[777m][888s][999p]99m78p9p",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "7m",
+            "7m",
+            "7m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9p",
+            "9p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 508,
+    "notation": "[123p][444s][789m]34pCC2p",
+    "input": {
+      "hand": [
+        "3p",
+        "4p",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "2p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 516,
+    "notation": "[1111s][EEEE1][SSS][789m]8m8m",
+    "input": {
+      "hand": [
+        "8m"
+      ],
+      "win_tile": "8m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 519,
+    "notation": "[888m][888p]888sEEPPP",
+    "input": {
+      "hand": [
+        "8s",
+        "8s",
+        "8s",
+        "1z",
+        "1z",
+        "7z",
+        "7z"
+      ],
+      "win_tile": "7z",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "8m",
+            "8m",
+            "8m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8p",
+            "8p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 522,
+    "notation": "[123m][234m]34578mCC9m",
+    "input": {
+      "hand": [
+        "3m",
+        "4m",
+        "5m",
+        "7m",
+        "8m",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 525,
+    "notation": "[123s][234m][345p]55m45s6s",
+    "input": {
+      "hand": [
+        "5m",
+        "5m",
+        "4s",
+        "5s"
+      ],
+      "win_tile": "6s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 528,
+    "notation": "[123m][456p]789sNNFFF",
+    "input": {
+      "hand": [
+        "7s",
+        "8s",
+        "9s",
+        "4z",
+        "4z",
+        "6z",
+        "6z"
+      ],
+      "win_tile": "6z",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 531,
+    "notation": "[2222m1][456p][678p][888s]6m6m",
+    "input": {
+      "hand": [
+        "6m"
+      ],
+      "win_tile": "6m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6p",
+            "7p",
+            "8p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 534,
+    "notation": "[CCC][FFF]12378m88s9m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "7m",
+        "8m",
+        "8s",
+        "8s"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 537,
+    "notation": "[123m][123m][111p]11s11m1s",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1m",
+        "1m"
+      ],
+      "win_tile": "1s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 538,
+    "notation": "[789p][789m]7788999s9s",
+    "input": {
+      "hand": [
+        "7s",
+        "7s",
+        "8s",
+        "8s",
+        "9s",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "9s",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 539,
+    "notation": "[123m][123m][789m]78mCC9m",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "5z",
+        "5z"
+      ],
+      "win_tile": "9m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 540,
+    "notation": "[123m][123p]999m78pEE9p",
+    "input": {
+      "hand": [
+        "9m",
+        "9m",
+        "9m",
+        "7p",
+        "8p",
+        "1z",
+        "1z"
+      ],
+      "win_tile": "9p",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 543,
+    "notation": "234m4468s345678p7s",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "4s",
+        "4s",
+        "6s",
+        "8s",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p",
+        "8p"
+      ],
+      "win_tile": "7s",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 546,
+    "notation": "[4444p1][4444m1][CCC]1133m1m",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "3m",
+        "3m"
+      ],
+      "win_tile": "1m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "4p",
+            "4p",
+            "4p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "4m",
+            "4m",
+            "4m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 553,
+    "notation": "234567m66s34567p8p",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "6s",
+        "6s",
+        "3p",
+        "4p",
+        "5p",
+        "6p",
+        "7p"
+      ],
+      "win_tile": "8p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 556,
+    "notation": "234m456789s3477p5p",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "4s",
+        "5s",
+        "6s",
+        "7s",
+        "8s",
+        "9s",
+        "3p",
+        "4p",
+        "7p",
+        "7p"
+      ],
+      "win_tile": "5p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 559,
+    "notation": "[789p][789s][789m]77m33p7m",
+    "input": {
+      "hand": [
+        "7m",
+        "7m",
+        "3p",
+        "3p"
+      ],
+      "win_tile": "7m",
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 562,
+    "notation": "[222m][555m][555s]4488p8p",
+    "input": {
+      "hand": [
+        "4p",
+        "4p",
+        "8p",
+        "8p"
+      ],
+      "win_tile": "8p",
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5m",
+            "5m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 565,
+    "notation": "[9999p]1255789m999s3m",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "5m",
+        "5m",
+        "7m",
+        "8m",
+        "9m",
+        "9s",
+        "9s",
+        "9s"
+      ],
+      "win_tile": "3m",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "9p",
+            "9p",
+            "9p",
+            "9p"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 569,
+    "notation": "234m456777s3444p5p",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "4s",
+        "5s",
+        "6s",
+        "7s",
+        "7s",
+        "7s",
+        "3p",
+        "4p",
+        "4p",
+        "4p"
+      ],
+      "win_tile": "5p",
+      "melds": [],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": false,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  },
+  {
+    "source_line": 583,
+    "notation": "[1111p1][456s]2789s456p2s",
+    "input": {
+      "hand": [
+        "2s",
+        "7s",
+        "8s",
+        "9s",
+        "4p",
+        "5p",
+        "6p"
+      ],
+      "win_tile": "2s",
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1p",
+            "1p",
+            "1p",
+            "1p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "fourth_tile": false,
+      "kong_related": false,
+      "wall_last": false
+    }
+  }
+]

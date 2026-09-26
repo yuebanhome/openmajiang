@@ -1,0 +1,186 @@
+name: Verify and publish
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Test and container (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+      mailpit:
+        image: axllent/mailpit:v1.29
+        ports: ["1025:1025", "8025:8025"]
+    env:
+      CGO_ENABLED: "1"
+      DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      AUTH_MAIL_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      TOKEN_HASH_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
+      PUBLIC_BASE_URL: http://127.0.0.1:8080
+      MAILPIT_HTTP_URL: http://127.0.0.1:8025
+      COOKIE_SECURE: "false"
+      SMTP_ADDR: 127.0.0.1:1025
+      SMTP_FROM: test@localhost
+      SMTP_STARTTLS: "false"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.1"
+          cache: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Frontend checks
+        working-directory: web
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+      - name: Formatting, analysis and tests
+        run: |
+          test -z "$(gofmt -l $(git ls-files '*.go'))"
+          go vet ./...
+          go test -race -count=1 ./...
+          python3 -m unittest discover -s deploy -p 'test_*.py'
+      - name: Database migrations are repeatable
+        run: |
+          go run ./cmd/openmajiang migrate
+          go run ./cmd/openmajiang migrate
+      - name: MCR 10,000-hand deterministic soak
+        env:
+          MCR_SOAK_MATCHES: "625"
+        run: go test ./rules/mcr -run '^TestSoak$' -count=1 -timeout=10m
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build native runtime image without credentials
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          push: false
+          platforms: linux/${{ matrix.arch }}
+          tags: openmajiang:verify
+          cache-from: type=gha,scope=verify-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=verify-${{ matrix.arch }}
+      - name: Container migration and HTTP smoke
+        run: |
+          docker run --rm --network host -e DATABASE_URL openmajiang:verify migrate
+          docker run -d --name openmajiang-smoke --network host \
+            -e DATABASE_URL -e AUTH_MAIL_KEY -e TOKEN_HASH_KEY -e PUBLIC_BASE_URL -e COOKIE_SECURE \
+            -e SMTP_ADDR -e SMTP_FROM -e SMTP_STARTTLS openmajiang:verify
+          ./deploy/smoke.sh
+          docker exec openmajiang-smoke openmajiang healthcheck
+          test "$(docker inspect --format '{{.Config.User}}' openmajiang-smoke)" = '10001:10001'
+      - name: Install browser for full account and table E2E
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: Browser account, match, spectator and reconnect E2E
+        working-directory: web
+        run: npm run test:e2e
+      - name: Browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-failure-${{ matrix.arch }}
+          path: |
+            web/playwright-report
+            web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Container logs
+        if: always()
+        run: docker logs openmajiang-smoke 2>&1 || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f openmajiang-smoke 2>/dev/null || true
+
+  publish:
+    name: Publish Docker Hub image
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    environment: DOCKERHUB
+    concurrency:
+      group: dockerhub-publish
+      cancel-in-progress: false
+    env:
+      DOCKERHUB_USER: ${{ secrets.USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.TOKEN }}
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate main/tag and compute image metadata
+        id: metadata
+        run: python3 deploy/release.py metadata
+      - name: Reject an existing immutable version tag
+        env:
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+        run: python3 deploy/release.py absent
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.TOKEN }}
+      - name: Build and push tested architectures
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.metadata.outputs.version }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=release
+          cache-to: type=gha,mode=max,scope=release
+      - name: Record deployment digest
+        env:
+          IMAGE: ${{ steps.metadata.outputs.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          printf 'Published `%s@%s`\n' "$IMAGE" "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          printf 'This workflow does not update latest or deploy a server.\n' >> "$GITHUB_STEP_SUMMARY"

@@ -7,3 +7,10 @@ coverage.out
 test-results/
 playwright-report/
 data/
+backups/
+__pycache__/
+*.pyc
+sdk/typescript/dist/
+*.egg-info/
+.venv/
+*.tsbuildinfo

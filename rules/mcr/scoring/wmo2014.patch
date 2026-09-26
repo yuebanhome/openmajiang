@@ -1,0 +1,102 @@
+--- a/fan_calculator.cpp
++++ b/fan_calculator.cpp
+@@ -746,7 +746,8 @@
+ #if SUPPORT_CONCEALED_KONG_AND_MELDED_KONG
+             fan_table[CONCEALED_KONG_AND_MELDED_KONG] = 1;
+ #else
+-            fan_table[MELDED_KONG] = 1;
++            // OpenMajiang WMO2014 fan 57: one melded + one concealed = 6.
++            fan_table[TWO_MELDED_KONGS] = 1;
+             fan_table[CONCEALED_KONG] = 1;
+ #endif
+             switch (concealed_pung_cnt) {  // 暗刻的个数
+@@ -809,6 +810,18 @@
+     default:
+         UNREACHABLE();
+         break;
++    }
++    // OpenMajiang om-mcr-1 adjudication: WMO2014 fans 5/17 explicitly
++    // permit concealed-kong additions. Count the highest concealed-kong
++    // award once, independently of the highest concealed-pung award.
++    // This named interpretation is documented for independent rule review.
++    if (kong_cnt >= 3) {
++        if (concealed_kong_cnt == 1) {
++            fan_table[CONCEALED_KONG] = 1;
++        } else if (concealed_kong_cnt >= 2) {
++            fan_table[TWO_CONCEALED_KONGS] = 1;
++            fan_table[TWO_CONCEALED_PUNGS] = 0;
++        }
+     }
+ }
+ 
+@@ -1419,9 +1432,8 @@
+         fan_table[ONE_VOIDED_SUIT] = 0;
+ #endif
+     }
+-    // 绿一色不计混一色、缺一门
++    // OpenMajiang WMO2014 fan 3 permits Half Flush.
+     if (fan_table[ALL_GREEN]) {
+-        fan_table[HALF_FLUSH] = 0;
+         fan_table[ONE_VOIDED_SUIT] = 0;
+     }
+     // 四杠不计单钓将
+@@ -1435,7 +1447,7 @@
+         fan_table[OUTSIDE_HAND] = 0;
+         fan_table[PUNG_OF_TERMINALS_OR_HONORS] = 0;
+         fan_table[NO_HONORS] = 0;
+-        fan_table[DOUBLE_PUNG] = 0;  // 通行计法不计双同刻
++        // OpenMajiang WMO2014 fan 8 examples explicitly permit Double Pung.
+ #ifdef STRICT_98_RULE
+         fan_table[TRIPLE_PUNG] = 0;
+ #endif
+@@ -1464,14 +1476,10 @@
+         fan_table[PUNG_OF_TERMINALS_OR_HONORS] = 0;
+         fan_table[ONE_VOIDED_SUIT] = 0;
+     }
+-    // 四暗刻不计碰碰和、门前清，把不求人修正为自摸
++    // OpenMajiang WMO2014 fan 12 permits Fully Concealed Hand on self draw.
+     if (fan_table[FOUR_CONCEALED_PUNGS]) {
+         fan_table[ALL_PUNGS] = 0;
+         fan_table[CONCEALED_HAND] = 0;
+-        if (fan_table[FULLY_CONCEALED_HAND]) {
+-            fan_table[FULLY_CONCEALED_HAND] = 0;
+-            fan_table[SELF_DRAWN] = 1;
+-        }
+     }
+     // 一色双龙会不计七对、清一色、平和、一般高、老少副、缺一门、无字
+     if (fan_table[PURE_TERMINAL_CHOWS]) {
+@@ -2138,6 +2146,12 @@
+ 
+ static void adjust_by_win_flag_4_special_form(wind_t seat_wind, win_flag_t win_flag, fan_table_t &fan_table) {
+     adjust_by_win_flag(win_flag, fan_table);
++    // OpenMajiang WMO2014 fans 4,6,7,19,20,34 expressly permit
++    // Fully Concealed Hand, including when last-tile modifiers apply.
++    if (win_flag & WIN_FLAG_SELF_DRAWN) {
++        fan_table[FULLY_CONCEALED_HAND] = 1;
++        fan_table[SELF_DRAWN] = 0;
++    }
+ #if SUPPORT_BLESSINGS
+     // 天和、地和、人和
+     if (win_flag & WIN_FLAG_INITIAL) {
+--- a/fan_calculator.h
++++ b/fan_calculator.h
+@@ -25,8 +25,8 @@
+ 
+ #include "tile.h"
+ 
+-#define SUPPORT_CONCEALED_KONG_AND_MELDED_KONG      1  // 支持明暗杠
+-#define KNITTED_STRAIGHT_BODY_WITH_ECS              1  // 组合龙龙身的边嵌钓
++#define SUPPORT_CONCEALED_KONG_AND_MELDED_KONG      0  // 支持明暗杠
++#define KNITTED_STRAIGHT_BODY_WITH_ECS              0  // 组合龙龙身的边嵌钓
+ #define DISTINGUISH_PURE_SHIFTED_CHOWS              0  // 区分一色三（四）步的宽窄
+ #define NINE_GATES_WHEN_BLESSING_OF_HEAVEN          1  // 天和支持九莲宝灯
+ #define SUPPORT_BLESSINGS                           0  // 支持天和、地和、人和
+@@ -374,7 +374,7 @@
+     16, 16, 16, 16, 16, 16,
+     12, 12, 12, 12, 12,
+     8, 8, 8, 8, 8, 8, 8, 8, 8,
+-    6, 6, 6, 6, 6, 6, 6,
++    6, 6, 6, 6, 6, 8, 6,  // OpenMajiang WMO2014: two concealed kongs = 8.
+     4, 4, 4, 4,
+     2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

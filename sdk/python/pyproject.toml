@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openmajiang-bot-sdk"
+version = "0.1.0"
+description = "Self-hosted OpenMajiang Bot protocol client"
+requires-python = ">=3.11"
+dependencies = ["websockets==15.0.1"]
+
+[tool.setuptools.packages.find]
+include = ["openmajiang*"]
