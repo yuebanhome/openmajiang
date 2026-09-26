@@ -93,6 +93,16 @@ func TestPGWaitingSnapshotRetainsCurrentControlEpoch(t *testing.T) {
 	if _, leaked := public["control_epoch"]; leaked {
 		t.Fatal("public waiting room leaked controller metadata")
 	}
+	if _, e = s.pool.Exec(ctx, `UPDATE platform_seats SET active=false WHERE participant_id=$1`, pid); e != nil {
+		t.Fatal(e)
+	}
+	departed, e := s.snapshotUncached(r, room.ID, pid)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, ok := departed["participant_id"]; ok {
+		t.Fatal("departed waiting-room participant was assigned a seat")
+	}
 }
 
 type controlTestMailer struct{}

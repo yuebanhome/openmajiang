@@ -48,11 +48,11 @@ func loadRoom(ctx context.Context, q queryer, rid string) (Room, error) {
 func loadMatch(ctx context.Context, q queryer, mid string, lock bool) (match, error) {
 	var m match
 	var choices []byte
-	sql := `SELECT id,room_id,ruleset_id,ruleset_version,match_format,state,seq,status,window_id,deadline_at,choices,owner_id,owner_epoch,updated_at,interrupted,artifact_hash,archived_at FROM platform_matches WHERE id=$1`
+	sql := `SELECT id,room_id,ruleset_id,ruleset_version,match_format,state,seq,status,window_id,deadline_at,choices,owner_id,owner_epoch,updated_at,interrupted,artifact_hash,archived_at,owner_until<now() FROM platform_matches WHERE id=$1`
 	if lock {
 		sql += " FOR UPDATE"
 	}
-	e := q.QueryRow(ctx, sql, mid).Scan(&m.ID, &m.RoomID, &m.RulesetID, &m.RulesetVersion, &m.Format, &m.State, &m.Seq, &m.Status, &m.WindowID, &m.Deadline, &choices, &m.Owner, &m.OwnerEpoch, &m.Updated, &m.Interrupted, &m.Artifact, &m.ArchivedAt)
+	e := q.QueryRow(ctx, sql, mid).Scan(&m.ID, &m.RoomID, &m.RulesetID, &m.RulesetVersion, &m.Format, &m.State, &m.Seq, &m.Status, &m.WindowID, &m.Deadline, &choices, &m.Owner, &m.OwnerEpoch, &m.Updated, &m.Interrupted, &m.Artifact, &m.ArchivedAt, &m.LeaseExpired)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return m, api(404, "MATCH_NOT_FOUND")
 	}
@@ -66,9 +66,12 @@ func (s *Service) persistViews(ctx context.Context, tx pgx.Tx, m match, rule rul
 	if e != nil {
 		return e
 	}
-	if e = s.persistStatistics(ctx, tx, m, f); e != nil {
-		return e
-	}
+	return s.persistFlowViews(ctx, tx, m, rule, events, input, f)
+}
+
+// The caller has already inspected this immutable state. Reusing that Flow
+// avoids reevaluating every legal win while the table's row lock is held.
+func (s *Service) persistFlowViews(ctx context.Context, tx pgx.Tx, m match, rule rulesdk.Rule, events []rulesdk.Event, input rulesdk.Input, f rulesdk.Flow) error {
 	public, e := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.SpectatorDiscardOnly})
 	if e != nil {
 		return e
@@ -77,22 +80,22 @@ func (s *Service) persistViews(ctx context.Context, tx pgx.Tx, m match, rule rul
 	if e != nil {
 		return e
 	}
-	_, e = tx.Exec(ctx, `INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,'',$4)`, m.ID, m.Seq, f.HandIndex, public)
-	if e != nil {
+	// Validate all projections before sending the batch. The public and private
+	// rows remain separate; a failed projection aborts the entire transaction.
+	batch := &pgx.Batch{}
+	batch.Queue(`INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,'',$4)`, m.ID, m.Seq, f.HandIndex, public)
+	for _, a := range f.Assignments {
+		v, err := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.ParticipantPrivate, ParticipantID: a.ParticipantID})
+		if err != nil {
+			return err
+		}
+		batch.Queue(`INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, f.HandIndex, a.ParticipantID, v)
+	}
+	batch.Queue(`INSERT INTO platform_events(match_id,seq,events,input,owner_epoch) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, jsonBytes(events), jsonBytes(input), m.OwnerEpoch)
+	if e = tx.SendBatch(ctx, batch).Close(); e != nil {
 		return e
 	}
-	for _, a := range f.Assignments {
-		v, e := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.ParticipantPrivate, ParticipantID: a.ParticipantID})
-		if e != nil {
-			return e
-		}
-		_, e = tx.Exec(ctx, `INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, f.HandIndex, a.ParticipantID, v)
-		if e != nil {
-			return e
-		}
-	}
-	_, e = tx.Exec(ctx, `INSERT INTO platform_events(match_id,seq,events,input,owner_epoch) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, jsonBytes(events), jsonBytes(input), m.OwnerEpoch)
-	return e
+	return s.persistStatistics(ctx, tx, m, f)
 }
 func (s *Service) deadline(ctx context.Context, tx pgx.Tx, m match, flow rulesdk.Flow) time.Time {
 	duration := 15 * time.Second
@@ -120,6 +123,10 @@ func (s *Service) advance(ctx context.Context, tx pgx.Tx, m *match, rule rulesdk
 	if e != nil {
 		return e
 	}
+	return s.advanceFromFlow(ctx, tx, m, rule, input, old)
+}
+
+func (s *Service) advanceFromFlow(ctx context.Context, tx pgx.Tx, m *match, rule rulesdk.Rule, input rulesdk.Input, old rulesdk.Flow) error {
 	transition, e := rule.Apply(m.State, input)
 	if e != nil {
 		return e
@@ -150,7 +157,7 @@ func (s *Service) advance(ctx context.Context, tx pgx.Tx, m *match, rule rulesdk
 	if res.RowsAffected() != 1 {
 		return api(409, "OWNERSHIP_LOST")
 	}
-	if e = s.persistViews(ctx, tx, *m, rule, transition.Events, input); e != nil {
+	if e = s.persistFlowViews(ctx, tx, *m, rule, transition.Events, input, f); e != nil {
 		return e
 	}
 	if m.Status != "active" {
@@ -245,7 +252,7 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 	if e = s.freezeStatistics(ctx, tx, m); e != nil {
 		return "", e
 	}
-	if e = s.persistViews(ctx, tx, m, rule, nil, rulesdk.Input{Type: "init"}); e != nil {
+	if e = s.persistFlowViews(ctx, tx, m, rule, nil, rulesdk.Input{Type: "init"}, flow); e != nil {
 		return "", e
 	}
 	_, e = tx.Exec(ctx, `UPDATE platform_rooms SET status='playing',match_id=$2 WHERE id=$1`, r.ID, m.ID)

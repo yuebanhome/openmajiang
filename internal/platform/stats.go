@@ -109,10 +109,9 @@ func (s *Service) freezeStatistics(ctx context.Context, tx pgx.Tx, m match) erro
 }
 
 func (s *Service) persistStatistics(ctx context.Context, tx pgx.Tx, m match, f rulesdk.Flow) error {
+	batch := &pgx.Batch{}
 	for _, d := range f.Decisions {
-		if _, err := tx.Exec(ctx, `INSERT INTO platform_stat_decisions(match_id,participant_id,decision_id) SELECT match_id,participant_id,$3 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, d.ParticipantID, d.ID); err != nil {
-			return err
-		}
+		batch.Queue(`INSERT INTO platform_stat_decisions(match_id,participant_id,decision_id) SELECT match_id,participant_id,$3 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, d.ParticipantID, d.ID)
 	}
 	if f.HandEnded && f.HandResult != nil {
 		h := f.HandResult
@@ -125,9 +124,7 @@ func (s *Service) persistStatistics(ctx context.Context, tx pgx.Tx, m match, f r
 		}
 		for _, score := range h.Scores {
 			w, won := winners[score.ParticipantID]
-			if _, err := tx.Exec(ctx, `INSERT INTO platform_stat_hands(match_id,participant_id,hand_index,net_points,won,self_draw,discard_loss,nonflower_points) SELECT match_id,participant_id,$3,$4,$5,$6,$7,$8 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, score.ParticipantID, h.HandIndex, score.Delta, won, won && w.SelfDraw, score.ParticipantID == h.DiscarderID, w.NonFlowerPoints); err != nil {
-				return err
-			}
+			batch.Queue(`INSERT INTO platform_stat_hands(match_id,participant_id,hand_index,net_points,won,self_draw,discard_loss,nonflower_points) SELECT match_id,participant_id,$3,$4,$5,$6,$7,$8 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, score.ParticipantID, h.HandIndex, score.Delta, won, won && w.SelfDraw, score.ParticipantID == h.DiscarderID, w.NonFlowerPoints)
 		}
 	}
 	if f.MatchEnded {
@@ -139,17 +136,34 @@ func (s *Service) persistStatistics(ctx context.Context, tx pgx.Tx, m match, f r
 				}
 				numerator, denominator = &rank.StandardPoints.Numerator, &rank.StandardPoints.Denominator
 			}
-			if _, err := tx.Exec(ctx, `INSERT INTO platform_stat_rankings(match_id,participant_id,rank,raw_score,standard_n,standard_d) SELECT match_id,participant_id,$3,$4,$5,$6 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, rank.ParticipantID, rank.Rank, rank.RawScore, numerator, denominator); err != nil {
-				return err
-			}
+			batch.Queue(`INSERT INTO platform_stat_rankings(match_id,participant_id,rank,raw_score,standard_n,standard_d) SELECT match_id,participant_id,$3,$4,$5,$6 FROM platform_stat_participants WHERE match_id=$1 AND participant_id=$2 ON CONFLICT DO NOTHING`, m.ID, rank.ParticipantID, rank.Rank, rank.RawScore, numerator, denominator)
 		}
 	}
-	return nil
+	if batch.Len() == 0 {
+		return nil
+	}
+	// Pipeline this transition's facts over one connection round trip. Close
+	// consumes every result and returns the first error; the caller then rolls
+	// back the same transition transaction. Conflict handling remains identical.
+	return tx.SendBatch(ctx, batch).Close()
 }
 
 func (s *Service) recordDecision(ctx context.Context, tx pgx.Tx, m match, decisionID, pid, outcome string, at time.Time) error {
 	_, err := tx.Exec(ctx, `UPDATE platform_stat_decisions SET resolved_at=$4,outcome=$5,latency_ms=GREATEST(0,EXTRACT(EPOCH FROM ($4::timestamptz-opened_at))*1000) WHERE match_id=$1 AND participant_id=$2 AND decision_id=$3 AND resolved_at IS NULL`, m.ID, pid, decisionID, at, outcome)
 	return err
+}
+
+// recordDecisions records a jointly resolved response window without one
+// network round trip per seat. The first accepted resolution still wins.
+func (s *Service) recordDecisions(ctx context.Context, tx pgx.Tx, m match, decisions []rulesdk.Decision, outcome string, at time.Time) error {
+	if len(decisions) == 0 {
+		return nil
+	}
+	batch := &pgx.Batch{}
+	for _, decision := range decisions {
+		batch.Queue(`UPDATE platform_stat_decisions SET resolved_at=$4,outcome=$5,latency_ms=GREATEST(0,EXTRACT(EPOCH FROM ($4::timestamptz-opened_at))*1000) WHERE match_id=$1 AND participant_id=$2 AND decision_id=$3 AND resolved_at IS NULL`, m.ID, decision.ParticipantID, decision.ID, at, outcome)
+	}
+	return tx.SendBatch(ctx, batch).Close()
 }
 
 // Called only after authorization, window and legal-option checks established a

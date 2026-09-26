@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
 	"sort"
 	"strconv"
 	"strings"
@@ -88,6 +89,7 @@ type capacityMetrics struct {
 	frames, reconnects               int64
 	peakHeap, peakRSS                uint64
 	peakGoroutines, peakSockets      int
+	peakPoolAcquired                 int32
 	samples, belowPopulation         int
 }
 
@@ -153,6 +155,44 @@ func capacityPercentile(values []int64, p float64) float64 {
 	return float64(values[i]) / float64(time.Millisecond)
 }
 
+// Distribution includes every recorded latency; no warm requests or slow
+// samples inside the measurement interval are discarded.
+func capacityDistribution(values []int64) map[string]any {
+	result := map[string]any{"samples": len(values)}
+	if len(values) == 0 {
+		return result
+	}
+	sort.Slice(values, func(i, j int) bool { return values[i] < values[j] })
+	for name, p := range map[string]float64{"p50_ms": .5, "p90_ms": .9, "p95_ms": .95, "p99_ms": .99} {
+		result[name] = float64(values[int(float64(len(values)-1)*p)]) / float64(time.Millisecond)
+	}
+	result["min_ms"] = float64(values[0]) / float64(time.Millisecond)
+	result["max_ms"] = float64(values[len(values)-1]) / float64(time.Millisecond)
+	bounds := []int64{10, 25, 50, 100, 250, 500, 1000}
+	names := []string{"less_than_10_ms", "10_to_25_ms", "25_to_50_ms", "50_to_100_ms", "100_to_250_ms", "250_to_500_ms", "500_to_1000_ms", "at_least_1000_ms"}
+	buckets := map[string]int{}
+	for _, name := range names {
+		buckets[name] = 0
+	}
+	over100 := 0
+	for _, value := range values {
+		bucket := len(bounds)
+		for i, bound := range bounds {
+			if value < bound*int64(time.Millisecond) {
+				bucket = i
+				break
+			}
+		}
+		buckets[names[bucket]]++
+		if value >= 100*int64(time.Millisecond) {
+			over100++
+		}
+	}
+	result["at_least_100_ms"] = over100
+	result["histogram"] = buckets
+	return result
+}
+
 type capacityReport struct {
 	Passed                                    bool           `json:"passed"`
 	StartedAt                                 time.Time      `json:"started_at"`
@@ -175,9 +215,12 @@ type capacityReport struct {
 	SpectatorFrames                           int64 `json:"spectator_frames"`
 	SlowConsumers, SlowConsumersReleased      int
 	HotspotLimitRejected, IPLimitRejected     bool
-	CPUSeconds                                float64        `json:"process_cpu_seconds_including_generator"`
-	CommandErrors                             map[string]int `json:"command_errors"`
-	Errors                                    []string       `json:"errors"`
+	CPUSeconds                                float64           `json:"process_cpu_seconds_including_generator"`
+	Pool                                      map[string]any    `json:"postgres_pool"`
+	LatencyDistributions                      map[string]any    `json:"latency_distributions"`
+	Profiles                                  map[string]string `json:"profiles,omitempty"`
+	CommandErrors                             map[string]int    `json:"command_errors"`
+	Errors                                    []string          `json:"errors"`
 }
 
 func capacityNewUser(t *testing.T, s *Service, name string) capacityUser {
@@ -413,6 +456,9 @@ func (c *capacityConnection) finish(ctx context.Context, human bool, m *capacity
 	c.done <- err
 }
 func capacitySpectator(ctx context.Context, target *capacityTarget, client *http.Client, base string, m *capacityMetrics) {
+	ctx = pprof.WithLabels(ctx, pprof.Labels("capacity_component", "spectator_generator"))
+	pprof.SetGoroutineLabels(ctx)
+	defer pprof.SetGoroutineLabels(context.Background())
 	var retiring *capacityConnection
 	defer func() { retiring.close() }()
 	for ctx.Err() == nil {
@@ -490,6 +536,9 @@ func capacitySpectator(ctx context.Context, target *capacityTarget, client *http
 	}
 }
 func capacityPlayer(ctx context.Context, target *capacityTarget, user capacityUser, client *http.Client, base string, m *capacityMetrics) {
+	ctx = pprof.WithLabels(ctx, pprof.Labels("capacity_component", "player_generator"))
+	pprof.SetGoroutineLabels(ctx)
+	defer pprof.SetGoroutineLabels(context.Background())
 	var retiring *capacityConnection
 	defer func() { retiring.close() }()
 	for ctx.Err() == nil {
@@ -729,8 +778,39 @@ func TestCapacityOneHour(t *testing.T) {
 	var clients []*http.Client
 	cpuStart := capacityCPU()
 	var measuredStart time.Time
+	poolBaseline := s.pool.Stat()
+	var cpuProfile *os.File
+	profilePrefix := os.Getenv("OMJ_CAPACITY_PROFILE_PREFIX")
 	defer func() {
 		metrics.measure.Store(false)
+		// Stop while the load is still present, so heap samples describe the
+		// measured workload rather than an already dismantled test server.
+		if cpuProfile != nil {
+			pprof.StopCPUProfile()
+			if err := cpuProfile.Close(); err != nil {
+				t.Errorf("close CPU profile: %v", err)
+			}
+			heap, err := os.Create(profilePrefix + "-heap.pprof")
+			if err == nil {
+				err = pprof.WriteHeapProfile(heap)
+				closeErr := heap.Close()
+				if err == nil {
+					err = closeErr
+				}
+			}
+			if err != nil {
+				t.Errorf("write heap profile: %v", err)
+			}
+		}
+		poolFinal := s.pool.Stat()
+		report.Pool = map[string]any{
+			"max_connections": poolFinal.MaxConns(), "total_connections": poolFinal.TotalConns(),
+			"acquisitions":               poolFinal.AcquireCount() - poolBaseline.AcquireCount(),
+			"acquire_seconds":            (poolFinal.AcquireDuration() - poolBaseline.AcquireDuration()).Seconds(),
+			"empty_acquisitions":         poolFinal.EmptyAcquireCount() - poolBaseline.EmptyAcquireCount(),
+			"empty_acquire_wait_seconds": (poolFinal.EmptyAcquireWaitTime() - poolBaseline.EmptyAcquireWaitTime()).Seconds(),
+			"cancelled_acquisitions":     poolFinal.CanceledAcquireCount() - poolBaseline.CanceledAcquireCount(),
+		}
 		cancel()
 		for _, c := range slowSockets {
 			c.CloseNow()
@@ -754,6 +834,8 @@ func TestCapacityOneHour(t *testing.T) {
 		report.ACKP95MS = capacityPercentile(metrics.acks, .95)
 		report.TimerSamples = len(metrics.lags)
 		report.TimerP99MS = capacityPercentile(metrics.lags, .99)
+		report.LatencyDistributions = map[string]any{"ack": capacityDistribution(metrics.acks), "adjudication_lag": capacityDistribution(metrics.lags)}
+		report.Pool["peak_acquired_connections"] = metrics.peakPoolAcquired
 		report.Errors = append(report.Errors, metrics.errors...)
 		report.CommandErrors = metrics.commandErrors
 		report.PeakHeapBytes = metrics.peakHeap
@@ -922,7 +1004,24 @@ func TestCapacityOneHour(t *testing.T) {
 	case <-ctx.Done():
 		t.Fatal("warmup interrupted")
 	}
+	if profilePrefix != "" {
+		if err := os.MkdirAll(filepath.Dir(profilePrefix), 0755); err != nil {
+			t.Fatal(err)
+		}
+		cpuProfile, err = os.Create(profilePrefix + "-cpu.pprof")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = pprof.StartCPUProfile(cpuProfile); err != nil {
+			_ = cpuProfile.Close()
+			cpuProfile = nil
+			t.Fatal(err)
+		}
+		report.Profiles = map[string]string{"cpu": profilePrefix + "-cpu.pprof", "heap": profilePrefix + "-heap.pprof", "scope": "server and load generator; profile labels distinguish generator player/spectator loops"}
+	}
 	measuredStart = time.Now()
+	poolBaseline = s.pool.Stat()
+	lastProgress := measuredStart
 	cpuStart = capacityCPU()
 	report.StartedAt = measuredStart.UTC()
 	metrics.minimumHumans.Store(metrics.humans.Load())
@@ -974,6 +1073,7 @@ func TestCapacityOneHour(t *testing.T) {
 				t.Fatal("slow consumers were not released by bounded server writes within five minutes")
 			}
 		case <-sample.C:
+			poolStats := s.pool.Stat()
 			var mem runtime.MemStats
 			runtime.ReadMemStats(&mem)
 			var usage syscall.Rusage
@@ -983,6 +1083,13 @@ func TestCapacityOneHour(t *testing.T) {
 			s.mu.Unlock()
 			metrics.mu.Lock()
 			metrics.samples++
+			if poolStats.AcquiredConns() > metrics.peakPoolAcquired {
+				metrics.peakPoolAcquired = poolStats.AcquiredConns()
+			}
+			if time.Since(lastProgress) >= time.Minute {
+				lastProgress = time.Now()
+				t.Logf("capacity progress elapsed=%.1fs humans=%d spectators=%d ACKsamples=%d timersamples=%d pool=%d/%d empty_wait=%.3fs acquisitions=%d cpu=%.3fs", time.Since(measuredStart).Seconds(), metrics.humans.Load(), metrics.spectators.Load(), len(metrics.acks), len(metrics.lags), poolStats.AcquiredConns(), poolStats.MaxConns(), (poolStats.EmptyAcquireWaitTime() - poolBaseline.EmptyAcquireWaitTime()).Seconds(), poolStats.AcquireCount()-poolBaseline.AcquireCount(), capacityCPU()-cpuStart)
+			}
 			if metrics.humans.Load() < 80 || metrics.spectators.Load() < 1000 {
 				metrics.belowPopulation++
 			}

@@ -1,48 +1,20 @@
-// Package bots implements baseline opponents using only a participant projection
-// and the server's legal options. It never receives an authoritative snapshot.
+// This frozen pre-optimization implementation is intentionally retained only
+// in tests. It independently verifies every original option ranking when
+// candidate evaluation is reused by kind; do not mechanically update it with
+// cache changes. It uses the same unchanged fanPotential/scoring contracts.
 package bots
 
 import (
 	"encoding/json"
 	"errors"
-	"math/rand/v2"
-	"sort"
-
 	"github.com/yuebanhome/openmajiang/pkg/rulesdk"
 	"github.com/yuebanhome/openmajiang/rules/mcr/scoring"
+	"math/rand/v2"
+	"sort"
+	"testing"
 )
 
-type tile struct {
-	ID   string `json:"tile_id"`
-	Kind string `json:"kind"`
-}
-type meld struct {
-	Type      string `json:"type"`
-	Tiles     []tile `json:"tiles"`
-	Concealed bool   `json:"concealed"`
-}
-type seat struct {
-	ID      int    `json:"seat_id"`
-	Wind    int    `json:"seat_wind"`
-	Melds   []meld `json:"melds"`
-	Flowers []tile `json:"flowers"`
-}
-type observation struct {
-	Policy    string `json:"view_policy"`
-	Hand      []tile `json:"hand"`
-	Seats     []seat `json:"seats"`
-	Seat      int    `json:"seat_id"`
-	RoundWind int    `json:"round_wind"`
-	Discards  []struct {
-		Tile    tile `json:"tile"`
-		Claimed bool `json:"claimed"`
-	} `json:"discards"`
-}
-
-// Choose is deliberately a modest baseline, not a claim of expert play.
-// random_legal is useful for protocol stress. basic_heuristic compares shanten,
-// legal >=8-fan winning draws, visible remaining improvements, and fan potential.
-func Choose(strategy string, view json.RawMessage, options []rulesdk.Option) (string, error) {
+func referenceChooseBeforeReuse(strategy string, view json.RawMessage, options []rulesdk.Option) (string, error) {
 	if len(options) == 0 {
 		return "", errors.New("no legal options")
 	}
@@ -111,31 +83,20 @@ func Choose(strategy string, view json.RawMessage, options []rulesdk.Option) (st
 		distance, winning, outs, potential int
 	}
 	choices := []candidate{}
-	// Physical copies of the same kind leave the same multiset after discard.
-	// Reuse only the hand evaluation; each legal option keeps its own ID for
-	// the existing stable tie break and server-side action identity.
-	byKind := make(map[string]candidate, len(options))
 	for _, o := range options {
 		if o.Type != "discard" {
 			continue
 		}
 		hand := []string{}
 		found := false
-		discardKind := ""
 		for _, t := range v.Hand {
 			if t.ID == o.TileID {
 				found = true
-				discardKind = t.Kind
 				continue
 			}
 			hand = append(hand, t.Kind)
 		}
 		if !found {
-			continue
-		}
-		if cached, ok := byKind[discardKind]; ok {
-			cached.id = o.ID
-			choices = append(choices, cached)
 			continue
 		}
 		d, improve, e := scoring.Shanten(hand, len(packs))
@@ -156,7 +117,6 @@ func Choose(strategy string, view json.RawMessage, options []rulesdk.Option) (st
 				}
 			}
 		}
-		byKind[discardKind] = c
 		choices = append(choices, c)
 	}
 	if len(choices) == 0 {
@@ -181,52 +141,31 @@ func Choose(strategy string, view json.RawMessage, options []rulesdk.Option) (st
 	return choices[0].id, nil
 }
 
-// This tie breaker is only an estimate. Win eligibility always comes from the
-// official evaluator above and the authoritative legal action list.
-func fanPotential(hand []string, packs []scoring.Meld) int {
-	suits := map[byte]int{}
-	counts := map[string]int{}
-	honors := 0
-	for _, k := range hand {
-		if len(k) != 2 {
-			continue
-		}
-		counts[k]++
-		if k[1] == 'z' {
-			honors++
-		} else {
-			suits[k[1]]++
-		}
-	}
-	for _, p := range packs {
-		for _, k := range p.Tiles {
-			if len(k) == 2 {
-				if k[1] == 'z' {
-					honors++
-				} else {
-					suits[k[1]]++
+func TestBasicHeuristicReusePreservesEveryOptionRanking(t *testing.T) {
+	for _, c := range heuristicCorpus(t) {
+		options := append([]rulesdk.Option(nil), c.Options...)
+		// Repeatedly remove the winner to compare the full original ranking,
+		// including each physical duplicate tile and its original option ID.
+		for len(options) > 0 {
+			want, err := referenceChooseBeforeReuse("basic_heuristic", c.View, options)
+			if err != nil {
+				t.Fatal(c.Name, err)
+			}
+			got, err := Choose("basic_heuristic", c.View, options)
+			if err != nil || got != want {
+				t.Fatalf("%s remaining=%d got=%q want=%q err=%v", c.Name, len(options), got, want, err)
+			}
+			found := false
+			for i, o := range options {
+				if o.ID == want {
+					options = append(options[:i], options[i+1:]...)
+					found = true
+					break
 				}
+			}
+			if !found {
+				t.Fatal("reference chose invalid option", c.Name, want)
 			}
 		}
 	}
-	p := 0
-	if len(suits) == 1 {
-		p += 6
-		if honors == 0 {
-			p += 6
-		}
-	}
-	pairs := 0
-	for _, n := range counts {
-		if n >= 2 {
-			pairs++
-		}
-		if n >= 3 {
-			p += 2
-		}
-	}
-	if len(packs) == 0 {
-		p += pairs
-	}
-	return p
 }

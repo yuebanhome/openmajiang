@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -196,6 +197,8 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 	var lastSeq int64 = -1
 	var lastEpoch int64 = -1
 	var lastRoom string
+	var lastPublicDigest [sha256.Size]byte
+	var havePublic bool
 	timer := time.NewTicker(150 * time.Millisecond)
 	defer timer.Stop()
 	defer func() {
@@ -222,7 +225,27 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		if valid != nil && !valid() {
 			return false
 		}
-		v, e := s.snapshot(r, rid, pid)
+		var v map[string]any
+		var e error
+		if pid == "" {
+			var entry publicCacheEntry
+			entry, e = s.cachedPublicEntry(r, rid)
+			if e == nil {
+				// Thousands of viewers may poll an unchanged table. Comparing an
+				// immutable public digest avoids decoding the same complete JSON
+				// for every viewer on every tick. Changed frames still get their
+				// own object before any recipient-specific fields are attached.
+				if !force && havePublic && entry.digest == lastPublicDigest {
+					return true
+				}
+				v, e = decodePublicSnapshot(entry.body)
+				if e == nil {
+					lastPublicDigest, havePublic = entry.digest, true
+				}
+			}
+		} else {
+			v, e = s.snapshot(r, rid, pid)
+		}
 		if e != nil {
 			return send(map[string]any{"type": "error", "error": map[string]string{"code": "SNAPSHOT_UNAVAILABLE"}})
 		}
@@ -230,9 +253,12 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		epoch := wireInt64(v["control_epoch"])
 		matchID, _ := v["match_id"].(string)
 		hand, _ := v["hand_id"].(string)
-		roomHash := string(jsonBytes(v["room"]))
+		var roomHash string
+		if pid != "" {
+			roomHash = string(jsonBytes(v["room"]))
+		}
 		status, _ := v["status"].(string)
-		if !force && seq == lastSeq && epoch == lastEpoch && matchID == previousMatch && hand == previousHand && roomHash == lastRoom && status == previousStatus {
+		if pid != "" && !force && seq == lastSeq && epoch == lastEpoch && matchID == previousMatch && hand == previousHand && roomHash == lastRoom && status == previousStatus {
 			return true
 		}
 		if epoch != lastEpoch && lastEpoch >= 0 && pid != "" && !readonly {

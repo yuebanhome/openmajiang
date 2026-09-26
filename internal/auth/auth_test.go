@@ -113,7 +113,7 @@ func (m *captureMailer) lastToken(t *testing.T) string {
 	return match[1]
 }
 
-func integrationService(t *testing.T) (*Service, *http.ServeMux, *captureMailer) {
+func integrationService(t *testing.T, tracers ...pgx.QueryTracer) (*Service, *http.ServeMux, *captureMailer) {
 	t.Helper()
 	dsn := os.Getenv("TEST_DATABASE_URL")
 	if dsn == "" {
@@ -134,6 +134,9 @@ func integrationService(t *testing.T) (*Service, *http.ServeMux, *captureMailer)
 		t.Fatal(err)
 	}
 	cfg.ConnConfig.RuntimeParams["search_path"] = schema
+	if len(tracers) > 0 {
+		cfg.ConnConfig.Tracer = tracers[0]
+	}
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)

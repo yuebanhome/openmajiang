@@ -78,6 +78,7 @@ type Seat struct {
 	Leave         bool   `json:"leave_after_hand"`
 }
 type match struct {
+	LeaseExpired                                                                     bool
 	ArchivedAt                                                                       *time.Time
 	ID, RoomID, RulesetID, RulesetVersion, Format, Status, WindowID, Owner, Artifact string
 	State                                                                            json.RawMessage

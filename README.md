@@ -66,4 +66,4 @@ go run ./cmd/bot-runner -local -hands 16 -strategy basic_heuristic
 
 服务启动后可直接读取 `/openapi.json`、`/schemas/ws-server.json`、`/schemas/ws-client.json`、`/schemas/spectator.json`、`/llms.txt` 和 `/llms-full.txt`。这些公开文档只包含协议与合成样例。
 
-GitHub Actions 的发布 job 绑定已有 Environment **`DOCKERHUB`**，使用 **`USER` / `TOKEN`**。PR 只验证、不推送镜像；通过验证的 main / 版本标签才触发发布。仓库许可证为 MIT；引入的算番代码保留其原始 MIT 声明。
+GitHub Actions 的发布 job 绑定已有 Environment **`DOCKERHUB`**，使用 **`USER` / `TOKEN`**。PR 只验证、不推送镜像；通过验证的 main / 版本标签才触发发布。仓库许可证为 Apache License 2.0；引入的算番代码保留其原始 MIT 声明。

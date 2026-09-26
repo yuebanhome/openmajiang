@@ -176,11 +176,17 @@ func (s *Service) getSession(r *http.Request) (session, error) {
 	if err != nil || len(cookie.Value) != 43 {
 		return v, ErrUnauthenticated
 	}
-	err = s.pool.QueryRow(r.Context(), `SELECT s.id,s.csrf_token,u.id,u.name,COALESCE(u.email,''),u.verified,u.role,u.status FROM auth_sessions s JOIN auth_users u ON u.id=s.user_id WHERE s.secret_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND u.status<>'deleted'`, hashSecret(cookie.Value)).Scan(&v.ID, &v.CSRF, &v.User.ID, &v.User.Name, &v.User.Email, &v.User.Verified, &v.User.Role, &v.User.Status)
+	var touchDue bool
+	err = s.pool.QueryRow(r.Context(), `SELECT s.id,s.csrf_token,u.id,u.name,COALESCE(u.email,''),u.verified,u.role,u.status,s.last_seen_at<now()-interval '5 minutes' FROM auth_sessions s JOIN auth_users u ON u.id=s.user_id WHERE s.secret_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND u.status<>'deleted'`, hashSecret(cookie.Value)).Scan(&v.ID, &v.CSRF, &v.User.ID, &v.User.Name, &v.User.Email, &v.User.Verified, &v.User.Role, &v.User.Status, &touchDue)
 	if err != nil {
 		return session{}, ErrUnauthenticated
 	}
-	_, _ = s.pool.Exec(r.Context(), `UPDATE auth_sessions SET last_seen_at=now() WHERE id=$1 AND last_seen_at<now()-interval '5 minutes'`, v.ID)
+	// Authorization is freshly read on every call. The database clock decides
+	// whether this optional device-activity write is due, avoiding a second
+	// pool round trip on every WebSocket frame without caching permissions.
+	if touchDue {
+		_, _ = s.pool.Exec(r.Context(), `UPDATE auth_sessions SET last_seen_at=now() WHERE id=$1 AND last_seen_at<now()-interval '5 minutes' AND revoked_at IS NULL AND expires_at>now()`, v.ID)
+	}
 	return v, nil
 }
 

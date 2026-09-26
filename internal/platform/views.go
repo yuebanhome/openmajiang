@@ -19,57 +19,45 @@ func (s *Service) snapshot(r *http.Request, roomID, pid string) (map[string]any,
 }
 
 func (s *Service) snapshotUncached(r *http.Request, roomID, pid string) (map[string]any, error) {
-	room, e := loadRoom(r.Context(), s.pool, roomID)
+	data, e := s.loadSnapshot(r.Context(), roomID, pid)
 	if e != nil {
 		return nil, e
 	}
+	room, m := data.room, data.match
 	if room.MatchID == "" {
 		result := map[string]any{"type": "room_snapshot", "room": room, "view": nil, "status": room.Status}
 		if pid != "" {
 			for _, seat := range room.Seats {
 				if seat.ParticipantID == pid {
 					result["participant_id"] = pid
-					result["control_epoch"] = seat.Epoch
-					result["seat_id"] = seat.Order
+					result["control_epoch"] = data.epoch
+					result["seat_id"] = data.ownSeat
 					break
 				}
 			}
 		}
 		return result, nil
 	}
-	m, e := loadMatch(r.Context(), s.pool, room.MatchID, false)
-	if e != nil {
-		return nil, e
-	}
 	if m.ArchivedAt != nil {
 		return nil, api(410, "MATCH_ARCHIVED")
 	}
-	var view json.RawMessage
-	var index int
-	e = s.pool.QueryRow(r.Context(), `SELECT view,hand_index FROM platform_views WHERE match_id=$1 AND participant_id=$2 AND seq=$3`, m.ID, pid, m.Seq).Scan(&view, &index)
+	if len(data.view) == 0 {
+		return nil, api(503, "VIEW_UNAVAILABLE")
+	}
+	view, e := anonymizeView(data.view, data.deleted)
 	if e != nil {
 		return nil, e
 	}
-	deleted, e := s.deletedParticipants(r.Context(), m.ID)
-	if e != nil {
-		return nil, e
-	}
-	view, e = anonymizeView(view, deleted)
-	if e != nil {
-		return nil, e
-	}
+	index := data.index
 	result := map[string]any{"type": "snapshot", "room": room, "view": view, "match_id": m.ID, "hand_id": handID(m.ID, index), "hand_index": index, "seq": m.Seq, "status": m.Status, "deadline_at": m.Deadline, "platform_interrupted": m.Interrupted, "ruleset": map[string]string{"id": m.RulesetID, "version": m.RulesetVersion}, "match_format": m.Format}
 	if pid == "" {
 		result["type"] = "spectator_snapshot"
 		result["view_policy"] = "spectator_discard_only@1"
 		return result, nil
 	}
-	var epoch int64
-	_ = s.pool.QueryRow(r.Context(), `SELECT control_epoch FROM platform_seats WHERE participant_id=$1`, pid).Scan(&epoch)
-	var selfTimeouts, reactionTimeouts int
-	_ = s.pool.QueryRow(r.Context(), `SELECT self_timeouts,reaction_timeouts FROM platform_seats WHERE participant_id=$1`, pid).Scan(&selfTimeouts, &reactionTimeouts)
-	result["self_timeout_count"] = selfTimeouts
-	result["reaction_timeout_count"] = reactionTimeouts
+	epoch := data.epoch
+	result["self_timeout_count"] = data.selfTimeouts
+	result["reaction_timeout_count"] = data.reactionTimeouts
 	result["participant_id"] = pid
 	result["control_epoch"] = epoch
 	result["seat_assignment_version"] = index

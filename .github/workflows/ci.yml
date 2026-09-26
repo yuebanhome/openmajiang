@@ -241,6 +241,7 @@ jobs:
       TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
       OMJ_CAPACITY_SECONDS: "3600"
       OMJ_CAPACITY_REPORT: ${{ github.workspace }}/test-results/capacity-report.json
+      OMJ_CAPACITY_PROFILE_PREFIX: ${{ github.workspace }}/test-results/capacity
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

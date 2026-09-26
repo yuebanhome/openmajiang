@@ -3,6 +3,7 @@ package platform
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -11,6 +12,7 @@ import (
 type publicCacheEntry struct {
 	body    []byte
 	expires time.Time
+	digest  [sha256.Size]byte
 }
 
 const publicCacheTTL = 200 * time.Millisecond
@@ -23,23 +25,24 @@ func (s *Service) invalidatePublicSnapshots() {
 	s.publicGeneration++
 }
 
-// Only this explicitly public path is cached. The cached value is immutable JSON;
-// every caller gets a new object before socketLoop adds recipient stream fields.
+// Only this explicitly public path is cached. The encoded body is immutable,
+// so a socket can compare its digest before allocating a decoded object. Any
+// caller adding recipient stream fields must use decodePublicSnapshot first.
 // A private projection can never populate, read or share this cache.
-func (s *Service) cachedPublicSnapshot(r *http.Request, roomID string) (map[string]any, error) {
+func (s *Service) cachedPublicEntry(r *http.Request, roomID string) (publicCacheEntry, error) {
 	key := "spectator_discard_only@1/" + roomID
-	read := func() []byte {
+	read := func() (publicCacheEntry, bool) {
 		s.publicMu.Lock()
 		defer s.publicMu.Unlock()
 		if entry, ok := s.publicSnapshots[key]; ok && time.Now().Before(entry.expires) {
-			return entry.body
+			return entry, true
 		}
-		return nil
+		return publicCacheEntry{}, false
 	}
-	body := read()
-	if body == nil {
+	entry, ok := read()
+	if !ok {
 		value, err, _ := s.publicLoads.Do(key, func() (any, error) {
-			if cached := read(); cached != nil {
+			if cached, ok := read(); ok {
 				return cached, nil
 			}
 			s.publicMu.Lock()
@@ -74,14 +77,27 @@ func (s *Service) cachedPublicSnapshot(r *http.Request, roomID string) (map[stri
 				}
 				delete(s.publicSnapshots, oldest)
 			}
-			s.publicSnapshots[key] = publicCacheEntry{body: encoded, expires: time.Now().Add(publicCacheTTL)}
-			return encoded, nil
+			entry := publicCacheEntry{body: encoded, expires: time.Now().Add(publicCacheTTL), digest: sha256.Sum256(encoded)}
+			s.publicSnapshots[key] = entry
+			return entry, nil
 		})
 		if err != nil {
-			return nil, err
+			return publicCacheEntry{}, err
 		}
-		body = value.([]byte)
+		entry = value.(publicCacheEntry)
 	}
+	return entry, nil
+}
+
+func (s *Service) cachedPublicSnapshot(r *http.Request, roomID string) (map[string]any, error) {
+	entry, err := s.cachedPublicEntry(r, roomID)
+	if err != nil {
+		return nil, err
+	}
+	return decodePublicSnapshot(entry.body)
+}
+
+func decodePublicSnapshot(body []byte) (map[string]any, error) {
 	var view map[string]any
 	d := json.NewDecoder(bytes.NewReader(body))
 	d.UseNumber()
