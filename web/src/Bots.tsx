@@ -311,7 +311,11 @@ export function Bots({ user }: { user?: User }) {
               </p>
               <div className="room-actions">
                 <Button
-                  disabled={!bot.connected}
+                  disabled={
+                    !bot.online ||
+                    bot.enabled === false ||
+                    bot.suspended === true
+                  }
                   busy={busy === "queue"}
                   onClick={() =>
                     run("queue", `/v1/bots/${bot.id}/queue`, {

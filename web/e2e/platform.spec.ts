@@ -173,8 +173,18 @@ test("real account, mail, playable table, anonymous discard view, replay and cre
     page.getByRole("heading", { name: "BrowserBot", exact: true }).last(),
   ).toBeVisible();
   await page.getByPlaceholder("版本号，例如 0.1.0").fill("e2e-1");
+  const publishedVersion = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/versions") &&
+      response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "发布版本", exact: true }).click();
-  await expect(page.getByText("e2e-1", { exact: true })).toBeVisible();
+  const versionResponse = await publishedVersion;
+  expect(versionResponse.status()).toBe(201);
+  expect((await versionResponse.json()).version.label).toBe("e2e-1");
+  await expect(
+    page.getByRole("listitem").filter({ hasText: "e2e-1" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "生成新 Key", exact: true }).click();
   await expect(page.locator(".secret")).toContainText("omj_bot_");
   await page.getByRole("button", { name: "已保存，关闭" }).click();

@@ -306,6 +306,7 @@ func (s *Service) adminUser(w http.ResponseWriter, r *http.Request) {
 			`UPDATE platform_bot_credentials SET revoked_at=now() WHERE bot_id IN(SELECT id FROM platform_bots WHERE owner_id=$1) AND revoked_at IS NULL`,
 			`UPDATE platform_bot_sessions SET revoked_at=now() WHERE bot_id IN(SELECT id FROM platform_bots WHERE owner_id=$1) AND revoked_at IS NULL`,
 			`DELETE FROM platform_queue WHERE user_id=$1`,
+			`UPDATE platform_seats SET continuous=false WHERE user_id=$1`,
 			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL,leave_after_hand=true WHERE user_id=$1 AND active`,
 			`DELETE FROM platform_seats s USING platform_rooms r WHERE s.room_id=r.id AND r.status='waiting' AND s.user_id=$1`,
 		} {
@@ -376,6 +377,7 @@ func (s *Service) setBotSuspended(w http.ResponseWriter, r *http.Request, suspen
 	}
 	if suspended {
 		for _, q := range []string{
+			`UPDATE platform_seats SET continuous=false WHERE bot_id=$1`,
 			`UPDATE platform_seats SET control_epoch=control_epoch+1,controller='',controller_session='',connected_until=NULL,leave_after_hand=true WHERE bot_id=$1 AND active`,
 			`DELETE FROM platform_queue WHERE bot_id=$1`,
 			`DELETE FROM platform_seats s USING platform_rooms r WHERE s.room_id=r.id AND r.status='waiting' AND s.bot_id=$1`,

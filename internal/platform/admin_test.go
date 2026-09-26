@@ -159,15 +159,28 @@ func TestAdministrationPostgres(t *testing.T) {
 		t.Fatal("maintenance admitted a new table")
 	}
 	opsStatus(t, opsRequest(t, mux, "POST", "/v1/admin/maintenance", map[string]any{"enabled": false, "reason": "部署检查完成"}, operator), 200)
+	if _, err = pool.Exec(ctx, `INSERT INTO platform_rooms(id,name,owner_id,mode,ruleset_id,ruleset_version,match_format,online_profile,capacity,status) VALUES('pending-room','finished',$1,'mixed','fixture','1','fixture','fixture',3,'ended')`, player.uid); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `INSERT INTO platform_seats(participant_id,room_id,user_id,name,kind,seat_order,active,continuous) VALUES('pending-human','pending-room',$1,'player','human',0,false,true)`, player.uid); err != nil {
+		t.Fatal(err)
+	}
 	opsStatus(t, opsRequest(t, mux, "POST", "/v1/admin/users/"+player.uid+"/status", map[string]string{"status": "restricted", "reason": "测试账号限制"}, operator), 200)
 	opsStatus(t, opsRequest(t, mux, "GET", "/v1/me", nil, player), 401)
 	opsStatus(t, opsRequest(t, mux, "POST", "/v1/admin/users/"+player.uid+"/status", map[string]string{"status": "active", "reason": "解除测试限制"}, operator), 200)
 	opsStatus(t, opsRequest(t, mux, "GET", "/v1/me", nil, player), 401)
+	var pending bool
+	if err = pool.QueryRow(ctx, `SELECT continuous FROM platform_seats WHERE participant_id='pending-human'`).Scan(&pending); err != nil || pending {
+		t.Fatal("restoring account retained a completed table's pending requeue", err)
+	}
 	player = opsSignIn(t, mux, "player@example.test")
 	if _, err = pool.Exec(ctx, `INSERT INTO platform_bots(id,owner_id,name) VALUES('test-bot',$1,'test')`, player.uid); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = pool.Exec(ctx, `INSERT INTO platform_bot_credentials(id,bot_id,secret_hash) VALUES('test-key','test-bot','hashed-key')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `INSERT INTO platform_seats(participant_id,room_id,user_id,bot_id,name,kind,seat_order,active,continuous) VALUES('pending-bot','pending-room',$1,'test-bot','bot','bot',1,false,true)`, player.uid); err != nil {
 		t.Fatal(err)
 	}
 	opsStatus(t, opsRequest(t, mux, "POST", "/v1/admin/bots/test-bot/disable", map[string]string{"reason": "测试停用 Bot"}, operator), 200)
@@ -183,6 +196,9 @@ func TestAdministrationPostgres(t *testing.T) {
 	var stillRevoked bool
 	if err = pool.QueryRow(ctx, `SELECT revoked_at IS NOT NULL FROM platform_bot_credentials WHERE id='test-key'`).Scan(&stillRevoked); err != nil || !stillRevoked {
 		t.Fatal("restoring bot revived old credential")
+	}
+	if err = pool.QueryRow(ctx, `SELECT continuous FROM platform_seats WHERE participant_id='pending-bot'`).Scan(&pending); err != nil || pending {
+		t.Fatal("restoring bot retained a completed table's pending requeue", err)
 	}
 	manifest := threeplayer.New().Manifest()
 	rulePath := "/v1/admin/rulesets/" + manifest.ID + "/versions/" + manifest.Version + "/status"

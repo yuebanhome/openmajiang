@@ -82,6 +82,8 @@ jobs:
           .venv-sdk/bin/python -m pip install -r api/requirements-test.lock
           cd sdk/python
           ../../.venv-sdk/bin/python -m unittest discover -s tests -v
+          cd ../..
+          .venv-sdk/bin/python -m unittest discover -s sdk/integration -v
       - name: Generated API and WebSocket contracts remain in sync
         run: |
           go run ./api/generate
@@ -117,6 +119,7 @@ jobs:
           cache-from: type=gha,scope=verify-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=verify-${{ matrix.arch }}
       - name: Container migration and HTTP smoke
+        id: runtime_smoke
         run: |
           docker run --rm --network host -e DATABASE_URL openmajiang:verify migrate
           docker run -d --name openmajiang-smoke --network host \
@@ -130,8 +133,11 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
       - name: Browser account, match, spectator and reconnect E2E
         working-directory: web
+        env:
+          DEBUG: pw:browser
         run: npm run test:e2e
       - name: PostgreSQL backup/restore and graceful SIGTERM/restart
+        if: ${{ !cancelled() && steps.runtime_smoke.outcome == 'success' }}
         env:
           POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         run: ./deploy/ci-restore.sh

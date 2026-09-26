@@ -23,7 +23,7 @@
 | M0 规格、插件 SDK、协议、骨架 | `pkg/rulesdk`、`rules/registry`、`api`、`docs` | 85 HTTP 操作及强 Schema 已落地，共同样例、生成一致性和离线校验通过 |
 | M1 国标裁判、算番、赛程、重放 | `rules/mcr`、`rules/mcr/scoring` | 两种架构规则回归及 10,000 手已通过；保留线上裁决解释与专家复核边界 |
 | M2 账号、房间、邀请、匹配 | `internal/auth`、`internal/platform` | 真实 PostgreSQL 权限、并发、恢复通过；新增修复须再跑 |
-| M3 React、弃牌观战、重连、历史 | `web`、`internal/platform` | 构建和单测通过；39 前端单测通过；真实浏览器修复后待 CI |
+| M3 React、弃牌观战、重连、历史 | `web`、`internal/platform` | 构建和单测通过；43 前端单测通过；真实浏览器修复后待 CI |
 | M4 内置/外部 Bot、SDK、统计 | `internal/bots`、`sdk`、`internal/platform/stats.go` | 两语言 SDK 用例通过；3 Python+1 TypeScript 的 100 手 WSS、统计数据库新用例待 CI |
 | M5 Docker、CI、运维、完整验收 | `Dockerfile`、`deploy`、`.github/workflows` | 双架构容器构建/冒烟通过；一小时容量、备份恢复待通过 |
 

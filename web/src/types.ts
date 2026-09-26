@@ -121,6 +121,7 @@ export type ParticipantView = {
 };
 export type Bot = {
   online?: boolean;
+  suspended?: boolean;
   enabled?: boolean;
   current_version?: string;
   id: string;

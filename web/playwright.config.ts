@@ -6,8 +6,11 @@ export default defineConfig({
   timeout: 180_000,
   expect: { timeout: 15_000 },
   retries: 0,
+  maxFailures: process.env.CI ? 1 : undefined,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
     baseURL: process.env.PUBLIC_BASE_URL || "http://127.0.0.1:8080",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

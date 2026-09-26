@@ -4,6 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 test "${CI:-}" = true
 : "${POSTGRES_CONTAINER:?Pass the GitHub Actions PostgreSQL service container ID}"
+docker image inspect openmajiang:verify >/dev/null
+docker inspect openmajiang-smoke >/dev/null
 restore_db=openmajiang_ci_restore
 backup_file="$(mktemp)"
 cleanup() {

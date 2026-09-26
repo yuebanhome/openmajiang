@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS platform_commands (
  response jsonb NOT NULL, accepted_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(participant_id,match_id,command_id), UNIQUE(participant_id,match_id,decision_id)
 );
+CREATE INDEX IF NOT EXISTS platform_commands_match ON platform_commands(match_id);
 CREATE TABLE IF NOT EXISTS platform_views (
  match_id text NOT NULL REFERENCES platform_matches(id), seq bigint NOT NULL, hand_index integer NOT NULL,
  participant_id text NOT NULL, view jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
