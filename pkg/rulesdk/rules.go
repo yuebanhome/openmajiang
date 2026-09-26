@@ -133,3 +133,12 @@ type Rule interface {
 	Apply(Snapshot, Input) (Transition, error)
 	Project(Snapshot, Viewer) (json.RawMessage, error)
 }
+
+// BatchProjector is an optional optimization for projecting one immutable
+// snapshot to several viewers. Results must match Project, preserve viewer
+// order, and own independent buffers. The snapshot must receive the same full
+// validation as Project. An error must return no partial views.
+// Rules implementing only Rule remain supported by the platform.
+type BatchProjector interface {
+	ProjectMany(Snapshot, []Viewer) ([]json.RawMessage, error)
+}

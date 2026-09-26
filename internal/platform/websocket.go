@@ -208,12 +208,30 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 	}()
 	heartbeat := time.NewTicker(10 * time.Second)
 	defer heartbeat.Stop()
-	send := func(v any) bool {
+	sendRaw := func(raw []byte) bool {
 		out, stop := context.WithTimeout(ctx, 2*time.Second)
 		defer stop()
-		return c.Write(out, websocket.MessageText, jsonBytes(v)) == nil
+		return c.Write(out, websocket.MessageText, raw) == nil
 	}
+	send := func(v any) bool { return sendRaw(jsonBytes(v)) }
 	snapshot := func(force bool) bool {
+		if pid == "" {
+			entry, err := s.cachedPublicEntry(r, rid)
+			if err != nil {
+				return send(map[string]any{"type": "error", "error": map[string]string{"code": "SNAPSHOT_UNAVAILABLE"}})
+			}
+			if !force && havePublic && entry.digest == lastPublicDigest {
+				return true
+			}
+			if previousMatch != entry.matchID || previousHand != entry.handID {
+				stream = id("stream")
+				sent = 0
+			}
+			previousMatch, previousHand = entry.matchID, entry.handID
+			lastPublicDigest, havePublic = entry.digest, true
+			sent++
+			return sendRaw(entry.socketFrame(stream, sent))
+		}
 		if !force && pid != "" && previousMatch != "" && lastSeq >= 0 {
 			var seq, epoch int64
 			var status string
@@ -225,27 +243,7 @@ func (s *Service) socketLoop(parent context.Context, c *websocket.Conn, r *http.
 		if valid != nil && !valid() {
 			return false
 		}
-		var v map[string]any
-		var e error
-		if pid == "" {
-			var entry publicCacheEntry
-			entry, e = s.cachedPublicEntry(r, rid)
-			if e == nil {
-				// Thousands of viewers may poll an unchanged table. Comparing an
-				// immutable public digest avoids decoding the same complete JSON
-				// for every viewer on every tick. Changed frames still get their
-				// own object before any recipient-specific fields are attached.
-				if !force && havePublic && entry.digest == lastPublicDigest {
-					return true
-				}
-				v, e = decodePublicSnapshot(entry.body)
-				if e == nil {
-					lastPublicDigest, havePublic = entry.digest, true
-				}
-			}
-		} else {
-			v, e = s.snapshot(r, rid, pid)
-		}
+		v, e := s.snapshot(r, rid, pid)
 		if e != nil {
 			return send(map[string]any{"type": "error", "error": map[string]string{"code": "SNAPSHOT_UNAVAILABLE"}})
 		}

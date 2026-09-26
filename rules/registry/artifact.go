@@ -3,6 +3,7 @@ package registry
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -42,6 +43,17 @@ type compiledRule struct {
 
 func (r compiledRule) Manifest() rulesdk.Manifest { return r.manifest }
 
+// An embedded Rule exposes only the required SDK methods. Preserve optional
+// batch projection without claiming support for plugins that do not offer it.
+type compiledBatchRule struct {
+	compiledRule
+	projector rulesdk.BatchProjector
+}
+
+func (r compiledBatchRule) ProjectMany(raw rulesdk.Snapshot, viewers []rulesdk.Viewer) ([]json.RawMessage, error) {
+	return r.projector.ProjectMany(raw, viewers)
+}
+
 func bindArtifact(rule rulesdk.Rule, m rulesdk.Manifest) (rulesdk.Rule, error) {
 	digest, err := executableHash()
 	if err != nil {
@@ -52,5 +64,9 @@ func bindArtifact(rule rulesdk.Rule, m rulesdk.Manifest) (rulesdk.Rule, error) {
 	}
 	m.ArtifactHash = digest
 	m.Build = &rulesdk.BuildIdentity{GoVersion: runtime.Version(), OS: runtime.GOOS, Architecture: runtime.GOARCH}
-	return compiledRule{Rule: rule, manifest: m}, nil
+	compiled := compiledRule{Rule: rule, manifest: m}
+	if projector, ok := rule.(rulesdk.BatchProjector); ok {
+		return compiledBatchRule{compiledRule: compiled, projector: projector}, nil
+	}
+	return compiled, nil
 }

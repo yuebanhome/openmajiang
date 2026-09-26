@@ -114,6 +114,27 @@ func (r Rule) Project(raw rulesdk.Snapshot, viewer rulesdk.Viewer) (json.RawMess
 	if err != nil {
 		return nil, err
 	}
+	return s.project(viewer)
+}
+
+// ProjectMany validates the immutable snapshot once and serializes each
+// audience independently. No decoded state or shared result buffers escape.
+func (r Rule) ProjectMany(raw rulesdk.Snapshot, viewers []rulesdk.Viewer) ([]json.RawMessage, error) {
+	s, err := load(raw)
+	if err != nil {
+		return nil, err
+	}
+	views := make([]json.RawMessage, len(viewers))
+	for i, viewer := range viewers {
+		views[i], err = s.project(viewer)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return views, nil
+}
+
+func (s *State) project(viewer rulesdk.Viewer) (json.RawMessage, error) {
 	identity := RuleIdentity{ID: "openmajiang.mcr", Version: version}
 	if viewer.Audience == rulesdk.SpectatorDiscardOnly {
 		v := SpectatorView{Policy: "spectator_discard_only@1", Ruleset: identity, Phase: s.Phase, HandIndex: s.HandIndex, ActiveSeat: s.Active, DealerSeat: s.Dealer, RoundWind: (s.HandIndex - 1) / 4, WallRemaining: s.remaining(), Seats: []PublicSeat{}, Discards: []PublicDiscard{}, LastAction: s.LastAction, Scores: s.scores(), Standings: s.Standings}

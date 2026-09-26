@@ -2,13 +2,170 @@ package platform
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/yuebanhome/openmajiang/pkg/rulesdk"
 	"github.com/yuebanhome/openmajiang/rules/mcr"
 )
+
+func schedulerStarted(t *testing.T, started <-chan string) string {
+	t.Helper()
+	select {
+	case mid := <-started:
+		return mid
+	case <-time.After(3 * time.Second):
+		t.Fatal("due table did not start without another poll")
+		return ""
+	}
+}
+
+func schedulerStopped(t *testing.T, cancel context.CancelFunc, done <-chan struct{}) {
+	t.Helper()
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(3 * time.Second):
+		t.Fatal("scheduler did not join its workers after cancellation")
+	}
+}
+
+func TestTableSchedulerDrainsDueBurstWithoutExtraPoll(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	polls := make(chan time.Time, 1)
+	started := make(chan string, 50)
+	release := make(chan struct{})
+	done := make(chan struct{})
+	var active, peak, discoveries atomic.Int64
+	ids := make([]string, 50)
+	for i := range ids {
+		ids[i] = fmt.Sprintf("table-%d", i)
+	}
+	go func() {
+		defer close(done)
+		runTableScheduler(ctx, polls, func(context.Context) ([]string, error) {
+			discoveries.Add(1)
+			return ids, nil
+		}, func(ctx context.Context, mid string) {
+			n := active.Add(1)
+			defer active.Add(-1)
+			for old := peak.Load(); n > old; old = peak.Load() {
+				if peak.CompareAndSwap(old, n) {
+					break
+				}
+			}
+			started <- mid
+			select {
+			case <-release:
+			case <-ctx.Done():
+			}
+		})
+	}()
+	t.Cleanup(func() { schedulerStopped(t, cancel, done) })
+	// One discovery must drain all 50 tables. Advancing the poll clock again
+	// would hide the regression where each group waited another 25ms.
+	polls <- time.Now()
+	seen := map[string]bool{}
+	for i := 0; i < len(ids); i++ {
+		if i >= 8 {
+			release <- struct{}{}
+		}
+		mid := schedulerStarted(t, started)
+		if seen[mid] {
+			t.Fatalf("table %s was scheduled twice", mid)
+		}
+		seen[mid] = true
+	}
+	schedulerStopped(t, cancel, done)
+	if discoveries.Load() != 1 || peak.Load() != 8 || active.Load() != 0 {
+		t.Fatalf("discoveries=%d peak workers=%d remaining workers=%d", discoveries.Load(), peak.Load(), active.Load())
+	}
+}
+
+func TestTableSchedulerRefreshesPendingWhileBusy(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	polls := make(chan time.Time, 1)
+	started := make(chan string, 20)
+	release := make(chan struct{})
+	refreshed := make(chan struct{})
+	done := make(chan struct{})
+	ids := make([]string, 8)
+	for i := range ids {
+		ids[i] = fmt.Sprintf("running-%d", i)
+	}
+	go func() {
+		defer close(done)
+		poll := 0
+		runTableScheduler(ctx, polls, func(context.Context) ([]string, error) {
+			poll++
+			if poll == 1 {
+				return append(append([]string{}, ids...), "stale", "retained"), nil
+			}
+			close(refreshed)
+			// Simulate a newly expired deadline and an external submission
+			// making the old pending table no longer due. Running tables must
+			// not reenter the queue, even if the database still lists them.
+			return append(append([]string{}, ids...), "urgent", "retained", "urgent"), nil
+		}, func(ctx context.Context, mid string) {
+			started <- mid
+			select {
+			case <-release:
+			case <-ctx.Done():
+			}
+		})
+	}()
+	t.Cleanup(func() { schedulerStopped(t, cancel, done) })
+	polls <- time.Now()
+	for range ids {
+		schedulerStarted(t, started)
+	}
+	polls <- time.Now()
+	select {
+	case <-refreshed:
+	case <-time.After(3 * time.Second):
+		t.Fatal("scheduler did not refresh deadlines while all eight slots were busy")
+	}
+	for _, want := range []string{"urgent", "retained"} {
+		release <- struct{}{}
+		if got := schedulerStarted(t, started); got != want {
+			t.Fatalf("started %s, want %s after priority refresh", got, want)
+		}
+	}
+}
+
+func TestTableSchedulerCancellationDoesNotStartPending(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	polls := make(chan time.Time, 1)
+	started := make(chan string, 50)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		runTableScheduler(ctx, polls, func(context.Context) ([]string, error) {
+			ids := make([]string, 50)
+			for i := range ids {
+				ids[i] = fmt.Sprintf("table-%d", i)
+			}
+			return ids, nil
+		}, func(ctx context.Context, mid string) {
+			started <- mid
+			<-ctx.Done()
+		})
+	}()
+	t.Cleanup(func() { schedulerStopped(t, cancel, done) })
+	polls <- time.Now()
+	for i := 0; i < 8; i++ {
+		schedulerStarted(t, started)
+	}
+	schedulerStopped(t, cancel, done)
+	select {
+	case mid := <-started:
+		t.Fatalf("pending table %s started after cancellation", mid)
+	default:
+	}
+}
 
 type stalledApplyRule struct {
 	rulesdk.Rule

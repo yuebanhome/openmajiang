@@ -171,43 +171,80 @@ func (s *Service) Run(ctx context.Context) {
 	ticker := time.NewTicker(25 * time.Millisecond)
 	defer ticker.Stop()
 	defer group.Wait()
+	runTableScheduler(ctx, ticker.C, s.dueMatches, s.tickMatch)
+}
+
+func (s *Service) dueMatches(ctx context.Context) ([]string, error) {
+	rows, err := s.pool.Query(ctx, `SELECT id FROM platform_matches WHERE status='active' AND ((owner_id=$1 AND (next_run_at<=now() OR deadline_at<=now())) OR owner_until<now()) ORDER BY CASE WHEN deadline_at<=now() THEN 0 ELSE 1 END,LEAST(next_run_at,deadline_at),id LIMIT 200`, s.id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var mid string
+		if err = rows.Scan(&mid); err != nil {
+			return nil, err
+		}
+		ids = append(ids, mid)
+	}
+	return ids, rows.Err()
+}
+
+// Polling discovers and reprioritizes due tables, but does not pace work already
+// discovered. Refill a free slot immediately: requiring another poll for each
+// group of eight adds 150ms to a 50-table burst even when the work itself is fast.
+func runTableScheduler(ctx context.Context, polls <-chan time.Time, due func(context.Context) ([]string, error), work func(context.Context, string)) {
 	const parallelTables = 8
 	completed := make(chan string, parallelTables)
 	running := map[string]bool{}
+	var pending []string
+	var group sync.WaitGroup
+	defer group.Wait()
+	dispatch := func() {
+		for len(pending) > 0 && len(running) < parallelTables && ctx.Err() == nil {
+			mid := pending[0]
+			pending = pending[1:]
+			running[mid] = true
+			group.Add(1)
+			go func() {
+				defer group.Done()
+				work(ctx, mid)
+				// At most eight workers can complete after cancellation, so the
+				// buffer also permits shutdown without a receiver in this loop.
+				completed <- mid
+			}()
+		}
+	}
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case mid := <-completed:
 			delete(running, mid)
-		case <-ticker.C:
-			// Drain completions before making admission decisions. Slots do not depend
-			// on the slowest table in a previously selected batch.
+			dispatch()
+		case <-polls:
 			for len(completed) > 0 {
 				delete(running, <-completed)
 			}
-			if len(running) >= parallelTables {
+			ids, err := due(ctx)
+			if err != nil {
+				dispatch()
 				continue
 			}
-			rows, e := s.pool.Query(ctx, `SELECT id FROM platform_matches WHERE status='active' AND ((owner_id=$1 AND (next_run_at<=now() OR deadline_at<=now())) OR owner_until<now()) ORDER BY CASE WHEN deadline_at<=now() THEN 0 ELSE 1 END,LEAST(next_run_at,deadline_at) LIMIT 200`, s.id)
-			if e != nil {
-				continue
-			}
-			var ids []string
-			for rows.Next() {
-				var mid string
-				if rows.Scan(&mid) == nil && !running[mid] {
-					ids = append(ids, mid)
-				}
-			}
-			rows.Close()
+			// Replace the queue even while every slot is occupied. This drops
+			// externally advanced tables and promotes newly expired deadlines.
+			// A table may still change after this read; work rechecks its state,
+			// deadline and ownership while holding the match row lock.
+			pending = pending[:0]
+			queued := make(map[string]bool, len(ids))
 			for _, mid := range ids {
-				if len(running) >= parallelTables {
-					break
+				if !running[mid] && !queued[mid] {
+					pending = append(pending, mid)
+					queued[mid] = true
 				}
-				running[mid] = true
-				start(func() { s.tickMatch(ctx, mid); completed <- mid })
 			}
+			dispatch()
 		}
 	}
 }

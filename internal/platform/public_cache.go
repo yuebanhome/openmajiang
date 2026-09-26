@@ -6,13 +6,56 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type publicCacheEntry struct {
-	body    []byte
-	expires time.Time
-	digest  [sha256.Size]byte
+	body            []byte
+	expires         time.Time
+	digest          [sha256.Size]byte
+	socketPrefix    []byte
+	matchID, handID string
+}
+
+// Prepare the public socket envelope once per cache fill. The payload stays
+// immutable; only stream identity and sequence are appended for each recipient.
+// HTTP keeps its database sequence, while sockets never expose it or decisions.
+func newPublicCacheEntry(view map[string]any, expires time.Time) (publicCacheEntry, error) {
+	body, err := json.Marshal(view)
+	if err != nil {
+		return publicCacheEntry{}, err
+	}
+	envelope := make(map[string]any, len(view))
+	for key, value := range view {
+		switch key {
+		case "seq", "decision", "stream_id", "view_seq":
+			continue
+		}
+		envelope[key] = value
+	}
+	payload, err := json.Marshal(envelope)
+	if err != nil {
+		return publicCacheEntry{}, err
+	}
+	matchID, _ := view["match_id"].(string)
+	handID, _ := view["hand_id"].(string)
+	prefix := payload[:len(payload)-1]
+	if len(envelope) > 0 {
+		prefix = append(prefix, ',')
+	}
+	return publicCacheEntry{body: body, expires: expires, digest: sha256.Sum256(body), socketPrefix: prefix, matchID: matchID, handID: handID}, nil
+}
+
+func (entry publicCacheEntry) socketFrame(stream string, seq int64) []byte {
+	frame := make([]byte, 0, len(entry.socketPrefix)+len(stream)+64)
+	frame = append(frame, entry.socketPrefix...)
+	frame = append(frame, `"stream_id":`...)
+	quoted, _ := json.Marshal(stream)
+	frame = append(frame, quoted...)
+	frame = append(frame, `,"view_seq":`...)
+	frame = strconv.AppendInt(frame, seq, 10)
+	return append(frame, '}')
 }
 
 const publicCacheTTL = 200 * time.Millisecond
@@ -26,8 +69,7 @@ func (s *Service) invalidatePublicSnapshots() {
 }
 
 // Only this explicitly public path is cached. The encoded body is immutable,
-// so a socket can compare its digest before allocating a decoded object. Any
-// caller adding recipient stream fields must use decodePublicSnapshot first.
+// so a socket can compare its digest before allocating a recipient frame.
 // A private projection can never populate, read or share this cache.
 func (s *Service) cachedPublicEntry(r *http.Request, roomID string) (publicCacheEntry, error) {
 	key := "spectator_discard_only@1/" + roomID
@@ -54,7 +96,7 @@ func (s *Service) cachedPublicEntry(r *http.Request, roomID string) (publicCache
 			if err != nil {
 				return nil, err
 			}
-			encoded, err := json.Marshal(view)
+			entry, err := newPublicCacheEntry(view, time.Now().Add(publicCacheTTL))
 			if err != nil {
 				return nil, err
 			}
@@ -77,7 +119,6 @@ func (s *Service) cachedPublicEntry(r *http.Request, roomID string) (publicCache
 				}
 				delete(s.publicSnapshots, oldest)
 			}
-			entry := publicCacheEntry{body: encoded, expires: time.Now().Add(publicCacheTTL), digest: sha256.Sum256(encoded)}
 			s.publicSnapshots[key] = entry
 			return entry, nil
 		})

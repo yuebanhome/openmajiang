@@ -72,11 +72,11 @@ func (s *Service) persistViews(ctx context.Context, tx pgx.Tx, m match, rule rul
 // The caller has already inspected this immutable state. Reusing that Flow
 // avoids reevaluating every legal win while the table's row lock is held.
 func (s *Service) persistFlowViews(ctx context.Context, tx pgx.Tx, m match, rule rulesdk.Rule, events []rulesdk.Event, input rulesdk.Input, f rulesdk.Flow) error {
-	public, e := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.SpectatorDiscardOnly})
+	views, e := projectFlowViews(rule, m.State, f.Assignments)
 	if e != nil {
 		return e
 	}
-	public, e = ValidateSpectator(public)
+	public, e := ValidateSpectator(views[0])
 	if e != nil {
 		return e
 	}
@@ -84,18 +84,41 @@ func (s *Service) persistFlowViews(ctx context.Context, tx pgx.Tx, m match, rule
 	// rows remain separate; a failed projection aborts the entire transaction.
 	batch := &pgx.Batch{}
 	batch.Queue(`INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,'',$4)`, m.ID, m.Seq, f.HandIndex, public)
-	for _, a := range f.Assignments {
-		v, err := rule.Project(m.State, rulesdk.Viewer{Audience: rulesdk.ParticipantPrivate, ParticipantID: a.ParticipantID})
-		if err != nil {
-			return err
-		}
-		batch.Queue(`INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, f.HandIndex, a.ParticipantID, v)
+	for i, a := range f.Assignments {
+		batch.Queue(`INSERT INTO platform_views(match_id,seq,hand_index,participant_id,view) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, f.HandIndex, a.ParticipantID, views[i+1])
 	}
 	batch.Queue(`INSERT INTO platform_events(match_id,seq,events,input,owner_epoch) VALUES($1,$2,$3,$4,$5)`, m.ID, m.Seq, jsonBytes(events), jsonBytes(input), m.OwnerEpoch)
 	if e = tx.SendBatch(ctx, batch).Close(); e != nil {
 		return e
 	}
 	return s.persistStatistics(ctx, tx, m, f)
+}
+
+func projectFlowViews(rule rulesdk.Rule, snapshot rulesdk.Snapshot, assignments []rulesdk.Assignment) ([]json.RawMessage, error) {
+	viewers := make([]rulesdk.Viewer, 1, len(assignments)+1)
+	viewers[0] = rulesdk.Viewer{Audience: rulesdk.SpectatorDiscardOnly}
+	for _, assignment := range assignments {
+		viewers = append(viewers, rulesdk.Viewer{Audience: rulesdk.ParticipantPrivate, ParticipantID: assignment.ParticipantID})
+	}
+	if projector, ok := rule.(rulesdk.BatchProjector); ok {
+		views, err := projector.ProjectMany(snapshot, viewers)
+		if err != nil {
+			return nil, err
+		}
+		if len(views) != len(viewers) {
+			return nil, errors.New("rule returned incorrect projection count")
+		}
+		return views, nil
+	}
+	views := make([]json.RawMessage, len(viewers))
+	for i, viewer := range viewers {
+		view, err := rule.Project(snapshot, viewer)
+		if err != nil {
+			return nil, err
+		}
+		views[i] = view
+	}
+	return views, nil
 }
 func (s *Service) deadline(ctx context.Context, tx pgx.Tx, m match, flow rulesdk.Flow) time.Time {
 	duration := 15 * time.Second
