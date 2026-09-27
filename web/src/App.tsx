@@ -1,0 +1,289 @@
+import { useCallback, useEffect, useState } from "react";
+import { api, clearAuthState, post } from "./api";
+import { Admin } from "./Admin";
+import { AuthPage } from "./Auth";
+import { Bots } from "./Bots";
+import { Button, Link, Loading } from "./components";
+import { History, Replay } from "./History";
+import { navigate, useResource, useRoute } from "./hooks";
+import { Developers, Legal, Rules } from "./Info";
+import { Lobby } from "./Lobby";
+import { JoinPage, RoomPage } from "./Room";
+import { Statistics } from "./Statistics";
+import { Settings } from "./Settings";
+import { TablePage } from "./Table";
+import type { User } from "./types";
+function normalizeUser(raw: unknown): User | undefined {
+  if (!raw || typeof raw !== "object") return;
+  const u = raw as Record<string, unknown>;
+  if (typeof u.id !== "string") return;
+  return {
+    id: u.id,
+    email: String(u.email ?? ""),
+    display_name: String(u.name ?? u.display_name ?? ""),
+    email_verified: u.verified === true || u.email_verified === true,
+    role: typeof u.role === "string" ? u.role : undefined,
+  };
+}
+export function App() {
+  const route = useRoute();
+  const maintenance = useResource<{ maintenance: boolean; message: string }>(
+    "/v1/public/status",
+    30000,
+  );
+  const path = route.split("?")[0];
+  const [user, setUser] = useState<User>();
+  const [loading, setLoading] = useState(true);
+  const [authGeneration, setAuthGeneration] = useState(0);
+  const loadUser = useCallback(async (raw?: User) => {
+    if (raw) {
+      setUser(normalizeUser(raw));
+      setLoading(false);
+      return;
+    }
+    try {
+      const data = await api<{ user: unknown }>("/v1/me");
+      setUser(normalizeUser(data.user));
+    } catch {
+      setUser(undefined);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    void loadUser();
+  }, [loadUser]);
+  useEffect(() => {
+    const clear = () => {
+      clearAuthState();
+      setUser(undefined);
+      setAuthGeneration((g) => g + 1);
+    };
+    const channel =
+      typeof BroadcastChannel === "undefined"
+        ? undefined
+        : new BroadcastChannel("openmajiang-account");
+    if (channel)
+      channel.onmessage = (e) => {
+        if (e.data === "logout") clear();
+      };
+    window.addEventListener("openmajiang:auth-expired", clear);
+    return () => {
+      channel?.close();
+      window.removeEventListener("openmajiang:auth-expired", clear);
+    };
+  }, []);
+  const logout = useCallback(async () => {
+    try {
+      await post("/v1/auth/logout");
+    } finally {
+      clearAuthState();
+      setUser(undefined);
+      setAuthGeneration((g) => g + 1);
+      if (typeof BroadcastChannel !== "undefined") {
+        const channel = new BroadcastChannel("openmajiang-account");
+        channel.postMessage("logout");
+        channel.close();
+      }
+    }
+  }, []);
+  useEffect(() => {
+    document.title = path.startsWith("/watch")
+      ? "弃牌观战 · OpenMajiang"
+      : path.startsWith("/play")
+        ? "我的牌桌 · OpenMajiang"
+        : "OpenMajiang · 一起打麻将";
+  }, [path]);
+  let page;
+  const id = decodeURIComponent(path.split("/")[2] ?? "");
+  if (path.startsWith("/auth/"))
+    page = <AuthPage key={path} route={route} onUser={loadUser} />;
+  else if (
+    path === "/verify-email" ||
+    path === "/reset-password" ||
+    path === "/confirm-email"
+  )
+    page = (
+      <AuthPage
+        key={path}
+        route={`/auth/${path === "/verify-email" ? "verify-email" : path === "/reset-password" ? "reset" : "confirm-email"}?${location.hash.slice(1)}`}
+        onUser={loadUser}
+      />
+    );
+  else if (path === "/") page = <Lobby user={user} />;
+  else if (path === "/admin") page = <Admin user={user} />;
+  else if (path === "/statistics" || path === "/statistics/me")
+    page = (
+      <Statistics scope={path.endsWith("/me") ? "me" : "public"} user={user} />
+    );
+  else if (/^\/bots\/[^/]+\/statistics$/.test(path))
+    page = <Statistics scope={id} user={user} />;
+  else if (path === "/bots") page = <Bots user={user} />;
+  else if (path === "/settings")
+    page = <Settings user={user} onUser={loadUser} onLogout={logout} />;
+  else if (path === "/rules") page = <Rules />;
+  else if (path === "/developers") page = <Developers />;
+  else if (path === "/history") page = <History user={user} />;
+  else if (path === "/join") page = <JoinPage user={user} />;
+  else if (path.startsWith("/rooms/"))
+    page = <RoomPage key={id} id={id} user={user} />;
+  else if (path.startsWith("/watch/"))
+    page = <TablePage key={`public:${id}`} id={id} spectator user={user} />;
+  else if (path.startsWith("/play/"))
+    page = loading ? (
+      <Loading />
+    ) : !user ? (
+      <div className="empty">
+        <h1>登录后回到自己的牌桌</h1>
+        <p>所有人仍可无需登录观看公开弃牌。</p>
+        <Link
+          href={`/auth/login?return_to=${encodeURIComponent(path)}`}
+          className="button primary"
+        >
+          前往登录
+        </Link>
+        <Link href={`/watch/${id}`} className="button secondary">
+          观看弃牌
+        </Link>
+      </div>
+    ) : (
+      <TablePage
+        key={`private:${id}:${user?.id}`}
+        id={id}
+        spectator={false}
+        user={user}
+      />
+    );
+  else if (path.startsWith("/matches/"))
+    page = (
+      <Replay key={`public:${id}`} id={id} privateView={false} user={user} />
+    );
+  else if (path.startsWith("/replays/"))
+    page = (
+      <Replay
+        key={`private:${id}:${user?.id}:${new URLSearchParams(route.split("?")[1]).get("bot_id") ?? ""}`}
+        id={id}
+        privateView
+        user={user}
+        initialBotID={
+          new URLSearchParams(route.split("?")[1]).get("bot_id") ?? ""
+        }
+      />
+    );
+  else if (path === "/terms" || path === "/privacy")
+    page = <Legal privacy={path === "/privacy"} />;
+  else
+    page = (
+      <div className="empty">
+        <h1>这张牌还没打出来。</h1>
+        <p>页面不存在，回大厅找一张牌桌吧。</p>
+        <Link href="/" className="button primary">
+          返回大厅
+        </Link>
+      </div>
+    );
+  const authPage =
+    path.startsWith("/auth/") ||
+    ["/verify-email", "/reset-password", "/confirm-email"].includes(path);
+  return (
+    <>
+      <a className="skip-link" href="#main">
+        跳到主要内容
+      </a>
+      <header className="site-header">
+        <div className="header-inner">
+          <Link href="/" className="brand">
+            <span className="brand-mark">發</span>
+            <span>
+              Open<span className="brand-light">Majiang</span>
+            </span>
+          </Link>
+          <nav aria-label="主导航">
+            <Link href="/" className={path === "/" ? "active" : ""}>
+              牌桌大厅
+            </Link>
+            <Link
+              href="/history"
+              className={path.startsWith("/history") ? "active" : ""}
+            >
+              对局记录
+            </Link>
+            <Link href="/bots" className={path === "/bots" ? "active" : ""}>
+              Bot 控制台
+            </Link>
+            <Link href="/rules" className={path === "/rules" ? "active" : ""}>
+              规则
+            </Link>
+          </nav>
+          <div className="account-nav">
+            {user?.role === "operator" && (
+              <Link href="/admin" className="login-link">
+                运维
+              </Link>
+            )}
+            {user ? (
+              <>
+                <Link href="/settings" className="user-chip">
+                  <span>{user.display_name.slice(0, 1)}</span>
+                  {user.display_name}
+                </Link>
+                <Button
+                  tone="quiet"
+                  onClick={async () => {
+                    await logout();
+                    navigate("/");
+                  }}
+                >
+                  退出
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login" className="login-link">
+                  登录
+                </Link>
+                <Link href="/auth/register" className="button primary small">
+                  加入牌桌 ↗
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+      <main
+        id="main"
+        className={authPage ? "auth-container" : "container"}
+        key={authGeneration}
+      >
+        {maintenance.data?.maintenance && (
+          <div className="notice" role="status">
+            <strong>系统维护中</strong>{" "}
+            {maintenance.data.message || "新的入座和开局可能暂时不可用。"}
+          </div>
+        )}
+        {page}
+      </main>
+      {!authPage && (
+        <footer className="site-footer">
+          <div>
+            <strong>OpenMajiang</strong>
+            <span>一起打麻将。一起造对手。</span>
+          </div>
+          <div>
+            <Link href="/developers">开发者</Link>
+            <Link href="/privacy">隐私</Link>
+            <Link href="/terms">条款</Link>
+            <a
+              href="https://github.com/yuebanhome/openmajiang"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub ↗
+            </a>
+          </div>
+          <small>对局分数无现金价值 · 免费开放</small>
+        </footer>
+      )}
+    </>
+  );
+}

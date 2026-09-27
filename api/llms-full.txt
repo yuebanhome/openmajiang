@@ -1,0 +1,188 @@
+# OpenMajiang client integration guide
+
+This document describes public client interfaces. It provides no operator
+credentials, hidden-card channel, arbitrary Bot-code hosting or scoring override.
+The exact current HTTP contract is /openapi.json. Wire schemas are published at
+/schemas/dto.json, /schemas/protocol.json, /schemas/ws-client.json,
+/schemas/ws-server.json and /schemas/spectator.json.
+
+## Accounts
+
+Register with POST /v1/auth/register {email,password,name,accept_terms:true}.
+Passwords contain 15–128 Unicode characters; preserve spaces. The generic 202
+response means an eligible email request was queued, not that SMTP delivered it.
+Existing addresses receive the same unauthenticated response. A registration
+does not yet authorize joining a table.
+
+Verification and reset links place their one-time token in the URL fragment.
+GET displays a confirmation page. POST /v1/auth/verify-email {token} consumes a
+verification token; POST /v1/auth/reset-password {token,password} consumes a
+reset token and revokes old human sessions. Do not put fragments, request bodies,
+cookies, passwords or bearer credentials in logs or analytics.
+
+POST /v1/auth/login {email,password} sets an HttpOnly SameSite session cookie and
+returns {user,csrf_token}. GET /v1/me returns the same private identity and CSRF
+token. Browser writes require the exact configured Origin and, after login,
+X-CSRF-Token. Cookie credentials must not be copied into localStorage. Account
+data includes private email, role and status; public display names use distinct
+public DTOs. An unverified account may watch and manage its verification process,
+but cannot join games or manage Bots.
+
+The account supports display-name changes, devices, logout, password change,
+new-email confirmation, delivery status and account deletion. Sensitive changes
+verify current credentials. Password/email changes revoke old human sessions;
+Bot runtime credentials are independently revoked through their own endpoints.
+Deletion revokes both kinds and anonymizes personal identity while retaining
+stable match references. No API lets a registrant assign themselves operator.
+
+## Discover rules and rooms
+
+GET /v1/rulesets returns versioned manifests: seat counts, formats, online
+profiles, plugin API, state/view schema, renderer and artifact fingerprint.
+artifact_hash identifies the running compiled executable; source_hash records
+the source digest, and build records Go version, OS and architecture. Preserve
+these identities when reproducing a match; a source digest alone is not binary
+compatibility evidence for a compiled ruleset.
+Room creation fixes a ruleset/version/profile/format. The server rejects invalid
+combinations. The first MCR plugin uses 144 tiles, 81 scoring patterns and an
+8-point nonflower eligibility threshold. The rule evaluator, legal options and
+final server settlement are authoritative; an SDK must not compute and submit
+its own replacement score.
+
+GET /v1/public/rooms discovers all tables. POST /v1/rooms creates a table;
+POST /v1/rooms/{id}/join requests a seat. An invitation controls admission only:
+every table remains anonymously viewable. Waiting-room ownership permits
+configuration, invite rotation and eligible Bot additions, not hidden-card
+access or in-game manipulation. Public queue matching never silently fills a
+human-only table with Bots. Self-test rooms require invite admission and remain
+outside comparable public Bot statistics.
+
+Room participant identities are stable. Physical seat assignment may change
+between hands or rounds. Use participant_id together with current seat_id,
+hand_id, seat_assignment_version and control_epoch. Never authorize a player
+from the room owner field, a former seat or a remembered seat number alone.
+
+## Human control
+
+GET /v1/rooms/{id}/view returns an authorized private snapshot. A new tab may be
+read-only while another tab holds the control lease. POST /v1/rooms/{id}/take-control
+explicitly claims control and returns control_token and the new control_epoch.
+Human HTTP actions send that token as X-Control-Token in addition to session,
+Origin and CSRF. Never use a CSRF token or user ID as a substitute controller.
+
+The player WebSocket is /v1/ws/players?room_id=... and uses the browser cookie.
+After an HTTP takeover a tab may send {type:"resume_control",control_token:...}
+to bind its existing socket to that lease. control_readonly is not an actionable
+grant; control_granted carries the current token and epoch. A replaced old
+controller receives control_changed and must stop, rather than auto-steal control.
+
+## Self-hosted Bots
+
+A verified owner creates a Bot through POST /v1/bots, records immutable strategy
+versions and issues a credential through POST /v1/bots/{id}/credentials. The
+api_key is returned only once. Keep strategy code and any LLM API keys on the
+owner's machine. The platform does not receive arbitrary executable source.
+
+Exchange a long key through POST /v1/bot-sessions, Authorization: Bearer LONG_KEY,
+with {protocol_version:"1.0",rulesets:[{id,version},...]}. The result includes a
+30-minute session_token. Use that short token for GET /v1/bot/active-match,
+POST/DELETE /v1/bot/queue and the Bot WSS Authorization header. Keys and sessions
+must never appear in query strings. TLS certificate verification is mandatory
+for remote connections.
+
+Connect to /v1/ws/bots?room_id=...; omitting room_id discovers the Bot's own active
+seat. Send {type:"ready"} after a waiting room_snapshot. When all publicly matched
+seats confirm, the server starts the match. Capability declarations must include
+the exact room ruleset version. After a terminal match, close the room-specific
+socket and discover the next active room. continuous queues do not move an old
+socket to a new room automatically. Refresh short sessions before expiry.
+
+GET /v1/bots/{id}/status is an owner-only runtime panel: authenticated presence,
+connected seat lease, active_room_id, active_match_id, queued, continuous and up
+to 20 recent errors. Only error codes and timestamps are retained in this panel.
+
+## Decisions and observations
+
+The server sends a full snapshot followed by decision_request. The decision's
+observation_ref must exactly match the snapshot's stream_id and view_seq. Match,
+hand, participant, seat assignment and control epoch must also match. A decision
+sequence number follows the snapshot, while command_ack, command_error,
+heartbeat, seat_assigned and other control messages are not observation updates.
+Do not use a receipt as a replacement private snapshot.
+
+New hands start with seat_assigned and a new stream. A missing state or mismatched
+observation requires {type:"resume"}; wait for a fresh snapshot before invoking
+strategy. REST private snapshots contain their decision atomically; the
+observation_ref fields specifically describe the WebSocket snapshot barrier.
+
+Only use the legal_actions in that decision. submit_action includes type,
+protocol_version, match_id, hand_id, participant_id, seat_id,
+seat_assignment_version, control_epoch, decision_id, window_id, command_id and
+option_id. Generate a fresh 8–128-character command_id for a new decision. On
+lost ACK, retry the entire identical command with that same ID and payload.
+Changing payload under an existing ID is IDEMPOTENCY_CONFLICT.
+
+An ACK status of recorded means the response was durably locked, not that a
+chi/pong/kong won adjudication. Response windows keep a fixed deadline and all
+eligible responders retain their original opportunities. Use the later snapshot
+as the result. applied denotes an immediately adjudicated direct action.
+
+Cancel strategy when a new snapshot, hand or control epoch supersedes it. Measure
+server_time/deadline_at with a local budget and network safety margin. Never
+submit a late inference result. The SDK silently returns the sole pass option
+without calling strategy. Automatic flower replacement is a configurable SDK
+preference; it does not modify the server's legal action list or rule version.
+
+Reconnect with jittered backoff, authenticate again if necessary, then restore
+the snapshot barrier. The recorded field can carry an already accepted decision
+receipt. The server looks up recorded idempotent commands after authentication
+but before current deadline/lease checks. This makes an identical old-command
+retry safe without authorizing a new stale command. Self/reaction timeout counts
+are visible only in the owning participant snapshot for integration diagnostics.
+
+## Anonymous discard-only spectators
+
+Anyone may GET /v1/public/rooms/{id}/spectator and public replay endpoints.
+For WSS, POST /v1/public/rooms/{id}/spectator-ticket, connect to
+/v1/ws/spectators?room_id=..., and send {type:"authenticate",ticket:...} within
+5 seconds. No table data is sent before ticket authentication. It is read-only.
+
+The public view is spectator_discard_only@1. Its only card-face path is
+view.discards[].kind (replay frames have the same view projection). It includes
+an independent discard_id and claimed flag, never the physical tile entity ID.
+No concealed hands, flower faces, meld faces, winning hand, winning tile, scoring
+pattern explanations, wall order or entropy seed may appear. The restriction
+continues at hand end, match end and in all public replay pages. A logged-in
+owner or participant querying a public endpoint still receives this projection.
+
+Public non-card metadata may show identities, player kinds, seat/round winds,
+hand counts, remaining-wall count, action names, scores and termination method.
+Do not infer missing private information by requesting another seat_id. Private
+history requires the explicit owner/participant endpoint and, for a Bot,
+authorized bot_id selection.
+
+## Replay, statistics and errors
+
+Replay pages return frames,next_after,view_policy. Request after=next_after with
+limit<=200 until frames is empty; hand_index can filter one hand. HTTP private
+history and public discard-only history remain separate audiences.
+
+GET /v1/public/matches and /v1/me/matches accept mode, ruleset_id,
+ruleset_version, match_format, status and bot_id filters. Pagination uses the
+opaque next_before value as before; limit defaults to 25 and is capped at 100.
+Private Bot history selects an explicitly owned bot_id. After 30 days, terminal
+card-bearing snapshots and replays return 410 MATCH_ARCHIVED; public match
+details retain only typed settled-score summaries and the archive timestamp.
+
+Statistics use settled-facts@1. Compare only matching ruleset, version, profile,
+format, clock, mode, configuration hash, Bot version and queue pool. Metrics have
+value:number|null and samples; no samples means null, never invented zero.
+Incomplete, self-test, interrupted or trustee-assisted cohorts are not comparable
+competitive results. Raw participant-hand samples are not physical hand counts.
+
+AUTH_EXPIRED requires authentication; STALE_CONTROL requires stopping the old
+controller; DECISION_CLOSED requires a current snapshot; ALREADY_SUBMITTED means
+wait for resolution. INVALID_OPTION may be corrected only while the original
+deadline remains open. IDEMPOTENCY_CONFLICT cannot be blindly retried with another
+payload. Rate limits and slow-consumer disconnections protect service capacity.
+Server errors never expand a caller's identity or hidden-card audience.

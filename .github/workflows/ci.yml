@@ -1,0 +1,356 @@
+name: Verify and publish
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Test and container (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+      mailpit:
+        image: axllent/mailpit:v1.29
+        ports: ["1025:1025", "8025:8025"]
+    env:
+      CGO_ENABLED: "1"
+      DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      AUTH_MAIL_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      TOKEN_HASH_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
+      PUBLIC_BASE_URL: http://127.0.0.1:8080
+      MAILPIT_HTTP_URL: http://127.0.0.1:8025
+      COOKIE_SECURE: "false"
+      SMTP_ADDR: 127.0.0.1:1025
+      SMTP_FROM: test@localhost
+      SMTP_STARTTLS: "false"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.1"
+          cache: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Frontend checks
+        working-directory: web
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+      - name: TypeScript Bot SDK protocol fixtures
+        working-directory: sdk/typescript
+        run: npm ci && npm test
+      - name: Python Bot SDK protocol fixtures
+        run: |
+          python3 -m venv .venv-sdk
+          .venv-sdk/bin/python -m pip install -r sdk/python/requirements.lock
+          .venv-sdk/bin/python -m pip install -r api/requirements-test.lock
+          cd sdk/python
+          ../../.venv-sdk/bin/python -m unittest discover -s tests -v
+          cd ../..
+          .venv-sdk/bin/python -m unittest discover -s sdk/integration -v
+      - name: Generated API and WebSocket contracts remain in sync
+        run: |
+          go run ./api/generate
+          python3 api/generate_protocol.py
+          git diff --exit-code -- api
+          .venv-sdk/bin/python api/check_contracts.py
+      - name: Formatting, analysis and tests
+        run: |
+          test -z "$(gofmt -l $(git ls-files '*.go'))"
+          go vet ./...
+          go test -race -count=1 ./...
+          python3 -m unittest discover -s deploy -p 'test_*.py'
+      - name: Database migrations are repeatable
+        run: |
+          go run ./cmd/openmajiang migrate
+          go run ./cmd/openmajiang migrate
+      - name: MCR 10,000-hand deterministic soak
+        env:
+          MCR_SOAK_MATCHES: "625"
+        run: |
+          go test ./rules/mcr -list '^TestSoak$' | python3 -c 'import sys; assert "TestSoak" in sys.stdin.read().splitlines(), "required soak test is missing"'
+          go test ./rules/mcr -run '^TestSoak$' -count=1 -timeout=10m
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build native runtime image without credentials
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          push: false
+          platforms: linux/${{ matrix.arch }}
+          tags: openmajiang:verify
+          build-args: VCS_REF=${{ github.sha }}
+          cache-from: type=gha,scope=verify-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=verify-${{ matrix.arch }}
+      - name: Container migration and HTTP smoke
+        id: runtime_smoke
+        run: |
+          docker run --rm --network host -e DATABASE_URL openmajiang:verify migrate
+          docker run -d --name openmajiang-smoke --network host \
+            -e DATABASE_URL -e AUTH_MAIL_KEY -e TOKEN_HASH_KEY -e PUBLIC_BASE_URL -e COOKIE_SECURE \
+            -e SMTP_ADDR -e SMTP_FROM -e SMTP_STARTTLS openmajiang:verify
+          ./deploy/smoke.sh
+          docker exec openmajiang-smoke openmajiang healthcheck
+          test "$(docker inspect --format '{{.Config.User}}' openmajiang-smoke)" = '10001:10001'
+      - name: Install browsers for desktop and mobile account/table E2E
+        working-directory: web
+        run: npx playwright install --with-deps chromium webkit
+      - name: Browser account, match, spectator and reconnect E2E
+        working-directory: web
+        env:
+          DEBUG: pw:browser
+        run: npm run test:e2e
+      - name: PostgreSQL backup/restore and graceful SIGTERM/restart
+        if: ${{ !cancelled() && steps.runtime_smoke.outcome == 'success' }}
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: ./deploy/ci-restore.sh
+      - name: Browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-failure-${{ matrix.arch }}
+          path: |
+            web/playwright-report
+            web/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Container logs
+        if: always()
+        run: docker logs openmajiang-smoke 2>&1 || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f openmajiang-smoke 2>/dev/null || true
+
+  bot-wss:
+    name: 100-hand real WSS Bot integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+      mailpit:
+        image: axllent/mailpit:v1.29
+        ports: ["1025:1025", "8025:8025"]
+    env:
+      DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      AUTH_MAIL_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      TOKEN_HASH_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
+      SMTP_ADDR: 127.0.0.1:1025
+      SMTP_FROM: test@localhost
+      SMTP_STARTTLS: "false"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: sdk/typescript/package-lock.json
+      - name: Build TypeScript SDK for real WSS workers
+        working-directory: sdk/typescript
+        run: npm ci && npm run build
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build tested-source runtime image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          load: true
+          push: false
+          platforms: linux/amd64
+          tags: openmajiang:verify
+          build-args: VCS_REF=${{ github.sha }}
+          cache-from: type=gha,scope=verify-amd64
+      - name: Install fixed Python SDK dependency
+        run: |
+          python3 -m venv .venv-sdk
+          .venv-sdk/bin/python -m pip install -r sdk/python/requirements.lock
+      - name: Four independent Bot owners over trusted TLS
+        run: ./deploy/ci-wss.sh
+      - name: WSS integration report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bot-wss-integration
+          path: test-results/bot-wss.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  capacity:
+    name: One-hour 50-table spectator and latency capacity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: openmajiang
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openmajiang
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U openmajiang -d openmajiang"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+    env:
+      CGO_ENABLED: "1"
+      TEST_DATABASE_URL: postgres://openmajiang:ci-only-password@127.0.0.1:5432/openmajiang?sslmode=disable
+      OMJ_CAPACITY_SECONDS: "3600"
+      OMJ_CAPACITY_REPORT: ${{ github.workspace }}/test-results/capacity-report.json
+      OMJ_CAPACITY_PROFILE_PREFIX: ${{ github.workspace }}/test-results/capacity
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.27.1"
+          cache: true
+      - name: Six-minute capacity diagnostic with the same load and thresholds
+        env:
+          OMJ_CAPACITY_DIAGNOSTIC_SECONDS: "360"
+          OMJ_CAPACITY_REPORT: ${{ github.workspace }}/test-results/diagnostic/capacity-report.json
+          OMJ_CAPACITY_PROFILE_PREFIX: ${{ github.workspace }}/test-results/diagnostic/capacity
+        run: |
+          mkdir -p test-results/diagnostic
+          set -o pipefail
+          go test ./internal/platform -list '^TestCapacityDiagnostic$' | python3 -c 'import sys; assert "TestCapacityDiagnostic" in sys.stdin.read().splitlines(), "required diagnostic test is missing"'
+          go test ./internal/platform -run '^TestCapacityDiagnostic$' -count=1 -v -timeout=15m 2>&1 | tee test-results/diagnostic/capacity.log
+          python3 -c 'import json, os; r=json.load(open(os.environ["OMJ_CAPACITY_REPORT"])); assert r.get("purpose") == "diagnostic" and r.get("checks_passed") is True and r.get("passed") is False, "diagnostics must not claim full-hour acceptance"'
+      - name: Early capacity diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: capacity-diagnostic
+          path: test-results/diagnostic/capacity*
+          if-no-files-found: error
+          retention-days: 7
+      - name: Sustain production-clock capacity for a full hour
+        run: |
+          mkdir -p test-results
+          set -o pipefail
+          go test ./internal/platform -list '^TestCapacityOneHour$' | python3 -c 'import sys; assert "TestCapacityOneHour" in sys.stdin.read().splitlines(), "required capacity test is missing"'
+          go test ./internal/platform -run '^TestCapacityOneHour$' -count=1 -v -timeout=80m 2>&1 | tee test-results/capacity.log
+          test -s "$OMJ_CAPACITY_REPORT"
+          python3 -c 'import json, os; r=json.load(open(os.environ["OMJ_CAPACITY_REPORT"])); assert r.get("passed") is True and r.get("elapsed_seconds", 0) >= 3600, "full-hour capacity evidence is required"'
+      - name: Capacity profile summaries
+        if: always()
+        run: |
+          if [ -s "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof" ]; then
+            go tool pprof -top -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+            go tool pprof -top -cum -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+            go tool pprof -tags "${OMJ_CAPACITY_PROFILE_PREFIX}-cpu.pprof"
+          fi
+          if [ -s "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof" ]; then
+            go tool pprof -top -inuse_space -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof"
+            go tool pprof -top -alloc_space -nodecount=40 "${OMJ_CAPACITY_PROFILE_PREFIX}-heap.pprof"
+          fi
+      - name: Capacity evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: one-hour-capacity
+          path: test-results/capacity*
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    name: Publish Docker Hub image
+    needs: [verify, bot-wss, capacity]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    environment: DOCKERHUB
+    concurrency:
+      group: dockerhub-publish
+      cancel-in-progress: false
+    env:
+      DOCKERHUB_USER: ${{ secrets.USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.TOKEN }}
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate main/tag and compute image metadata
+        id: metadata
+        run: python3 deploy/release.py metadata
+      - name: Reject an existing immutable version tag
+        env:
+          RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+        run: python3 deploy/release.py absent
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.TOKEN }}
+      - name: Build and push tested architectures
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.metadata.outputs.tags }}
+          build-args: VCS_REF=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.metadata.outputs.version }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=release
+          cache-to: type=gha,mode=max,scope=release
+      - name: Record deployment digest
+        env:
+          IMAGE: ${{ steps.metadata.outputs.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          printf 'Published `%s@%s`\n' "$IMAGE" "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          printf 'This workflow does not update latest or deploy a server.\n' >> "$GITHUB_STEP_SUMMARY"

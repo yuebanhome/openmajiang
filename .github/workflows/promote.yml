@@ -1,0 +1,54 @@
+name: Promote stable image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Existing stable version, without v (for example 0.1.0)"
+        required: true
+        type: string
+      digest:
+        description: "Exact sha256 digest from the successful tag publication summary"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  promote:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: DOCKERHUB
+    concurrency:
+      group: dockerhub-publish
+      cancel-in-progress: false
+    env:
+      DOCKERHUB_USER: ${{ secrets.USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.TOKEN }}
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_DIGEST: ${{ inputs.digest }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify stable tag, successful release and exact manifest
+        id: verified
+        run: python3 deploy/release.py promote
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.TOKEN }}
+      - name: Promote existing digest without rebuilding
+        env:
+          IMAGE: ${{ steps.verified.outputs.image }}
+          DIGEST: ${{ steps.verified.outputs.digest }}
+        run: |
+          docker buildx imagetools create --tag "$IMAGE:latest" "$IMAGE@$DIGEST"
+          printf 'Promoted `%s@%s` to `latest`.\n' "$IMAGE" "$DIGEST" >> "$GITHUB_STEP_SUMMARY"

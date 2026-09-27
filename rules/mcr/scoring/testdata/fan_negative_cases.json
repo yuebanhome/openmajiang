@@ -1,0 +1,3689 @@
+[
+  {
+    "not_fan_id": 1,
+    "source_positive_fan_id": 9,
+    "reason": "小四喜只有三风刻与第四风将，不是四风刻。",
+    "input": {
+      "hand": [
+        "4z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "4z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 2,
+    "source_positive_fan_id": 10,
+    "reason": "小三元只有两箭刻与第三箭将。",
+    "input": {
+      "hand": [
+        "7z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "7z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 3,
+    "source_positive_fan_id": 3,
+    "reason": "将牌改为五索，含非绿牌。",
+    "input": {
+      "hand": [
+        "5s"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2s",
+            "2s",
+            "2s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6s",
+            "6s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 4,
+    "source_positive_fan_id": 4,
+    "reason": "九莲牌形声明幺九刻后不再是门清九莲宝灯。",
+    "input": {
+      "hand": [
+        "2m",
+        "3m",
+        "4m",
+        "5m",
+        "6m",
+        "7m",
+        "8m",
+        "9m",
+        "9m",
+        "9m"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5m",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true
+    }
+  },
+  {
+    "not_fan_id": 5,
+    "source_positive_fan_id": 17,
+    "reason": "只有三副杠，未达到四杠。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 6,
+    "source_positive_fan_id": 19,
+    "reason": "七对跨三门且不连续，不是连七对。",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5s",
+        "5s",
+        "6s",
+        "6s",
+        "7z"
+      ],
+      "melds": [],
+      "win_tile": "7z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 7,
+    "source_positive_fan_id": 18,
+    "reason": "混幺九由刻子和将组成，缺少十三种幺九字的单张构成。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9s",
+            "9s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 8,
+    "source_positive_fan_id": 18,
+    "reason": "混幺九含字牌，不是全由序数幺九组成。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9s",
+            "9s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 9,
+    "source_positive_fan_id": 38,
+    "reason": "三风刻配数牌将，缺少第四风将。",
+    "input": {
+      "hand": [
+        "4m",
+        "5m",
+        "6m",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2z",
+            "2z",
+            "2z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3z",
+            "3z",
+            "3z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 10,
+    "source_positive_fan_id": 54,
+    "reason": "两箭刻配数牌将，缺少第三箭将。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "2p"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6z",
+            "6z",
+            "6z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 11,
+    "source_positive_fan_id": 18,
+    "reason": "混幺九含万索数牌，不是全字牌。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "9s",
+            "9s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 12,
+    "source_positive_fan_id": 33,
+    "reason": "只有三副暗刻，另一个面子是顺子。",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "1m",
+        "3p",
+        "3p",
+        "3p",
+        "5s",
+        "5s",
+        "5s",
+        "6m",
+        "7m",
+        "8m",
+        "2z"
+      ],
+      "melds": [],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 13,
+    "source_positive_fan_id": 29,
+    "reason": "三色双龙会跨花色，不是一色双龙会。",
+    "input": {
+      "hand": [
+        "7s",
+        "8s",
+        "9s",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 14,
+    "source_positive_fan_id": 23,
+    "reason": "只有三副相同顺子，未达到四副。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 15,
+    "source_positive_fan_id": 24,
+    "reason": "只有三副连续刻子，未达到四副。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3m",
+            "3m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4m",
+            "4m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 16,
+    "source_positive_fan_id": 30,
+    "reason": "只有三副步高顺子，未达到四副。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 17,
+    "source_positive_fan_id": 57,
+    "reason": "只有两副杠，未达到三副。",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 18,
+    "source_positive_fan_id": 55,
+    "reason": "全带幺中有顺子的中张，不是混幺九刻子和将。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "1z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "1z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 19,
+    "source_positive_fan_id": 62,
+    "reason": "门清普通四顺一将并不是七对子。",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "4p",
+        "5p",
+        "6p",
+        "7s",
+        "8s",
+        "9s",
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 20,
+    "source_positive_fan_id": 34,
+    "reason": "仅五种字牌，不具备七种字牌。",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "2s",
+        "5s",
+        "8s",
+        "3p",
+        "6p",
+        "9p",
+        "1z",
+        "2z",
+        "3z",
+        "4z"
+      ],
+      "melds": [],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 21,
+    "source_positive_fan_id": 49,
+    "reason": "碰碰和包含一三五七奇数刻，非全双数刻将。",
+    "input": {
+      "hand": [
+        "7m",
+        "7m",
+        "7m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 22,
+    "source_positive_fan_id": 50,
+    "reason": "混一色有箭牌，非清一色。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "2m"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2m",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 23,
+    "source_positive_fan_id": 69,
+    "reason": "只有两副相同顺子，不是三副。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 24,
+    "source_positive_fan_id": 42,
+    "reason": "连续刻子跨花色，不是一色三节高。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4s",
+            "4s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 25,
+    "source_positive_fan_id": 36,
+    "reason": "上四含六，未限定七八九。",
+    "input": {
+      "hand": [
+        "7s",
+        "7s",
+        "7s",
+        "8p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "6m",
+            "7m",
+            "8m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "6p",
+            "6p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "8p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 26,
+    "source_positive_fan_id": 68,
+    "reason": "断幺包含二三七八，未限定四五六。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 27,
+    "source_positive_fan_id": 37,
+    "reason": "下四含四，未限定一二三。",
+    "input": {
+      "hand": [
+        "2s",
+        "2s",
+        "2s",
+        "3p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4p",
+            "4p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "3p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 28,
+    "source_positive_fan_id": 71,
+    "reason": "只有一至六的短直，缺少七八九顺子。",
+    "input": {
+      "hand": [
+        "6p",
+        "7p",
+        "8p",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 29,
+    "source_positive_fan_id": 29,
+    "reason": "将改为四筒，不满足三色双龙会五数将。",
+    "input": {
+      "hand": [
+        "7s",
+        "8s",
+        "9s",
+        "4p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1s",
+            "2s",
+            "3s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "4p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 30,
+    "source_positive_fan_id": 51,
+    "reason": "步高顺子跨花色，不是一色三步高。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3s",
+            "4s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 31,
+    "source_positive_fan_id": 68,
+    "reason": "断幺的二三四顺子不含五，不满足每组带五。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 32,
+    "source_positive_fan_id": 65,
+    "reason": "只有两门同数刻，缺少第三门。",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "2p",
+            "2p",
+            "2p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 33,
+    "source_positive_fan_id": 66,
+    "reason": "只有两副暗刻，另外两面子为顺子。",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "1m",
+        "3p",
+        "3p",
+        "3p",
+        "4s",
+        "5s",
+        "6s",
+        "7m",
+        "8m",
+        "9m",
+        "2z"
+      ],
+      "melds": [],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 34,
+    "source_positive_fan_id": 20,
+    "reason": "七星不靠成立时按高番排除全不靠，不叠计。",
+    "input": {
+      "hand": [
+        "1m",
+        "4m",
+        "7m",
+        "2s",
+        "5s",
+        "8s",
+        "3p",
+        "1z",
+        "2z",
+        "3z",
+        "4z",
+        "5z",
+        "6z"
+      ],
+      "melds": [],
+      "win_tile": "7z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 35,
+    "source_positive_fan_id": 62,
+    "reason": "普通一二三、四五六、七八九顺子缺少147/258/369组合龙。",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "4p",
+        "5p",
+        "6p",
+        "7s",
+        "8s",
+        "9s",
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 36,
+    "source_positive_fan_id": 68,
+    "reason": "断幺含二三四，非限定六七八九。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 37,
+    "source_positive_fan_id": 68,
+    "reason": "断幺含六七八，非限定一二三四。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 38,
+    "source_positive_fan_id": 49,
+    "reason": "碰碰和仅字牌将而无三风刻。",
+    "input": {
+      "hand": [
+        "7m",
+        "7m",
+        "7m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 39,
+    "source_positive_fan_id": 28,
+    "reason": "清龙三顺同色，不是三色花龙。",
+    "input": {
+      "hand": [
+        "2p",
+        "3p",
+        "4p",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 40,
+    "source_positive_fan_id": 43,
+    "reason": "包含万牌；推不倒的允许牌集合不含万牌。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 41,
+    "source_positive_fan_id": 23,
+    "reason": "三个相同顺子都为万，不是三色三同顺。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 42,
+    "source_positive_fan_id": 24,
+    "reason": "连续刻都为万，不是三色三节高。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3m",
+            "3m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "4m",
+            "4m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 43,
+    "source_positive_fan_id": 80,
+    "reason": "自摸已构成番，不能再计无番和。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true
+    }
+  },
+  {
+    "not_fan_id": 44,
+    "source_positive_fan_id": 45,
+    "reason": "最后张为点和，不是自摸妙手回春。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "wall_last": true
+    }
+  },
+  {
+    "not_fan_id": 45,
+    "source_positive_fan_id": 44,
+    "reason": "最后张为自摸，不是海底捞月点和。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true,
+      "wall_last": true
+    }
+  },
+  {
+    "not_fan_id": 46,
+    "source_positive_fan_id": 80,
+    "reason": "普通自摸没有杠后补牌标记。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true
+    }
+  },
+  {
+    "not_fan_id": 47,
+    "source_positive_fan_id": 43,
+    "reason": "普通点和没有抢补杠标记。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 48,
+    "source_positive_fan_id": 57,
+    "reason": "两副杠均为明杠，不是双暗杠。",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 49,
+    "source_positive_fan_id": 31,
+    "reason": "全带五牌形含顺子，不是四刻一将。",
+    "input": {
+      "hand": [
+        "5s",
+        "5s",
+        "5s",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4m",
+            "5m",
+            "6m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5p",
+            "6p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 50,
+    "source_positive_fan_id": 22,
+    "reason": "清一色无字牌，不计混一色。",
+    "input": {
+      "hand": [
+        "5m",
+        "5m",
+        "5m",
+        "6m"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7m",
+            "8m",
+            "9m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "6m",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 51,
+    "source_positive_fan_id": 39,
+    "reason": "三色花龙顺子间差三，不是逐一递增三色步高。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7s",
+            "8s",
+            "9s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 52,
+    "source_positive_fan_id": 52,
+    "reason": "字牌只剩箭牌而无风牌，缺少五门之一。",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "2p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 53,
+    "source_positive_fan_id": 53,
+    "reason": "全明面子自摸将牌，不能按点和计全求人。",
+    "input": {
+      "hand": [
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2s",
+            "3s",
+            "4s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true
+    }
+  },
+  {
+    "not_fan_id": 54,
+    "source_positive_fan_id": 59,
+    "reason": "仅一副箭刻，缺少第二副。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 55,
+    "source_positive_fan_id": 55,
+    "reason": "将改为五万，这一组不带幺字。",
+    "input": {
+      "hand": [
+        "5z",
+        "5z",
+        "5z",
+        "5m"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "7p",
+            "8p",
+            "9p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "1s",
+            "1s",
+            "1s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5m",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 56,
+    "source_positive_fan_id": 62,
+    "reason": "门清点和而非自摸，不能计不求人。",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "4p",
+        "5p",
+        "6p",
+        "7s",
+        "8s",
+        "9s",
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 57,
+    "source_positive_fan_id": 48,
+    "reason": "双暗杠不是双明杠。",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "gang",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 58,
+    "source_positive_fan_id": 43,
+    "reason": "和牌张没有公开第四张标记。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 59,
+    "source_positive_fan_id": 59,
+    "reason": "箭刻改为数牌刻，没有任何箭刻。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 60,
+    "source_positive_fan_id": 60,
+    "reason": "场风改南而刻子为东，非圈风刻。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 1,
+      "round_wind": 1
+    }
+  },
+  {
+    "not_fan_id": 61,
+    "source_positive_fan_id": 61,
+    "reason": "门风改南而刻子为东，非门风刻。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1z",
+            "1z",
+            "1z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 1,
+      "round_wind": 1
+    }
+  },
+  {
+    "not_fan_id": 62,
+    "source_positive_fan_id": 56,
+    "reason": "门清自摸计不求人，不重复计门前清。",
+    "input": {
+      "hand": [
+        "1m",
+        "2m",
+        "3m",
+        "4p",
+        "5p",
+        "6p",
+        "7s",
+        "8s",
+        "9s",
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0,
+      "self_draw": true
+    }
+  },
+  {
+    "not_fan_id": 63,
+    "source_positive_fan_id": 63,
+    "reason": "将改为中发白中的中，含字牌将不满足平和。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 64,
+    "source_positive_fan_id": 64,
+    "reason": "四张二万拆成两张二万和两张七万，所有牌最多两张，无四归一。",
+    "input": {
+      "hand": [
+        "1m",
+        "1m",
+        "2m",
+        "2m",
+        "3p",
+        "3p",
+        "4p",
+        "4p",
+        "5s",
+        "5s",
+        "6s",
+        "7m",
+        "7m"
+      ],
+      "melds": [],
+      "win_tile": "6s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 65,
+    "source_positive_fan_id": 65,
+    "reason": "两刻分别为二万与三筒，不同数。",
+    "input": {
+      "hand": [
+        "7m",
+        "8m",
+        "9m",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "3p",
+            "3p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 66,
+    "source_positive_fan_id": 66,
+    "reason": "一副原暗刻改为明碰，只剩一暗刻。",
+    "input": {
+      "hand": [
+        "3p",
+        "3p",
+        "3p",
+        "4s",
+        "5s",
+        "6s",
+        "7m",
+        "8m",
+        "9m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 67,
+    "source_positive_fan_id": 74,
+    "reason": "唯一杠为明杠，不计暗杠。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 68,
+    "source_positive_fan_id": 76,
+    "reason": "牌中有一万，非断幺。",
+    "input": {
+      "hand": [
+        "2s",
+        "3s",
+        "4s",
+        "5p"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 69,
+    "source_positive_fan_id": 69,
+    "reason": "两顺分别123万与234万，非相同顺。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 70,
+    "source_positive_fan_id": 70,
+    "reason": "不同花色顺子分别234万与123筒，没有同数顺。",
+    "input": {
+      "hand": [
+        "6s",
+        "7s",
+        "8s",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "2m",
+            "3m",
+            "4m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "1p",
+            "2p",
+            "3p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 71,
+    "source_positive_fan_id": 71,
+    "reason": "123万配567万，中间断开，非六张连续数。",
+    "input": {
+      "hand": [
+        "6p",
+        "7p",
+        "8p",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5m",
+            "6m",
+            "7m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 72,
+    "source_positive_fan_id": 72,
+    "reason": "123万配678万，缺少789万，非老少副。",
+    "input": {
+      "hand": [
+        "6p",
+        "7p",
+        "8p",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6m",
+            "7m",
+            "8m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5s",
+            "5s",
+            "5s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 73,
+    "source_positive_fan_id": 73,
+    "reason": "幺九刻改为二万刻，余下没有幺九字刻。",
+    "input": {
+      "hand": [
+        "4p",
+        "5p",
+        "6p",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "peng",
+          "tiles": [
+            "2m",
+            "2m",
+            "2m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "2p",
+            "3p",
+            "4p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "5z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 74,
+    "source_positive_fan_id": 67,
+    "reason": "唯一杠为暗杠，不计明杠。",
+    "input": {
+      "hand": [
+        "6m",
+        "7m",
+        "8m",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "gang",
+          "tiles": [
+            "1m",
+            "1m",
+            "1m",
+            "1m"
+          ],
+          "from_seat": 0,
+          "concealed": true
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "3p",
+            "4p",
+            "5p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4s",
+            "5s",
+            "6s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 75,
+    "source_positive_fan_id": 52,
+    "reason": "五门齐包含万筒索全部三门，非缺一门。",
+    "input": {
+      "hand": [
+        "1s",
+        "1s",
+        "1s",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "5z",
+            "5z",
+            "5z"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2z",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 76,
+    "source_positive_fan_id": 43,
+    "reason": "将为风牌，牌中有字。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 77,
+    "source_positive_fan_id": 78,
+    "reason": "和牌张嵌在13筒之间，属坎张而非边张。",
+    "input": {
+      "hand": [
+        "1p",
+        "3p",
+        "5z",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5p",
+            "6p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 78,
+    "source_positive_fan_id": 77,
+    "reason": "12筒和3筒，属边张而非坎张。",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "5z",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5p",
+            "6p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "3p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 79,
+    "source_positive_fan_id": 77,
+    "reason": "和牌张完成顺子而非将，非单钓将。",
+    "input": {
+      "hand": [
+        "1p",
+        "2p",
+        "5z",
+        "5z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "3m",
+            "4m",
+            "5m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "5p",
+            "6p",
+            "7p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "6s",
+            "7s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "3p",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 80,
+    "source_positive_fan_id": 43,
+    "reason": "和牌来源为点和而非自摸。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  },
+  {
+    "not_fan_id": 81,
+    "source_positive_fan_id": 43,
+    "reason": "花牌数为零。",
+    "input": {
+      "hand": [
+        "3s",
+        "4s",
+        "2z",
+        "2z"
+      ],
+      "melds": [
+        {
+          "kind": "chi",
+          "tiles": [
+            "1m",
+            "2m",
+            "3m"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "chi",
+          "tiles": [
+            "4p",
+            "5p",
+            "6p"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        },
+        {
+          "kind": "peng",
+          "tiles": [
+            "8s",
+            "8s",
+            "8s"
+          ],
+          "from_seat": 1,
+          "concealed": false
+        }
+      ],
+      "win_tile": "2s",
+      "seat_wind": 0,
+      "round_wind": 0
+    }
+  }
+]

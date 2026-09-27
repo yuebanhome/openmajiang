@@ -1,0 +1,241 @@
+import { listFrom } from "./api";
+import { Badge, Link, Notice, PageHeading } from "./components";
+import { useResource } from "./hooks";
+import type { RuleManifest } from "./types";
+export function Rules() {
+  const r = useResource<unknown>("/v1/public/rules");
+  const rules = listFrom<RuleManifest>(r.data, "rulesets");
+  return (
+    <>
+      <PageHeading eyebrow="KNOW THE TABLE" title="规则与公平对局">
+        规则版本在开局时锁定，同桌的人与 Bot 遵循同一套裁决。
+      </PageHeading>
+      <Notice error>{r.error}</Notice>
+      <div className="rules-intro">
+        <div>
+          <span className="eyebrow">MAHJONG COMPETITION RULES</span>
+          <h2>国标麻将</h2>
+          <p>
+            144 张牌 · 81 个番种 · 非花至少 8 分起和
+            <br />
+            WMO《麻将竞赛规则》2014 年第 2 版
+          </p>
+          <Badge>openmajiang.mcr @ 1.0.0</Badge>
+        </div>
+        <div className="rule-numbers">
+          <div>
+            <strong>144</strong>
+            <span>包含八张花牌</span>
+          </div>
+          <div>
+            <strong>81</strong>
+            <span>完整番种</span>
+          </div>
+          <div>
+            <strong>8</strong>
+            <span>非花起和门槛</span>
+          </div>
+        </div>
+      </div>
+      <div className="info-grid">
+        <section className="panel">
+          <h3>行牌与和牌</h3>
+          <p>
+            四人按顺序行牌，允许吃、碰、杠、补花和和牌。对同一弃牌的响应在固定窗口结束后统一裁决，和牌优先于碰杠，碰杠优先于吃。
+          </p>
+          <p>
+            多人同时可和时，按来源玩家之后的行牌顺序取最近者，一盘一位和牌者。没有振听规则。
+          </p>
+          <p>
+            七对、十三幺、全不靠、七星不靠、组合龙等特殊牌型按国标计算；七对允许四张相同牌计作两对。
+          </p>
+        </section>
+        <section className="panel">
+          <h3>8 分起和与计分</h3>
+          <p>
+            非花番分 B 至少为 8 才能和牌，花牌不能补足起和门槛。每张补出的花计 1
+            分，最终番分 F = B + 花分。
+          </p>
+          <p>点和：和牌者收入 24 + F，放铳者支付 8 + F，其余两人各付 8。</p>
+          <p>
+            自摸：其他三家各付 8 + F。杠不单独产生转账。比如 B=8、两张花，自摸为
+            +54 / −18 / −18 / −18。
+          </p>
+        </section>
+        <section className="panel">
+          <h3>赛程与花牌</h3>
+          <p>
+            标准赛程四圈共 16
+            盘，不连庄，换圈按国标换座。单盘、四盘练习单独记录，不混入标准赛程统计。
+          </p>
+          <p>
+            起手补花按庄家起的顺序完成。普通行牌中的自动补花是可关闭的操作偏好，未补花也可合法弃出。
+          </p>
+          <p>
+            线上赛程不使用线下 150 分钟整局上限，单步行动时间由房间配置确定。
+          </p>
+        </section>
+        <section className="panel">
+          <h3>线上补充 OM-MCR-1</h3>
+          <p>
+            没有可用补牌时不能杠；牌墙耗尽后的最后弃牌只允许和牌或过。末张花无法补牌时允许弃出并结束。
+          </p>
+          <p>
+            所有响应在固定窗口截止时裁决，不因有人提前响应而提前结束。断线不会重置计时，超时按公开兜底策略处理。
+          </p>
+          <p>
+            服务端只允许合法动作；收到“已登记”代表接收成功，最终牌面以服务端裁决为准。
+          </p>
+        </section>
+        <section className="panel">
+          <h3>公开观战边界</h3>
+          <p>
+            游客、登录的旁观者、Bot 所有者都只能通过公开观战看到已经打出的牌面。
+          </p>
+          <p>
+            手牌、摸入牌、副露、补花、暗杠、终局成牌和算番拆解不进入观众视图。公开回放遵循同样的规则。
+          </p>
+          <p>
+            被吃碰的弃牌仍保留原始弃牌记录及已取用标记，不因此展示新增牌面。
+          </p>
+        </section>
+        <section className="panel">
+          <h3>规则插件</h3>
+          <p>
+            每套规则声明人数、赛程、能力和视图版本。平台管理账号、房间与连接，规则插件负责合法动作与裁决。
+          </p>
+          {rules.map((rule) => (
+            <div className="registry-item" key={rule.id}>
+              <strong>{rule.name}</strong>
+              <code>
+                {rule.id} @ {rule.version}
+              </code>
+              <small>
+                {rule.seat_counts?.join(" / ")} 人 · {rule.formats?.join(" / ")}
+              </small>
+            </div>
+          ))}
+          <p>
+            <a
+              href="https://www.mindmahjong.com/adobe/MCR2021.pdf"
+              target="_blank"
+              rel="noreferrer"
+            >
+              查看 WMO 规则原文 ↗
+            </a>
+          </p>
+        </section>
+      </div>
+    </>
+  );
+}
+export function Developers() {
+  return (
+    <>
+      <PageHeading eyebrow="OPEN PROTOCOL" title="Bot 接入指南">
+        自己运行策略，平台负责发牌、合法动作、时钟与计分。
+      </PageHeading>
+      <article className="prose panel">
+        <h2>1. 创建 Bot、版本与凭证</h2>
+        <p>
+          在<Link href="/bots">Bot 控制台</Link>
+          创建独立身份，声明支持的规则版本并生成运行 Key。每个 Bot
+          使用独立凭证；运行 Key 不能操作你的账号。
+        </p>
+        <h2>2. 换取短期连接会话</h2>
+        <pre>
+          <code>{`POST /v1/bot-sessions\nAuthorization: Bearer <BOT_API_KEY>\nContent-Type: application/json\n\n{"protocol_version":"1.0","rulesets":[{"id":"openmajiang.mcr","version":"1.0.0"}]}`}</code>
+        </pre>
+        <p>
+          使用返回的 session_token，在 WebSocket 握手中发送 Authorization:
+          Bearer。连接地址是 <code>/v1/ws/bots</code>。不要把凭证写到 URL
+          或日志。
+        </p>
+        <h2>3. 接收观测，选择合法选项</h2>
+        <p>
+          先接收本人视角的快照，然后处理 decision_request。只选择当前
+          decision_id 内服务端列出的
+          option_id。提交时携带服务端提供的比赛、盘次、窗口、控制权上下文和全局唯一
+          command_id。
+        </p>
+        <pre>
+          <code>{`function choose(decision) {\n  return decision.legal_actions.find(a => a.type === "hu")\n    ?? decision.legal_actions.find(a => a.type === "pass")\n    ?? decision.legal_actions[0];\n}`}</code>
+        </pre>
+        <p>
+          动作确认 recorded
+          仅表示意向已持久化。收到后等待最新服务端视图，不要自行预演牌面并当作事实。重复提交同一动作时保留同一
+          command_id 和相同负载。
+        </p>
+        <h2>4. 超时与恢复</h2>
+        <p>
+          思考预算由牌桌时钟决定。接近截止时间时提交可用的合法方案；服务端在超时后兜底。重连后先恢复当前快照和控制权，再处理当前决策，旧窗口的动作不能用于新窗口。
+        </p>
+        <h2>5. 国标能力</h2>
+        <p>
+          完整处理花牌、非花 8 分起和门槛、四圈换座以及 144 张共享牌墙。Botzone
+          的无花、独立牌墙变体不能直接冒充完整国标支持。
+        </p>
+        <div className="mini-callout">
+          仓库提供 TypeScript 与 Python SDK、示例 Bot
+          和协议样例。以与服务端版本相同的 SDK 为准。
+        </div>
+        <a
+          className="button secondary"
+          href="https://github.com/yuebanhome/openmajiang"
+          target="_blank"
+          rel="noreferrer"
+        >
+          查看仓库与 SDK ↗
+        </a>
+      </article>
+    </>
+  );
+}
+export function Legal({ privacy }: { privacy: boolean }) {
+  return (
+    <>
+      <PageHeading title={privacy ? "隐私说明" : "使用条款"} />
+      <article className="prose panel">
+        {privacy ? (
+          <>
+            <h2>账号与比赛数据</h2>
+            <p>
+              平台保存账号邮箱、展示名、密码的不可逆校验值、登录会话以及比赛所需的行动和计分记录。运行凭证以不可逆形式保存，完整
+              Key 仅在创建时展示。
+            </p>
+            <h2>公开范围</h2>
+            <p>
+              房间名称、展示名、公开对局状态、分数与弃牌记录可以被任何人查看。邮箱、会话、Bot
+              凭证、玩家暗手和牌墙不属于公开观战内容。展示名和房间名请勿填写联系方式等敏感信息。
+            </p>
+            <h2>账号控制</h2>
+            <p>
+              你可以在账号设置中修改资料和密码、退出设备、请求更换邮箱或注销账号。比赛的必要记录按平台保留政策保存，注销不会改变已发生的比赛结果。
+            </p>
+          </>
+        ) : (
+          <>
+            <h2>免费对局</h2>
+            <p>
+              OpenMajiang 提供真人、混合与 Bot
+              麻将对局。没有充值、下注、提现、付费房卡或分数兑换；对局分数仅用于记录比赛结果。
+            </p>
+            <h2>公平与规则</h2>
+            <p>
+              参与者应遵守房间锁定的规则版本和平台时钟。不得利用接口漏洞、盗取凭证、跨身份窥牌或串通共享隐藏信息。Bot
+              只能使用获准的本人观测。
+            </p>
+            <h2>连接与中断</h2>
+            <p>
+              断线、超时与服务异常按已公布的恢复和托管策略处理。提前结束与平台中断会在对局记录中标注，不伪装为完整比赛。
+            </p>
+            <h2>公开房间</h2>
+            <p>
+              所有线上牌桌均允许匿名弃牌观战。邀请权限只限制入座，不限制其他人观看已打出的牌。
+            </p>
+          </>
+        )}
+      </article>
+    </>
+  );
+}

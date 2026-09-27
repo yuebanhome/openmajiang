@@ -1,0 +1,2471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openmajiang.invalid/schemas/protocol.json",
+  "$defs": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Ok": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Accepted": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "EmailRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        }
+      },
+      "required": [
+        "email"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "password": {
+          "type": "string",
+          "minLength": 15,
+          "maxLength": 128,
+          "writeOnly": true,
+          "description": "Unicode characters; spaces are preserved. Never log request bodies."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "accept_terms": {
+          "const": true
+        }
+      },
+      "required": [
+        "email",
+        "password",
+        "name",
+        "accept_terms"
+      ],
+      "additionalProperties": false
+    },
+    "LoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "TokenRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "ResetRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "writeOnly": true
+        },
+        "password": {
+          "type": "string",
+          "minLength": 15,
+          "maxLength": 128,
+          "writeOnly": true,
+          "description": "Unicode characters; spaces are preserved. Never log request bodies."
+        }
+      },
+      "required": [
+        "token",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "NameRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordRequest": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "PasswordChange": {
+      "type": "object",
+      "properties": {
+        "current_password": {
+          "type": "string",
+          "writeOnly": true
+        },
+        "new_password": {
+          "type": "string",
+          "minLength": 15,
+          "maxLength": 128,
+          "writeOnly": true,
+          "description": "Unicode characters; spaces are preserved. Never log request bodies."
+        }
+      },
+      "required": [
+        "current_password",
+        "new_password"
+      ],
+      "additionalProperties": false
+    },
+    "EmailChange": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "writeOnly": true
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "additionalProperties": false
+    },
+    "UserEnvelope": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "dto.json#/$defs/User"
+        },
+        "csrf_token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user"
+      ],
+      "additionalProperties": false
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "dto.json#/$defs/User"
+        },
+        "csrf_token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user",
+        "csrf_token"
+      ],
+      "additionalProperties": false
+    },
+    "Session": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "user_agent": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_seen_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "current": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "user_agent",
+        "created_at",
+        "last_seen_at",
+        "expires_at",
+        "current"
+      ],
+      "additionalProperties": false
+    },
+    "SessionList": {
+      "type": "object",
+      "properties": {
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Session"
+          }
+        }
+      },
+      "required": [
+        "sessions"
+      ],
+      "additionalProperties": false
+    },
+    "EmailDelivery": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "none",
+            "queued",
+            "sending",
+            "sent",
+            "failed"
+          ]
+        },
+        "attempts": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "next_attempt_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "notice": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Verified": {
+      "type": "object",
+      "properties": {
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "verified"
+      ],
+      "additionalProperties": false
+    },
+    "Reset": {
+      "type": "object",
+      "properties": {
+        "reset": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "reset"
+      ],
+      "additionalProperties": false
+    },
+    "LoggedOut": {
+      "type": "object",
+      "properties": {
+        "logged_out": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "logged_out"
+      ],
+      "additionalProperties": false
+    },
+    "Revoked": {
+      "type": "object",
+      "properties": {
+        "revoked": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "revoked"
+      ],
+      "additionalProperties": false
+    },
+    "Deleted": {
+      "type": "object",
+      "properties": {
+        "deleted": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "deleted"
+      ],
+      "additionalProperties": false
+    },
+    "Changed": {
+      "type": "object",
+      "properties": {
+        "changed": {
+          "type": "boolean"
+        },
+        "login_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "changed",
+        "login_required"
+      ],
+      "additionalProperties": false
+    },
+    "RuleIdentity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "RoomEnvelope": {
+      "type": "object",
+      "properties": {
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "own_participant_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "room"
+      ],
+      "additionalProperties": false
+    },
+    "RoomCreated": {
+      "type": "object",
+      "properties": {
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "invite_code": {
+          "type": "string",
+          "description": "Only issued to the owner. Never included in public room reads."
+        }
+      },
+      "required": [
+        "room",
+        "invite_code"
+      ],
+      "additionalProperties": false
+    },
+    "Rooms": {
+      "type": "object",
+      "properties": {
+        "rooms": {
+          "type": "array",
+          "items": {
+            "$ref": "dto.json#/$defs/Room"
+          }
+        }
+      },
+      "required": [
+        "rooms"
+      ],
+      "additionalProperties": false
+    },
+    "CreateRoom": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "human_only",
+            "mixed",
+            "bot_only"
+          ]
+        },
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "online_profile": {
+          "type": "string"
+        },
+        "seat_count": {
+          "type": "integer"
+        },
+        "invite_only": {
+          "type": "boolean"
+        },
+        "self_test": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "JoinRoom": {
+      "type": "object",
+      "properties": {
+        "invite_code": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "InviteCode": {
+      "type": "object",
+      "properties": {
+        "invite_code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invite_code"
+      ],
+      "additionalProperties": false
+    },
+    "Ready": {
+      "type": "object",
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ready"
+      ],
+      "additionalProperties": false
+    },
+    "AddBot": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "builtin": {
+              "type": "string",
+              "enum": [
+                "random_legal",
+                "basic_heuristic"
+              ]
+            }
+          },
+          "required": [
+            "builtin"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "bot_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "bot_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "LeftRoom": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "leave_after_hand": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "leave_after_hand"
+      ],
+      "additionalProperties": false
+    },
+    "QueueRequest": {
+      "type": "object",
+      "properties": {
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "continuous": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "QueueStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "cancelled"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "HumanQueue": {
+      "type": "object",
+      "properties": {
+        "queued": {
+          "type": "boolean"
+        },
+        "room_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queued",
+        "room_id"
+      ],
+      "additionalProperties": false
+    },
+    "ActiveMatch": {
+      "type": "object",
+      "properties": {
+        "room": {
+          "anyOf": [
+            {
+              "$ref": "dto.json#/$defs/Room"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "match": {
+          "type": "null"
+        },
+        "match_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "room"
+      ],
+      "additionalProperties": false
+    },
+    "CommandAck": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "command_ack"
+        },
+        "command_id": {
+          "type": "string"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "recorded",
+            "applied"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "command_id",
+        "decision_id",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "ObservationRef": {
+      "type": "object",
+      "properties": {
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "stream_id",
+        "view_seq"
+      ],
+      "additionalProperties": false
+    },
+    "Decision": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "decision_request"
+        },
+        "protocol_version": {
+          "const": "1.0"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "hand_id": {
+          "type": "string"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "seat_assignment_version": {
+          "type": "integer"
+        },
+        "control_epoch": {
+          "type": "integer"
+        },
+        "decision_id": {
+          "type": "string"
+        },
+        "window_id": {
+          "type": "string"
+        },
+        "phase": {
+          "type": "string"
+        },
+        "server_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "legal_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "dto.json#/$defs/Option"
+          }
+        },
+        "ruleset": {
+          "$ref": "#/$defs/RuleIdentity"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "observation_ref": {
+          "$ref": "#/$defs/ObservationRef"
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "protocol_version",
+        "match_id",
+        "hand_id",
+        "participant_id",
+        "seat_id",
+        "seat_assignment_version",
+        "control_epoch",
+        "decision_id",
+        "window_id",
+        "phase",
+        "server_time",
+        "deadline_at",
+        "legal_actions",
+        "ruleset",
+        "match_format"
+      ],
+      "additionalProperties": false
+    },
+    "ParticipantSnapshot": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "snapshot"
+        },
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "hand_id": {
+          "type": "string"
+        },
+        "hand_index": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "deadline_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "platform_interrupted": {
+          "type": "boolean"
+        },
+        "ruleset": {
+          "$ref": "#/$defs/RuleIdentity"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "integer"
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "seat_assignment_version": {
+          "type": "integer"
+        },
+        "control_epoch": {
+          "type": "integer"
+        },
+        "view": {
+          "$ref": "dto.json#/$defs/MCRParticipantView"
+        },
+        "decision": {
+          "$ref": "#/$defs/Decision"
+        },
+        "recorded": {
+          "$ref": "#/$defs/CommandAck"
+        },
+        "self_timeout_count": {
+          "type": "integer"
+        },
+        "reaction_timeout_count": {
+          "type": "integer"
+        },
+        "control_token": {
+          "type": "string"
+        },
+        "control_status": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "readonly"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "room",
+        "match_id",
+        "hand_id",
+        "participant_id",
+        "seat_id",
+        "seat_assignment_version",
+        "control_epoch",
+        "hand_index",
+        "status",
+        "view",
+        "ruleset",
+        "match_format",
+        "platform_interrupted"
+      ],
+      "additionalProperties": false
+    },
+    "SpectatorSnapshot": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "spectator_snapshot"
+        },
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "match_id": {
+          "type": "string"
+        },
+        "hand_id": {
+          "type": "string"
+        },
+        "hand_index": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "deadline_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "platform_interrupted": {
+          "type": "boolean"
+        },
+        "ruleset": {
+          "$ref": "#/$defs/RuleIdentity"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "integer"
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer"
+        },
+        "view_policy": {
+          "const": "spectator_discard_only@1"
+        },
+        "view": {
+          "$ref": "dto.json#/$defs/MCRSpectatorView"
+        },
+        "match": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "room_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "match_format": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "room_id",
+            "status",
+            "match_format"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "room",
+        "view",
+        "view_policy",
+        "match_id",
+        "hand_id",
+        "hand_index",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "RoomSnapshot": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "room_snapshot"
+        },
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "view": {
+          "type": "null"
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer"
+        },
+        "participant_id": {
+          "type": "string"
+        },
+        "seat_id": {
+          "type": "integer"
+        },
+        "control_epoch": {
+          "type": "integer"
+        },
+        "control_token": {
+          "type": "string"
+        },
+        "control_status": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "readonly"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "room",
+        "view"
+      ],
+      "additionalProperties": false
+    },
+    "PublicRoomSnapshot": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "room_snapshot"
+        },
+        "room": {
+          "$ref": "dto.json#/$defs/Room"
+        },
+        "view": {
+          "type": "null"
+        },
+        "stream_id": {
+          "type": "string"
+        },
+        "view_seq": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "room",
+        "view"
+      ],
+      "additionalProperties": false
+    },
+    "PrivateSnapshot": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ParticipantSnapshot"
+        },
+        {
+          "$ref": "#/$defs/RoomSnapshot"
+        }
+      ]
+    },
+    "PublicSnapshot": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/SpectatorSnapshot"
+        },
+        {
+          "$ref": "#/$defs/PublicRoomSnapshot"
+        }
+      ]
+    },
+    "SpectatorTicket": {
+      "type": "object",
+      "properties": {
+        "ticket": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Five-minute read-only spectator capability, used in first WS frame."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "view_policy": {
+          "const": "spectator_discard_only@1"
+        }
+      },
+      "required": [
+        "ticket",
+        "expires_at",
+        "view_policy"
+      ],
+      "additionalProperties": false
+    },
+    "PrivateReplay": {
+      "type": "object",
+      "properties": {
+        "frames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "seq": {
+                "type": "integer"
+              },
+              "hand_index": {
+                "type": "integer"
+              },
+              "hand_id": {
+                "type": "string"
+              },
+              "view": {
+                "$ref": "dto.json#/$defs/MCRParticipantView"
+              },
+              "at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "seq",
+              "hand_index",
+              "hand_id",
+              "view",
+              "at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "next_after": {
+          "type": "integer"
+        },
+        "view_policy": {
+          "const": "participant_private"
+        }
+      },
+      "required": [
+        "frames",
+        "next_after",
+        "view_policy"
+      ],
+      "additionalProperties": false
+    },
+    "PublicReplay": {
+      "type": "object",
+      "properties": {
+        "frames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "seq": {
+                "type": "integer"
+              },
+              "hand_index": {
+                "type": "integer"
+              },
+              "hand_id": {
+                "type": "string"
+              },
+              "view": {
+                "$ref": "dto.json#/$defs/MCRSpectatorView"
+              },
+              "at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "seq",
+              "hand_index",
+              "hand_id",
+              "view",
+              "at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "next_after": {
+          "type": "integer"
+        },
+        "view_policy": {
+          "const": "spectator_discard_only@1"
+        }
+      },
+      "required": [
+        "frames",
+        "next_after",
+        "view_policy"
+      ],
+      "additionalProperties": false
+    },
+    "ArchivedScore": {
+      "type": "object",
+      "properties": {
+        "participant_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "human",
+            "bot"
+          ]
+        },
+        "total": {
+          "type": "integer"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "standard_points": {
+          "type": "object",
+          "properties": {
+            "numerator": {
+              "type": "integer"
+            },
+            "denominator": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "numerator",
+            "denominator"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "participant_id",
+        "kind",
+        "total"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveSummary": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "settled-scores@1"
+        },
+        "completed_hands": {
+          "type": "integer"
+        },
+        "scores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArchivedScore"
+          }
+        }
+      },
+      "required": [
+        "version",
+        "completed_hands",
+        "scores"
+      ],
+      "additionalProperties": false
+    },
+    "ArchivedMatch": {
+      "type": "object",
+      "properties": {
+        "archived": {
+          "const": true
+        },
+        "archived_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "summary": {
+          "$ref": "#/$defs/ArchiveSummary"
+        },
+        "match": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "room_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "match_format": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "room_id",
+            "status",
+            "match_format"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "archived",
+        "archived_at",
+        "summary",
+        "match"
+      ],
+      "additionalProperties": false
+    },
+    "PublicMatchInfo": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/PublicSnapshot"
+        },
+        {
+          "$ref": "#/$defs/ArchivedMatch"
+        }
+      ]
+    },
+    "MatchSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "room_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "human_only",
+            "mixed",
+            "bot_only"
+          ]
+        },
+        "platform_interrupted": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "archived_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "public_summary": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Empty"
+            },
+            {
+              "$ref": "#/$defs/ArchiveSummary"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "room_id",
+        "status",
+        "ruleset_id",
+        "ruleset_version",
+        "match_format",
+        "mode",
+        "platform_interrupted",
+        "created_at",
+        "archived_at",
+        "public_summary"
+      ],
+      "additionalProperties": false
+    },
+    "Matches": {
+      "type": "object",
+      "properties": {
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MatchSummary"
+          }
+        },
+        "next_before": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "matches",
+        "next_before"
+      ],
+      "additionalProperties": false
+    },
+    "Bot": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "current_version": {
+          "type": "string"
+        },
+        "online": {
+          "type": "boolean"
+        },
+        "suspended": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "enabled",
+        "current_version"
+      ],
+      "additionalProperties": false
+    },
+    "BotEnvelope": {
+      "type": "object",
+      "properties": {
+        "bot": {
+          "$ref": "#/$defs/Bot"
+        }
+      },
+      "required": [
+        "bot"
+      ],
+      "additionalProperties": false
+    },
+    "Bots": {
+      "type": "object",
+      "properties": {
+        "bots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Bot"
+          }
+        }
+      },
+      "required": [
+        "bots"
+      ],
+      "additionalProperties": false
+    },
+    "BotName": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "BotPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "BotVersionCreate": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "metadata": {
+          "description": "Arbitrary strategy-author metadata JSON, never executable code or credentials."
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "BotVersion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "metadata": {
+          "description": "Arbitrary strategy-author metadata JSON, never executable code or credentials."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "additionalProperties": false
+    },
+    "VersionEnvelope": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "$ref": "#/$defs/BotVersion"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "Versions": {
+      "type": "object",
+      "properties": {
+        "versions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BotVersion"
+          }
+        }
+      },
+      "required": [
+        "versions"
+      ],
+      "additionalProperties": false
+    },
+    "Credential": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "created_at",
+        "revoked_at"
+      ],
+      "additionalProperties": false
+    },
+    "Credentials": {
+      "type": "object",
+      "properties": {
+        "credentials": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Credential"
+          }
+        }
+      },
+      "required": [
+        "credentials"
+      ],
+      "additionalProperties": false
+    },
+    "CredentialCreated": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "Only returned once. Keep outside source, URL, CLI arguments, and logs."
+        },
+        "shown_once": {
+          "const": true
+        }
+      },
+      "required": [
+        "credential_id",
+        "api_key",
+        "shown_once"
+      ],
+      "additionalProperties": false
+    },
+    "BotSessionRequest": {
+      "type": "object",
+      "properties": {
+        "protocol_version": {
+          "const": "1.0"
+        },
+        "rulesets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuleIdentity"
+          }
+        }
+      },
+      "required": [
+        "protocol_version",
+        "rulesets"
+      ],
+      "additionalProperties": false
+    },
+    "BotSessionResponse": {
+      "type": "object",
+      "properties": {
+        "session_token": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "bot_id": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "const": "1.0"
+        }
+      },
+      "required": [
+        "session_token",
+        "expires_at",
+        "bot_id",
+        "protocol_version"
+      ],
+      "additionalProperties": false
+    },
+    "RuleList": {
+      "type": "object",
+      "properties": {
+        "rulesets": {
+          "type": "array",
+          "items": {
+            "$ref": "dto.json#/$defs/Manifest"
+          }
+        }
+      },
+      "required": [
+        "rulesets"
+      ],
+      "additionalProperties": false
+    },
+    "RuleEnvelope": {
+      "type": "object",
+      "properties": {
+        "ruleset": {
+          "$ref": "dto.json#/$defs/Manifest"
+        }
+      },
+      "required": [
+        "ruleset"
+      ],
+      "additionalProperties": false
+    },
+    "PublicStatus": {
+      "type": "object",
+      "properties": {
+        "maintenance": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "maintenance",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "AdminStatus": {
+      "type": "object",
+      "properties": {
+        "maintenance": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "active_matches": {
+          "type": "integer"
+        },
+        "waiting_rooms": {
+          "type": "integer"
+        },
+        "queued": {
+          "type": "integer"
+        },
+        "mail_queued": {
+          "type": "integer"
+        },
+        "mail_failed": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "maintenance",
+        "message",
+        "active_matches",
+        "waiting_rooms",
+        "queued",
+        "mail_queued",
+        "mail_failed"
+      ],
+      "additionalProperties": false
+    },
+    "Reason": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MaintenanceRequest": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "enabled",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "UserStatusRequest": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "restricted"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "status",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "RuleStatusRequest": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "enabled",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MaintenanceResponse": {
+      "type": "object",
+      "properties": {
+        "maintenance": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "maintenance"
+      ],
+      "additionalProperties": false
+    },
+    "RuleStatusResponse": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "BotSuspended": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "suspended": {
+          "type": "boolean"
+        },
+        "new_credential_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "suspended",
+        "new_credential_required"
+      ],
+      "additionalProperties": false
+    },
+    "AuditEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "actor_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "actor_id",
+        "action",
+        "target_id",
+        "reason",
+        "outcome",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Audit": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditEntry"
+          }
+        },
+        "next_before": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "entries",
+        "next_before"
+      ],
+      "additionalProperties": false
+    },
+    "AbortResponse": {
+      "type": "object",
+      "properties": {
+        "match_id": {
+          "type": "string"
+        },
+        "status": {
+          "const": "aborted_by_operator"
+        }
+      },
+      "required": [
+        "match_id",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Health": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "alive",
+            "ready"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "Metric": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "samples": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "value",
+        "samples"
+      ],
+      "additionalProperties": false
+    },
+    "StatisticDimensions": {
+      "type": "object",
+      "properties": {
+        "ruleset_id": {
+          "type": "string"
+        },
+        "ruleset_version": {
+          "type": "string"
+        },
+        "online_profile": {
+          "type": "string"
+        },
+        "match_format": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "clock_profile": {
+          "type": "string"
+        },
+        "config_hash": {
+          "type": "string"
+        },
+        "bot_version": {
+          "type": "string"
+        },
+        "participant_kind": {
+          "type": "string"
+        },
+        "queue_pool": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "self_test": {
+          "type": "boolean"
+        },
+        "platform_interrupted": {
+          "type": "boolean"
+        },
+        "trustee_used": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ruleset_id",
+        "ruleset_version",
+        "online_profile",
+        "match_format",
+        "mode",
+        "clock_profile",
+        "config_hash",
+        "bot_version",
+        "participant_kind",
+        "queue_pool",
+        "status",
+        "self_test",
+        "platform_interrupted",
+        "trustee_used"
+      ],
+      "additionalProperties": false
+    },
+    "StatisticMetrics": {
+      "type": "object",
+      "properties": {
+        "completed_hands": {
+          "$ref": "#/$defs/Metric"
+        },
+        "win_rate": {
+          "$ref": "#/$defs/Metric"
+        },
+        "discard_loss_rate": {
+          "$ref": "#/$defs/Metric"
+        },
+        "self_draw_rate": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_net_points": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_nonflower_points": {
+          "$ref": "#/$defs/Metric"
+        },
+        "completed_matches": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_rank": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_raw_score": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_standard_points": {
+          "$ref": "#/$defs/Metric"
+        },
+        "average_decision_ms": {
+          "$ref": "#/$defs/Metric"
+        },
+        "p95_decision_ms": {
+          "$ref": "#/$defs/Metric"
+        },
+        "illegal_action_rate": {
+          "$ref": "#/$defs/Metric"
+        },
+        "timeout_rate": {
+          "$ref": "#/$defs/Metric"
+        },
+        "trustee_rate": {
+          "$ref": "#/$defs/Metric"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "StatisticGroup": {
+      "type": "object",
+      "properties": {
+        "dimensions": {
+          "$ref": "#/$defs/StatisticDimensions"
+        },
+        "comparable": {
+          "type": "boolean"
+        },
+        "metrics": {
+          "$ref": "#/$defs/StatisticMetrics"
+        }
+      },
+      "required": [
+        "dimensions",
+        "comparable",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "StatisticMatch": {
+      "type": "object",
+      "properties": {
+        "match_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer"
+        },
+        "raw_score": {
+          "type": "integer"
+        },
+        "standard_points": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "numerator": {
+                  "type": "integer"
+                },
+                "denominator": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "numerator",
+                "denominator"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "match_id",
+        "created_at",
+        "status",
+        "rank",
+        "raw_score",
+        "standard_points"
+      ],
+      "additionalProperties": false
+    },
+    "Statistics": {
+      "$ref": "dto.json#/$defs/StatisticResponse"
+    },
+    "WSClient": {
+      "oneOf": [
+        {
+          "$ref": "dto.json#/$defs/Action"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "hello",
+                "resume",
+                "ready",
+                "ping",
+                "heartbeat"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "resume_control"
+            },
+            "control_token": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "control_token"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "authenticate"
+            },
+            "ticket": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "ticket"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WSServer": {
+      "oneOf": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ParticipantSnapshot"
+            },
+            {
+              "required": [
+                "stream_id",
+                "view_seq"
+              ]
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SpectatorSnapshot"
+            },
+            {
+              "required": [
+                "stream_id",
+                "view_seq"
+              ]
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/RoomSnapshot"
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Decision"
+            },
+            {
+              "required": [
+                "stream_id",
+                "view_seq",
+                "observation_ref"
+              ]
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/CommandAck"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "command_error"
+            },
+            "command_id": {
+              "type": "string"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "command_id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "error"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "heartbeat"
+            },
+            "server_time": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "type",
+            "server_time"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pong"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "seat_assigned"
+            },
+            "match_id": {
+              "type": "string"
+            },
+            "hand_id": {
+              "type": "string"
+            },
+            "participant_id": {
+              "type": "string"
+            },
+            "seat_id": {
+              "type": "integer"
+            },
+            "seat_assignment_version": {
+              "type": "integer"
+            },
+            "control_epoch": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type",
+            "match_id",
+            "hand_id",
+            "participant_id",
+            "seat_id",
+            "seat_assignment_version",
+            "control_epoch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "control_granted"
+            },
+            "control_token": {
+              "type": "string"
+            },
+            "control_epoch": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type",
+            "control_token",
+            "control_epoch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "control_readonly"
+            },
+            "control_epoch": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "control_changed"
+            },
+            "control_epoch": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type",
+            "control_epoch"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

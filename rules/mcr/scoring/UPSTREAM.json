@@ -1,0 +1,67 @@
+{
+  "repository": "https://github.com/summerinsects/mahjong-algorithm",
+  "commit": "44a178af08bf11f82a8993fddbe2fe8876ddd8f3",
+  "license": "MIT",
+  "rule_source": {
+    "edition": "WMO 2014 second edition, selected Chinese text",
+    "url": "https://mahjongclublausanne.ch/wp-content/uploads/2024/03/Greenbook2021_Chinese-EN.pdf",
+    "sha256": "77220856f7d02a9d108cb4046038102ac46a9271ed2baf48b383cb13691be01c"
+  },
+  "files": {
+    "CHANGELOG": {
+      "upstream_sha256": "18626ab36e665540a8668dfbad31ef847863bc2fbc22b00be36be67da14e99fc",
+      "vendored_sha256": "18626ab36e665540a8668dfbad31ef847863bc2fbc22b00be36be67da14e99fc",
+      "modified": false
+    },
+    "LICENSE": {
+      "upstream_sha256": "83a3f5f0574cb5a489b629c1caf9c63c6c7fbab6d4d4a934f726fd11bf1fe436",
+      "vendored_sha256": "83a3f5f0574cb5a489b629c1caf9c63c6c7fbab6d4d4a934f726fd11bf1fe436",
+      "modified": false
+    },
+    "README.md": {
+      "upstream_sha256": "d97d75d3d99e897a7ba9ec016ab78de4aaf3766ed9d0e0daa734b246116bf65e",
+      "vendored_sha256": "d97d75d3d99e897a7ba9ec016ab78de4aaf3766ed9d0e0daa734b246116bf65e",
+      "modified": false
+    },
+    "fan_calculator.cpp": {
+      "upstream_sha256": "eb034fa0664a4cddb0f6e4ec17cc06ce8e60efebcdf91e5da56db3a1f43f1d95",
+      "vendored_sha256": "078574a68285771fc35b8a5182c5732b10d605c8a3e1c92923c576696d1d5f74",
+      "modified": true
+    },
+    "fan_calculator.h": {
+      "upstream_sha256": "4c56f1cdd48bcd7288163909543c6fb13f5fd3e737f9b601f596173aae323df2",
+      "vendored_sha256": "119342873b2e64eb9619b10e590cdfafe4f82e4e95302ae2628c6284d7a95204",
+      "modified": true
+    },
+    "shanten.cpp": {
+      "upstream_sha256": "5c28ebde065b94dab8b22ea63d376b8eed09de44e6fcfc94c0883cf5e411b601",
+      "vendored_sha256": "5c28ebde065b94dab8b22ea63d376b8eed09de44e6fcfc94c0883cf5e411b601",
+      "modified": false
+    },
+    "shanten.h": {
+      "upstream_sha256": "9c86f66763f68a8bf97e9a75a6c44d4b2fc73f1cd5adf65a9e351f542fe23968",
+      "vendored_sha256": "9c86f66763f68a8bf97e9a75a6c44d4b2fc73f1cd5adf65a9e351f542fe23968",
+      "modified": false
+    },
+    "stringify.cpp": {
+      "upstream_sha256": "3e8cde82ff648a974ef02092409ae498676d5a168309d1a653399dc836077f4e",
+      "vendored_sha256": "3e8cde82ff648a974ef02092409ae498676d5a168309d1a653399dc836077f4e",
+      "modified": false
+    },
+    "stringify.h": {
+      "upstream_sha256": "889afc14814e2fdea9f6acd69f703052ca993d9207e6ac1a60d14e25b059c901",
+      "vendored_sha256": "889afc14814e2fdea9f6acd69f703052ca993d9207e6ac1a60d14e25b059c901",
+      "modified": false
+    },
+    "tile.h": {
+      "upstream_sha256": "fdeba8a52b895dd1c904a4558649743a2fab5e432bb2eee16ccf99420bc21cb0",
+      "vendored_sha256": "fdeba8a52b895dd1c904a4558649743a2fab5e432bb2eee16ccf99420bc21cb0",
+      "modified": false
+    },
+    "unit_test.cpp": {
+      "upstream_sha256": "8783784a0f9574c80713870a75b33a292a3485478778b20256430a4f829f75c1",
+      "vendored_sha256": "8783784a0f9574c80713870a75b33a292a3485478778b20256430a4f829f75c1",
+      "modified": false
+    }
+  }
+}

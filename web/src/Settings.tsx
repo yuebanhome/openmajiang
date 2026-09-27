@@ -1,0 +1,306 @@
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { api, errorMessage, listFrom, post } from "./api";
+import { Button, FormField, Link, Notice, PageHeading } from "./components";
+import { navigate, useResource } from "./hooks";
+import type { User } from "./types";
+type Session = {
+  id: string;
+  user_agent: string;
+  created_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  current: boolean;
+};
+export function Settings({
+  user,
+  onUser,
+  onLogout,
+}: {
+  user?: User;
+  onUser: () => Promise<void>;
+  onLogout: () => Promise<void>;
+}) {
+  const sessions = useResource<unknown>(user ? "/v1/me/sessions" : null);
+  const mail = useResource<{
+    status: string;
+    notice: string;
+    attempts: number;
+  }>(user && !user.email_verified ? "/v1/me/email-delivery" : null, 5000);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState("");
+  if (!user)
+    return (
+      <div className="narrow">
+        <PageHeading title="管理我的账号" />
+        <p>登录后可以修改个人资料、查看设备并管理账号安全。</p>
+        <Link
+          href="/auth/login?return_to=%2Fsettings"
+          className="button primary"
+        >
+          前往登录
+        </Link>
+      </div>
+    );
+  async function run(
+    name: string,
+    task: () => Promise<unknown>,
+    message: string,
+    logout = false,
+  ) {
+    setBusy(name);
+    setError("");
+    setMessage("");
+    try {
+      await task();
+      if (logout) {
+        await onLogout();
+        navigate("/auth/login");
+      } else {
+        setMessage(message);
+        await onUser();
+        sessions.reload();
+      }
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setBusy("");
+    }
+  }
+  const data = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    return new FormData(e.currentTarget);
+  };
+  return (
+    <>
+      <PageHeading eyebrow="YOUR ACCOUNT" title="账号设置">
+        你在牌桌上的身份，以及保护它的方式。
+      </PageHeading>
+      <Notice error>{error}</Notice>
+      <Notice>{message}</Notice>
+      {!user.email_verified && (
+        <div className="notice">
+          <strong>请先验证邮箱。</strong> 完成验证后即可入座和创建 Bot。
+          <Button
+            tone="quiet"
+            busy={busy === "verify"}
+            onClick={() =>
+              run(
+                "verify",
+                () =>
+                  post("/v1/auth/resend-verification", { email: user.email }),
+                "如果请求可用，验证邮件将发送至你的邮箱。",
+              )
+            }
+          >
+            重新发送验证邮件
+          </Button>
+          {mail.data && (
+            <p>
+              {mail.data.notice} · 已尝试 {mail.data.attempts} 次
+            </p>
+          )}
+        </div>
+      )}
+      <div className="settings-grid">
+        <section className="panel">
+          <h2>个人资料</h2>
+          <form
+            onSubmit={(e) => {
+              const f = data(e);
+              void run(
+                "profile",
+                () =>
+                  api("/v1/me", {
+                    method: "PATCH",
+                    body: JSON.stringify({ name: f.get("name") }),
+                  }),
+                "展示名已更新。",
+              );
+            }}
+          >
+            <FormField label="展示名">
+              <input
+                name="name"
+                defaultValue={user.display_name}
+                required
+                minLength={2}
+                maxLength={32}
+              />
+            </FormField>
+            <FormField label="邮箱">
+              <input value={user.email} readOnly />
+            </FormField>
+            <p className="caption">
+              {user.email_verified ? "邮箱已验证" : "邮箱待验证"} · 用户 ID{" "}
+              {user.id.slice(0, 12)}
+            </p>
+            <Button type="submit" busy={busy === "profile"}>
+              保存资料
+            </Button>
+          </form>
+        </section>
+        <section className="panel">
+          <h2>修改密码</h2>
+          <form
+            onSubmit={(e) => {
+              const f = data(e);
+              void run(
+                "password",
+                () =>
+                  post("/v1/me/password", {
+                    current_password: f.get("current"),
+                    new_password: f.get("next"),
+                  }),
+                "",
+                true,
+              );
+            }}
+          >
+            <FormField label="当前密码">
+              <input
+                type="password"
+                name="current"
+                autoComplete="current-password"
+                required
+              />
+            </FormField>
+            <FormField label="新密码">
+              <input
+                type="password"
+                name="next"
+                autoComplete="new-password"
+                required
+                minLength={12}
+                maxLength={128}
+              />
+            </FormField>
+            <p className="caption">
+              修改后所有设备退出登录，需要用新密码重新登录。
+            </p>
+            <Button type="submit" tone="secondary" busy={busy === "password"}>
+              更新密码
+            </Button>
+          </form>
+        </section>
+        <section className="panel">
+          <h2>更换邮箱</h2>
+          <form
+            onSubmit={(e) => {
+              const f = data(e);
+              void run(
+                "email",
+                () =>
+                  post("/v1/me/email-change/request", {
+                    email: f.get("email"),
+                    password: f.get("password"),
+                  }),
+                "如果请求可用，验证邮件将发送至新邮箱。确认前当前邮箱保持有效。",
+              );
+            }}
+          >
+            <FormField label="新邮箱">
+              <input name="email" type="email" required autoComplete="email" />
+            </FormField>
+            <FormField label="当前密码">
+              <input
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                required
+              />
+            </FormField>
+            <Button type="submit" tone="secondary" busy={busy === "email"}>
+              发送确认邮件
+            </Button>
+          </form>
+        </section>
+        <section className="panel">
+          <div className="section-heading">
+            <h2>登录设备</h2>
+            <Button
+              tone="quiet"
+              busy={busy === "sessions"}
+              onClick={() =>
+                run(
+                  "sessions",
+                  () => api("/v1/me/sessions/others", { method: "DELETE" }),
+                  "其他设备已退出。",
+                )
+              }
+            >
+              退出其他设备
+            </Button>
+          </div>
+          <Notice error>{sessions.error}</Notice>
+          <div className="session-list">
+            {listFrom<Session>(sessions.data, "sessions").map((s) => (
+              <div key={s.id}>
+                <div>
+                  <strong>{s.current ? "当前设备" : "其他设备"}</strong>
+                  <p title={s.user_agent}>
+                    {s.user_agent?.slice(0, 65) || "未知浏览器"}
+                  </p>
+                  <small>
+                    最近使用 {new Date(s.last_seen_at).toLocaleString("zh-CN")}
+                  </small>
+                </div>
+                {!s.current && (
+                  <button
+                    className="text-button danger-text"
+                    onClick={() =>
+                      run(
+                        s.id,
+                        () =>
+                          api(`/v1/me/sessions/${s.id}`, { method: "DELETE" }),
+                        "该设备已退出。",
+                      )
+                    }
+                  >
+                    退出
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="panel danger-panel">
+          <h2>注销账号</h2>
+          <p>
+            注销后无法再使用这个账号，所有会话和 Bot
+            凭证将撤销。已发生的比赛记录按隐私说明保留必要的匿名记录。
+          </p>
+          <form
+            onSubmit={(e) => {
+              const f = data(e);
+              if (!window.confirm("确定注销账号？此操作不能通过重新登录撤销。"))
+                return;
+              void run(
+                "delete",
+                () =>
+                  post("/v1/me/delete-account", {
+                    password: f.get("password"),
+                  }),
+                "",
+                true,
+              );
+            }}
+          >
+            <FormField label="输入当前密码确认">
+              <input
+                type="password"
+                name="password"
+                autoComplete="current-password"
+                required
+              />
+            </FormField>
+            <Button type="submit" tone="danger" busy={busy === "delete"}>
+              注销我的账号
+            </Button>
+          </form>
+        </section>
+      </div>
+    </>
+  );
+}

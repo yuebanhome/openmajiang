@@ -1,0 +1,426 @@
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { api, errorMessage, listFrom, post } from "./api";
+import {
+  Badge,
+  Button,
+  Empty,
+  FormField,
+  Link,
+  Loading,
+  Modal,
+  Notice,
+  formatName,
+  modeName,
+  statusName,
+  TileFace,
+} from "./components";
+import { navigate, useResource } from "./hooks";
+import type { Room, RuleManifest, User } from "./types";
+export function Lobby({ user }: { user?: User }) {
+  const roomsResource = useResource<unknown>("/v1/public/rooms", 5000);
+  const rulesResource = useResource<unknown>("/v1/public/rules");
+  const rooms = listFrom<Room>(roomsResource.data, "rooms");
+  const rules = listFrom<RuleManifest>(rulesResource.data, "rulesets");
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [create, setCreate] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [invite, setInvite] = useState("");
+  const [queue, setQueue] = useState(false);
+  function requireUser(fn: () => void) {
+    if (!user) return navigate("/auth/login?return_to=%2F");
+    if (!user.email_verified) return navigate("/settings");
+    fn();
+  }
+  async function practice() {
+    requireUser(() => {
+      void (async () => {
+        setBusy(true);
+        setError("");
+        try {
+          const data = await post<{ room: Room }>("/v1/practice", {
+            match_format: "practice_1",
+            ruleset_id: "openmajiang.mcr",
+            ruleset_version: "1.0.0",
+          });
+          navigate(`/play/${data.room.id}`);
+        } catch (err) {
+          setError(errorMessage(err));
+        } finally {
+          setBusy(false);
+        }
+      })();
+    });
+  }
+  async function toggleQueue() {
+    requireUser(() => {
+      void (async () => {
+        setBusy(true);
+        setError("");
+        try {
+          if (queue) {
+            await api("/v1/queue", { method: "DELETE" });
+            setQueue(false);
+          } else {
+            const data = await post<{ room_id?: string }>("/v1/queue", {
+              ruleset_id: "openmajiang.mcr",
+              ruleset_version: "1.0.0",
+              match_format: "standard_16",
+            });
+            if (data.room_id) navigate(`/rooms/${data.room_id}`);
+            else setQueue(true);
+          }
+        } catch (err) {
+          setError(errorMessage(err));
+        } finally {
+          setBusy(false);
+        }
+      })();
+    });
+  }
+  const queueResource = useResource<{ room_id?: string; status?: string }>(
+    queue ? "/v1/queue" : null,
+    2500,
+  );
+  const visible = rooms.filter(
+    (room) =>
+      (filter === "all" || room.mode === filter) &&
+      `${room.name} ${room.id} ${(room.seats ?? []).map((s) => s.name ?? s.display_name).join(" ")}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  return (
+    <>
+      <section className="hero">
+        <div>
+          <span className="eyebrow light">
+            <i className="live-dot" />
+            开放牌桌 · 国标麻将
+          </span>
+          <h1>
+            一起打麻将。
+            <br />
+            <span>
+              你的下一位对手，
+              <br className="mobile-only" />
+              也许是一个 Bot。
+            </span>
+          </h1>
+          <p>
+            真人切磋、朋友开桌、AI 对弈。
+            <br />
+            144 张牌，完整国标规则，所有牌桌开放弃牌观战。
+          </p>
+          <div className="hero-actions">
+            <Button onClick={() => requireUser(() => setCreate(true))}>
+              创建房间 <span>↗</span>
+            </Button>
+            <Button tone="secondary" onClick={practice} busy={busy}>
+              与 Bot 练习
+            </Button>
+          </div>
+          <div className="hero-foot">
+            <span>免费参与</span>
+            <b>·</b>
+            <span>国标 MCR</span>
+            <b>·</b>
+            <span>开放 Bot 接入</span>
+          </div>
+        </div>
+        <div className="hero-art" aria-hidden="true">
+          <div className="table-ring" />
+          <div className="hero-tiles">
+            <TileFace kind="1m" />
+            <TileFace kind="1p" />
+            <TileFace kind="1s" />
+            <TileFace kind="6z" />
+          </div>
+          <span className="hero-art-caption">HUMANS × BOTS × MAHJONG</span>
+          <div className="hero-score">
+            <span>自由观战</span>
+            <strong>只看弃牌</strong>
+            <small>手牌始终属于牌手</small>
+          </div>
+        </div>
+      </section>
+      <Notice error>{error}</Notice>
+      {queue && (
+        <Notice>
+          正在寻找真人对手，不会自动加入 Bot。
+          {queueResource.data?.room_id ? (
+            <Link href={`/rooms/${queueResource.data.room_id}`}>
+              房间已就绪，进入确认 →
+            </Link>
+          ) : (
+            <Button tone="quiet" onClick={toggleQueue} busy={busy}>
+              取消匹配
+            </Button>
+          )}
+        </Notice>
+      )}
+      <section className="section">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">THE LOBBY</span>
+            <h2>
+              牌桌大厅 <span className="count">{rooms.length}</span>
+            </h2>
+          </div>
+          <div className="heading-actions">
+            <Button tone="secondary" onClick={toggleQueue} busy={busy}>
+              {queue ? "取消匹配" : "快速匹配真人"}
+            </Button>
+            <button className="text-button" onClick={roomsResource.reload}>
+              刷新 ↻
+            </button>
+          </div>
+        </div>
+        <div className="lobby-toolbar">
+          <div className="tabs" role="tablist" aria-label="牌局模式">
+            {[
+              ["all", "所有牌桌"],
+              ["human_only", "真人"],
+              ["mixed", "人机"],
+              ["bot_only", "Bot"],
+            ].map(([value, label]) => (
+              <button
+                role="tab"
+                aria-selected={filter === value}
+                className={filter === value ? "active" : ""}
+                key={value}
+                onClick={() => setFilter(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <input
+            className="search"
+            aria-label="搜索房间或玩家"
+            placeholder="搜索房间 / 玩家 / Bot"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Notice error>{roomsResource.error}</Notice>
+        {roomsResource.loading ? (
+          <Loading text="正在读取开放牌桌…" />
+        ) : visible.length ? (
+          <div className="room-grid">
+            {visible.map((room) => (
+              <RoomCard key={room.id} room={room} />
+            ))}
+          </div>
+        ) : (
+          <Empty
+            title={
+              search || filter !== "all"
+                ? "没有符合条件的牌桌"
+                : "第一张牌桌，等你来开"
+            }
+            action={
+              <Button
+                tone="secondary"
+                onClick={() => requireUser(() => setCreate(true))}
+              >
+                创建房间
+              </Button>
+            }
+          >
+            朋友和 Bot 都可以成为你的下一位对手。
+          </Empty>
+        )}
+      </section>
+      <section className="lower-grid">
+        <div className="soft-card">
+          <span className="eyebrow">PLAY TOGETHER</span>
+          <h3>收到朋友的邀请码？</h3>
+          <p>邀请码用于入座。观战无需邀请，也无需账号。</p>
+          <form
+            className="inline-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              requireUser(() =>
+                navigate(`/join?code=${encodeURIComponent(invite.trim())}`),
+              );
+            }}
+          >
+            <input
+              aria-label="邀请码"
+              value={invite}
+              onChange={(e) => setInvite(e.target.value)}
+              placeholder="输入邀请码"
+              required
+              maxLength={64}
+            />
+            <Button tone="secondary" type="submit">
+              加入
+            </Button>
+          </form>
+        </div>
+        <div className="soft-card developer-card">
+          <span className="eyebrow">BUILD YOUR PLAYER</span>
+          <h3>让你的代码上桌。</h3>
+          <p>
+            自托管 Bot，使用同一套合法动作与规则。
+            <br />
+            从一个随机策略开始，慢慢学会打得更好。
+          </p>
+          <Link href="/bots" className="arrow-link">
+            接入你的 Bot <span>↗</span>
+          </Link>
+        </div>
+      </section>
+      {create && <CreateRoom rules={rules} onClose={() => setCreate(false)} />}
+    </>
+  );
+}
+export function RoomCard({ room }: { room: Room }) {
+  const active = ["playing", "active", "running"].includes(room.status);
+  return (
+    <article className="room-card">
+      <div className="room-card-top">
+        <Badge live={active}>{statusName[room.status] ?? room.status}</Badge>
+        <span className="room-format">
+          {formatName[room.match_format] ?? room.match_format}
+        </span>
+      </div>
+      <h3>
+        <Link href={`/watch/${room.id}`}>{room.name}</Link>
+      </h3>
+      <p className="room-meta">
+        {modeName[room.mode] ?? room.mode} <span>·</span> 国标{" "}
+        {room.ruleset_version}
+      </p>
+      <div className="seats-mini">
+        {Array.from({ length: room.capacity ?? 4 }, (_, i) => {
+          const s = room.seats?.find((s) => s.seat_id === i);
+          return (
+            <div key={i} className={s ? "filled" : ""}>
+              <span>
+                {s
+                  ? s.kind === "bot" || s.bot_id
+                    ? "AI"
+                    : (s.name ?? s.display_name ?? "人").slice(0, 1)
+                  : "+"}
+              </span>
+              <small>{s ? (s.name ?? s.display_name) : "空位"}</small>
+            </div>
+          );
+        })}
+      </div>
+      <div className="room-card-bottom">
+        <span>
+          {room.invite_code ||
+          room.access === "invite" ||
+          (room as Room & { invite_only?: boolean }).invite_only
+            ? "邀请入座 · 自由观战"
+            : "公开入座 · 自由观战"}
+        </span>
+        <Link
+          href={active ? `/watch/${room.id}` : `/rooms/${room.id}`}
+          className="arrow-link"
+        >
+          {active ? "观战" : "进房间"} ↗
+        </Link>
+      </div>
+    </article>
+  );
+}
+function CreateRoom({
+  rules,
+  onClose,
+}: {
+  rules: RuleManifest[];
+  onClose: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const chosen = rules.find((r) => r.id === f.get("ruleset_id"));
+    setBusy(true);
+    setError("");
+    try {
+      const data = await post<{ room: Room; invite_code?: string }>(
+        "/v1/rooms",
+        {
+          name: f.get("name"),
+          mode: f.get("mode"),
+          ruleset_id: chosen?.id ?? "openmajiang.mcr",
+          ruleset_version: chosen?.version ?? "1.0.0",
+          match_format: f.get("match_format"),
+          invite_only: f.get("access") === "invite",
+          self_test: f.get("self_test") === "on",
+        },
+      );
+      navigate(
+        `/rooms/${data.room.id}${data.invite_code ? `?code=${encodeURIComponent(data.invite_code)}` : ""}`,
+      );
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal title="创建一张新牌桌" onClose={onClose}>
+      <Notice error>{error}</Notice>
+      <form onSubmit={submit}>
+        <FormField label="房间名称">
+          <input
+            name="name"
+            required
+            maxLength={48}
+            placeholder="周末一起打麻将"
+          />
+        </FormField>
+        <div className="form-grid">
+          <FormField label="牌局模式">
+            <select name="mode">
+              <option value="human_only">真人对局</option>
+              <option value="mixed">真人 + Bot</option>
+              <option value="bot_only">纯 Bot 对弈</option>
+            </select>
+          </FormField>
+          <FormField label="赛程">
+            <select name="match_format" defaultValue="standard_16">
+              <option value="standard_16">标准 16 盘</option>
+              <option value="practice_4">四盘练习</option>
+              <option value="practice_1">单盘练习</option>
+            </select>
+          </FormField>
+        </div>
+        <FormField label="规则">
+          <select name="ruleset_id">
+            {rules.length ? (
+              rules.map((r) => (
+                <option key={`${r.id}@${r.version}`} value={r.id}>
+                  {r.name} · {r.version}
+                </option>
+              ))
+            ) : (
+              <option value="openmajiang.mcr">国标麻将 · 1.0.0</option>
+            )}
+          </select>
+        </FormField>
+        <FormField label="入座权限" hint="任何人始终都可以观看弃牌。">
+          <select name="access">
+            <option value="open">公开入座</option>
+            <option value="invite">仅通过邀请入座</option>
+          </select>
+        </FormField>
+        <label className="check">
+          <input type="checkbox" name="self_test" />
+          Bot 自测桌（允许同一所有者的多个 Bot，不计入公共统计）
+        </label>
+        <Button className="wide" busy={busy} type="submit">
+          创建房间
+        </Button>
+      </form>
+    </Modal>
+  );
+}

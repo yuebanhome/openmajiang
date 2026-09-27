@@ -1,0 +1,117 @@
+import { describe, expect, it } from "vitest";
+import { normalizeParticipant } from "./table-state";
+// Fixture follows rules/mcr/view.go and internal/platform/views.go, not UI aliases.
+export const playerFixture = {
+  type: "snapshot",
+  match_id: "m1",
+  hand_id: "m1_hand_5",
+  participant_id: "p0",
+  seat_id: 1,
+  seat_assignment_version: 5,
+  control_epoch: 4,
+  status: "active",
+  deadline_at: "2026-09-26T10:00:15Z",
+  view: {
+    ruleset: { id: "openmajiang.mcr", version: "1.0.0" },
+    view_policy: "participant_private@1",
+    phase: "self",
+    hand_index: 5,
+    seat_id: 1,
+    participant_id: "p0",
+    hand: [
+      { tile_id: "physical-12", kind: "4m" },
+      { tile_id: "physical-17", kind: "5m" },
+    ],
+    seats: [
+      {
+        seat_id: 1,
+        participant_id: "p0",
+        name: "我",
+        hand_count: 14,
+        melds: [
+          {
+            type: "chi",
+            tiles: [
+              { tile_id: "t1", kind: "1s" },
+              { tile_id: "t2", kind: "2s" },
+              { tile_id: "t3", kind: "3s" },
+            ],
+          },
+        ],
+        flowers: [{ tile_id: "flower1", kind: "h1" }],
+      },
+      {
+        seat_id: 0,
+        participant_id: "p1",
+        name: "对手",
+        hand_count: 13,
+        melds: [{ type: "concealed_kong", tile_count: 4 }],
+        flowers: [],
+      },
+    ],
+    scores: [
+      { participant_id: "p0", total: 34 },
+      { participant_id: "p1", total: -18 },
+    ],
+    discards: [
+      {
+        discard_id: "d1",
+        from_seat: 0,
+        tile: { tile_id: "t99", kind: "1z" },
+        claimed: false,
+      },
+    ],
+  },
+  decision: {
+    decision_id: "d5",
+    seat_id: 1,
+    participant_id: "p0",
+    window_id: "w5",
+    deadline_at: "2026-09-26T10:00:15Z",
+    legal_actions: [
+      {
+        option_id: "discard-12",
+        type: "discard",
+        tile_id: "physical-12",
+        kind: "4m",
+      },
+      {
+        option_id: "discard-17",
+        type: "discard",
+        tile_id: "physical-17",
+        kind: "5m",
+      },
+    ],
+  },
+};
+describe("participant host and engine integration DTO", () => {
+  it("maps nested discard tiles, seats, score ownership and full action context", () => {
+    const v = normalizeParticipant(playerFixture);
+    expect(v.hand).toEqual([
+      { id: "physical-12", kind: "4m" },
+      { id: "physical-17", kind: "5m" },
+    ]);
+    expect(v.window_id).toBe("w5");
+    expect(v.seat_assignment_version).toBe(5);
+    expect(v.control_epoch).toBe(4);
+    expect(v.discards[0]).toMatchObject({ tile: "1z", seat_id: 0 });
+    expect(v.players[0]).toMatchObject({
+      seat_id: 1,
+      name: "我",
+      score: 34,
+      flowers: ["h1"],
+    });
+    expect(v.players[1].melds?.[0].tiles).toEqual([]);
+    expect(v.decision?.legal_actions[0].option_id).toBe("discard-12");
+  });
+  it("never invents a decision after host records the response", () => {
+    const { decision, ...recorded } = playerFixture;
+    expect(decision.decision_id).toBe("d5");
+    const v = normalizeParticipant({
+      ...recorded,
+      recorded: { status: "recorded" },
+    });
+    expect(v.decision).toBeUndefined();
+    expect(v.hand).toHaveLength(2);
+  });
+});

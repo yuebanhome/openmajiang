@@ -1,0 +1,205 @@
+--- a/fan_calculator.cpp
++++ b/fan_calculator.cpp
+@@ -746,7 +746,8 @@
+ #if SUPPORT_CONCEALED_KONG_AND_MELDED_KONG
+             fan_table[CONCEALED_KONG_AND_MELDED_KONG] = 1;
+ #else
+-            fan_table[MELDED_KONG] = 1;
++            // OpenMajiang WMO2014 fan 57: one melded + one concealed = 6.
++            fan_table[TWO_MELDED_KONGS] = 1;
+             fan_table[CONCEALED_KONG] = 1;
+ #endif
+             switch (concealed_pung_cnt) {  // 暗刻的个数
+@@ -809,6 +810,18 @@
+     default:
+         UNREACHABLE();
+         break;
++    }
++    // OpenMajiang om-mcr-1 adjudication: WMO2014 fans 5/17 explicitly
++    // permit concealed-kong additions. Count the highest concealed-kong
++    // award once, independently of the highest concealed-pung award.
++    // This named interpretation is documented for independent rule review.
++    if (kong_cnt >= 3) {
++        if (concealed_kong_cnt == 1) {
++            fan_table[CONCEALED_KONG] = 1;
++        } else if (concealed_kong_cnt >= 2) {
++            fan_table[TWO_CONCEALED_KONGS] = 1;
++            fan_table[TWO_CONCEALED_PUNGS] = 0;
++        }
+     }
+ }
+ 
+@@ -1419,9 +1432,8 @@
+         fan_table[ONE_VOIDED_SUIT] = 0;
+ #endif
+     }
+-    // 绿一色不计混一色、缺一门
++    // OpenMajiang WMO2014 fan 3 permits Half Flush.
+     if (fan_table[ALL_GREEN]) {
+-        fan_table[HALF_FLUSH] = 0;
+         fan_table[ONE_VOIDED_SUIT] = 0;
+     }
+     // 四杠不计单钓将
+@@ -1435,7 +1447,7 @@
+         fan_table[OUTSIDE_HAND] = 0;
+         fan_table[PUNG_OF_TERMINALS_OR_HONORS] = 0;
+         fan_table[NO_HONORS] = 0;
+-        fan_table[DOUBLE_PUNG] = 0;  // 通行计法不计双同刻
++        // OpenMajiang WMO2014 fan 8 examples explicitly permit Double Pung.
+ #ifdef STRICT_98_RULE
+         fan_table[TRIPLE_PUNG] = 0;
+ #endif
+@@ -1464,14 +1476,10 @@
+         fan_table[PUNG_OF_TERMINALS_OR_HONORS] = 0;
+         fan_table[ONE_VOIDED_SUIT] = 0;
+     }
+-    // 四暗刻不计碰碰和、门前清，把不求人修正为自摸
++    // OpenMajiang WMO2014 fan 12 permits Fully Concealed Hand on self draw.
+     if (fan_table[FOUR_CONCEALED_PUNGS]) {
+         fan_table[ALL_PUNGS] = 0;
+         fan_table[CONCEALED_HAND] = 0;
+-        if (fan_table[FULLY_CONCEALED_HAND]) {
+-            fan_table[FULLY_CONCEALED_HAND] = 0;
+-            fan_table[SELF_DRAWN] = 1;
+-        }
+     }
+     // 一色双龙会不计七对、清一色、平和、一般高、老少副、缺一门、无字
+     if (fan_table[PURE_TERMINAL_CHOWS]) {
+@@ -1872,7 +1880,8 @@
+ 
+ // “组合龙+面子+雀头”和型算番
+ static bool calculate_knitted_straight_fan(const tile_table_t &fixed_table, const tile_table_t &standing_table,
+-    const calculate_param_t *calculate_param, win_flag_t win_flag, fan_table_t &fan_table) {
++    const calculate_param_t *calculate_param, win_flag_t win_flag, fan_table_t &fan_table,
++    calculation_details_t *details) {
+ 
+     const hand_tiles_t *hand_tiles = &calculate_param->hand_tiles;
+     const pack_t *fixed_packs = hand_tiles->fixed_packs;
+@@ -1920,6 +1929,13 @@
+     const pack_t *packs = result.divisions[0].packs;  // packs的0 1 2下标都是没用的
+     const pack_t &involved_pack = packs[3];  // 无关第4组
+     const tile_t pair_tile = pack_get_tile(packs[4]);  // 雀头牌
++    if (details != nullptr) {
++        details->form = 5;
++        details->pack_count = 2;
++        details->packs[0] = packs[3];
++        details->packs[1] = packs[4];
++        std::memcpy(details->knitted, *matched_seq, sizeof(details->knitted));
++    }
+ 
+     // 标记番
+     fan_table[KNITTED_STRAIGHT] = 1;  // 组合龙
+@@ -2138,6 +2154,12 @@
+ 
+ static void adjust_by_win_flag_4_special_form(wind_t seat_wind, win_flag_t win_flag, fan_table_t &fan_table) {
+     adjust_by_win_flag(win_flag, fan_table);
++    // OpenMajiang WMO2014 fans 4,6,7,19,20,34 expressly permit
++    // Fully Concealed Hand, including when last-tile modifiers apply.
++    if (win_flag & WIN_FLAG_SELF_DRAWN) {
++        fan_table[FULLY_CONCEALED_HAND] = 1;
++        fan_table[SELF_DRAWN] = 0;
++    }
+ #if SUPPORT_BLESSINGS
+     // 天和、地和、人和
+     if (win_flag & WIN_FLAG_INITIAL) {
+@@ -2208,6 +2230,9 @@
+ 
+ // 九莲宝灯算番
+ static bool calculate_nine_gates_fan(const tile_table_t &standing_table, tile_t win_tile, wind_t seat_wind, win_flag_t win_flag, fan_table_t &fan_table) {
++    // OpenMajiang safety: honor ranks do not have a nine-tile suit table.
++    // Reject before indexing make_tile(suit, 9) for a four-copy honor input.
++    if (!is_numbered_suit_quick(win_tile)) return false;
+     suit_t s;
+     rank_t r;
+     const bool heavenly = seat_wind == wind_t::EAST
+@@ -2339,7 +2364,9 @@
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////
+ // 算番
+ //
+-int calculate_fan(const calculate_param_t *calculate_param, fan_table_t *fan_table) {
++int calculate_fan(const calculate_param_t *calculate_param, fan_table_t *fan_table,
++    calculation_details_t *details) {
++    if (details != nullptr) std::memset(details, 0, sizeof(*details));
+     const hand_tiles_t *hand_tiles = &calculate_param->hand_tiles;
+     const intptr_t fixed_cnt = hand_tiles->pack_count;
+     const intptr_t standing_cnt = hand_tiles->tile_count;
+@@ -2397,14 +2424,14 @@
+     if (fixed_cnt == 0) {  // 门清状态，有可能是基本和型组合龙
+         // 出现频率：七对>组合龙>九莲宝灯
+         if (calculate_special_form_fan(standing_table, win_tile, unique_tiles, unique_cnt, calculate_param->seat_wind, win_flag, tmp_table)
+-            || calculate_knitted_straight_fan(fixed_table, standing_table, calculate_param, win_flag, tmp_table)
++            || calculate_knitted_straight_fan(fixed_table, standing_table, calculate_param, win_flag, tmp_table, details)
+             || calculate_nine_gates_fan(standing_table, win_tile, calculate_param->seat_wind, win_flag, tmp_table)) {
+             max_fan = get_fan_by_table(tmp_table);
+             LOG("fan = %d\n\n", max_fan);
+         }
+     }
+     else if (fixed_cnt == 1) {  // 1副露状态，有可能是基本和型组合龙
+-        if (calculate_knitted_straight_fan(fixed_table, standing_table, calculate_param, win_flag, tmp_table)) {
++        if (calculate_knitted_straight_fan(fixed_table, standing_table, calculate_param, win_flag, tmp_table, details)) {
+             max_fan = get_fan_by_table(tmp_table);
+             LOG("fan = %d\n\n", max_fan);
+         }
+@@ -2436,12 +2463,22 @@
+                 if (current_fan > max_fan) {
+                     max_fan = current_fan;
+                     selected_fan_table = &current_table;
++                    if (details != nullptr) {
++                        details->form = 1;
++                        details->pack_count = 5;
++                        std::memcpy(details->packs, result.divisions[i].packs, sizeof(details->packs));
++                    }
+                 }
+                 else if (current_fan == max_fan) {
+                     // 2022.3.7 优先选择一色三同顺、全中全带五
+                     // 2023.9.2 优先选择三同刻
+                     if (current_table[PURE_TRIPLE_CHOW] == 1 || tmp_table[SEVEN_PAIRS] == 1 || current_table[TRIPLE_PUNG]) {
+                         selected_fan_table = &current_table;
++                        if (details != nullptr) {
++                            details->form = 1;
++                            details->pack_count = 5;
++                            std::memcpy(details->packs, result.divisions[i].packs, sizeof(details->packs));
++                        }
+                     }
+                 }
+                 LOG("fan = %d\n\n", current_fan);
+--- a/fan_calculator.h
++++ b/fan_calculator.h
+@@ -25,8 +25,8 @@
+ 
+ #include "tile.h"
+ 
+-#define SUPPORT_CONCEALED_KONG_AND_MELDED_KONG      1  // 支持明暗杠
+-#define KNITTED_STRAIGHT_BODY_WITH_ECS              1  // 组合龙龙身的边嵌钓
++#define SUPPORT_CONCEALED_KONG_AND_MELDED_KONG      0  // 支持明暗杠
++#define KNITTED_STRAIGHT_BODY_WITH_ECS              0  // 组合龙龙身的边嵌钓
+ #define DISTINGUISH_PURE_SHIFTED_CHOWS              0  // 区分一色三（四）步的宽窄
+ #define NINE_GATES_WHEN_BLESSING_OF_HEAVEN          1  // 天和支持九莲宝灯
+ #define SUPPORT_BLESSINGS                           0  // 支持天和、地和、人和
+@@ -226,7 +226,16 @@
+  * @retval ERROR_TILE_COUNT_GREATER_THAN_4 某张牌出现超过4枚
+  * @retval ERROR_NOT_WIN 没和牌
+  */
+-int calculate_fan(const calculate_param_t *calculate_param, fan_table_t *fan_table);
++// OpenMajiang: provenance of the exact maximum-scoring interpretation.
++// form=1 regular packs; form=5 knitted sequence + remaining meld and pair.
++struct calculation_details_t {
++    int form;
++    pack_t packs[5];
++    int pack_count;
++    tile_t knitted[9];
++};
++int calculate_fan(const calculate_param_t *calculate_param, fan_table_t *fan_table,
++    calculation_details_t *details = nullptr);
+ 
+ #if SUPPORT_BLESSINGS
+ /**
+@@ -374,7 +383,7 @@
+     16, 16, 16, 16, 16, 16,
+     12, 12, 12, 12, 12,
+     8, 8, 8, 8, 8, 8, 8, 8, 8,
+-    6, 6, 6, 6, 6, 6, 6,
++    6, 6, 6, 6, 6, 8, 6,  // OpenMajiang WMO2014: two concealed kongs = 8.
+     4, 4, 4, 4,
+     2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

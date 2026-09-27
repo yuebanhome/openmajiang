@@ -1,0 +1,170 @@
+import { useState } from "react";
+import { listFrom } from "./api";
+import { Badge, Empty, Link, Loading, Notice, PageHeading } from "./components";
+import { useResource } from "./hooks";
+import type { User } from "./types";
+type Metric = { value: number | null; samples: number };
+type Group = {
+  dimensions: Record<string, string | boolean>;
+  comparable: boolean;
+  metrics: Record<string, Metric>;
+};
+const metricLabels: Record<string, string> = {
+  completed_hands: "完成盘数",
+  win_rate: "和牌率",
+  discard_loss_rate: "放铳率",
+  self_draw_rate: "自摸率",
+  average_net_points: "每盘平均净分",
+  average_nonflower_points: "平均非花番分",
+  completed_matches: "完成场数",
+  average_rank: "平均名次",
+  average_raw_score: "平均比赛分",
+  average_standard_points: "平均标准分",
+  average_decision_ms: "平均决策毫秒",
+  p95_decision_ms: "决策 P95 毫秒",
+  illegal_action_rate: "非法动作率",
+  timeout_rate: "超时率",
+  trustee_rate: "托管率",
+};
+export function Statistics({
+  scope,
+  user,
+}: {
+  scope: "public" | "me" | string;
+  user?: User;
+}) {
+  const [format, setFormat] = useState("");
+  const [mode, setMode] = useState("");
+  const query = new URLSearchParams();
+  if (format) query.set("match_format", format);
+  if (mode) query.set("mode", mode);
+  const endpoint =
+    scope === "public"
+      ? "/v1/public/statistics"
+      : scope === "me"
+        ? "/v1/me/statistics"
+        : `/v1/bots/${encodeURIComponent(scope)}/statistics`;
+  const allowed = scope === "public" || !!user;
+  const r = useResource<unknown>(allowed ? `${endpoint}?${query}` : null);
+  const groups = listFrom<Group>(r.data, "groups");
+  return (
+    <>
+      <PageHeading
+        eyebrow="UNDERSTAND THE RESULTS"
+        title={
+          scope === "public"
+            ? "公开对局统计"
+            : scope === "me"
+              ? "我的对局统计"
+              : "Bot 对局统计"
+        }
+        action={
+          <Link href="/history" className="button secondary">
+            查看对局记录
+          </Link>
+        }
+      >
+        相同规则、配置和赛程分别统计。样本不足时不推断实力。
+      </PageHeading>
+      <div className="statistics-toolbar">
+        <div className="tabs">
+          <Link
+            href="/statistics"
+            className={scope === "public" ? "active" : ""}
+          >
+            公开统计
+          </Link>
+          {user && (
+            <Link
+              href="/statistics/me"
+              className={scope === "me" ? "active" : ""}
+            >
+              我的统计
+            </Link>
+          )}
+        </div>
+        <select
+          aria-label="统计赛程"
+          value={format}
+          onChange={(e) => setFormat(e.target.value)}
+        >
+          <option value="">所有赛程（分组显示）</option>
+          <option value="standard_16">标准 16 盘</option>
+          <option value="practice_4">四盘练习</option>
+          <option value="practice_1">单盘练习</option>
+        </select>
+        <select
+          aria-label="统计模式"
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+        >
+          <option value="">所有模式（分组显示）</option>
+          <option value="human_only">真人</option>
+          <option value="mixed">混合</option>
+          <option value="bot_only">Bot</option>
+        </select>
+      </div>
+      <Notice error>{r.error}</Notice>
+      {!allowed ? (
+        <Notice>
+          请<Link href="/auth/login">登录</Link>后查看本人统计。
+        </Notice>
+      ) : r.loading ? (
+        <Loading />
+      ) : groups.length ? (
+        <div className="statistics-groups">
+          {groups.map((g, i) => (
+            <section className="panel" key={i}>
+              <div className="section-heading">
+                <h2>
+                  {String(g.dimensions.ruleset_id)} ·{" "}
+                  {String(g.dimensions.match_format)}
+                </h2>
+                <Badge>
+                  {g.comparable ? "完整可比样本" : "单独保留 · 不并入排名"}
+                </Badge>
+              </div>
+              <div className="dimension-tags">
+                {Object.entries(g.dimensions).map(([key, value]) => (
+                  <span key={key}>
+                    <b>{key}</b> {String(value)}
+                  </span>
+                ))}
+              </div>
+              <div className="metric-grid">
+                {Object.entries(metricLabels)
+                  .filter(([key]) => key in g.metrics)
+                  .map(([key, label]) => {
+                    const m = g.metrics[key];
+                    return (
+                      <div key={key}>
+                        <span>{label}</span>
+                        <strong>
+                          {m?.value === null || m?.value === undefined
+                            ? "—"
+                            : key.endsWith("_rate")
+                              ? `${(m.value * 100).toFixed(1)}%`
+                              : Number.isInteger(m.value)
+                                ? m.value
+                                : m.value.toFixed(2)}
+                        </strong>
+                        <small>
+                          {m?.value === null || m?.value === undefined
+                            ? "暂无有效样本"
+                            : `${m.samples} 个样本`}
+                        </small>
+                      </div>
+                    );
+                  })}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <Empty title="尚无可统计的样本">
+          完成比赛后将在相同规则和赛程分组下累计；空样本不会显示为 0% 胜率。
+        </Empty>
+      )}
+    </>
+  );
+}
