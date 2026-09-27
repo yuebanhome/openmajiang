@@ -54,14 +54,16 @@ func loadMatch(ctx context.Context, q queryer, mid string, lock bool) (match, er
 }
 
 func loadMatchForTick(ctx context.Context, q queryer, mid string) (match, error) {
-	return loadMatchQuery(ctx, q, mid, " FOR UPDATE SKIP LOCKED")
+	// A queued discovery can outlive a competing transition. Recheck its due
+	// time before locking so stale work cannot cause another scheduling write.
+	return loadMatchQuery(ctx, q, mid, " AND (next_run_at<=now() OR deadline_at<=now() OR owner_until<now()) FOR UPDATE SKIP LOCKED")
 }
 
-func loadMatchQuery(ctx context.Context, q queryer, mid, locking string) (match, error) {
+func loadMatchQuery(ctx context.Context, q queryer, mid, suffix string) (match, error) {
 	var m match
 	var choices []byte
 	sql := `SELECT id,room_id,ruleset_id,ruleset_version,match_format,state,seq,status,window_id,deadline_at,choices,owner_id,owner_epoch,updated_at,interrupted,artifact_hash,archived_at,owner_until<now() FROM platform_matches WHERE id=$1`
-	sql += locking
+	sql += suffix
 	e := q.QueryRow(ctx, sql, mid).Scan(&m.ID, &m.RoomID, &m.RulesetID, &m.RulesetVersion, &m.Format, &m.State, &m.Seq, &m.Status, &m.WindowID, &m.Deadline, &choices, &m.Owner, &m.OwnerEpoch, &m.Updated, &m.Interrupted, &m.Artifact, &m.ArchivedAt, &m.LeaseExpired)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return m, api(404, "MATCH_NOT_FOUND")
@@ -130,6 +132,15 @@ func projectFlowViews(rule rulesdk.Rule, snapshot rulesdk.Snapshot, assignments 
 	}
 	return views, nil
 }
+
+func decisionParticipantIDs(decisions []rulesdk.Decision) []string {
+	ids := make([]string, len(decisions))
+	for i, decision := range decisions {
+		ids[i] = decision.ParticipantID
+	}
+	return ids
+}
+
 func (s *Service) deadline(ctx context.Context, tx pgx.Tx, m match, flow rulesdk.Flow) time.Time {
 	duration := 15 * time.Second
 	if flow.WindowKind == "reaction" {
@@ -183,7 +194,13 @@ func (s *Service) advanceFromFlow(ctx context.Context, tx pgx.Tx, m *match, rule
 		m.Deadline = &d
 	}
 	m.WindowID = f.WindowID
-	res, e := tx.Exec(ctx, `UPDATE platform_matches SET state=$2,seq=$3,status=$4,window_id=$5,deadline_at=$6,choices=$7,updated_at=now(),next_run_at=now(),owner_until=now()+interval '5 seconds' WHERE id=$1 AND owner_id=$8 AND owner_epoch=$9`, m.ID, m.State, m.Seq, m.Status, m.WindowID, m.Deadline, jsonBytes(m.Choices), s.id, m.OwnerEpoch)
+	// Only a built-in controller with a current decision needs an early tick.
+	// Human/external-bot windows and intermissions can wait for their unchanged
+	// deadline without a second transaction just to defer next_run_at.
+	res, e := tx.Exec(ctx, `UPDATE platform_matches m SET state=$2,seq=$3,status=$4,window_id=$5,deadline_at=$6,choices=$7,updated_at=now(),
+ next_run_at=CASE WHEN EXISTS(SELECT 1 FROM platform_seats s WHERE s.room_id=m.room_id AND s.active AND s.kind='builtin' AND s.participant_id=ANY($10::text[])) THEN now() ELSE COALESCE($6::timestamptz,now()) END,
+ owner_until=now()+interval '5 seconds'
+ WHERE m.id=$1 AND m.owner_id=$8 AND m.owner_epoch=$9`, m.ID, m.State, m.Seq, m.Status, m.WindowID, m.Deadline, jsonBytes(m.Choices), s.id, m.OwnerEpoch, decisionParticipantIDs(f.Decisions))
 	if e != nil {
 		return e
 	}
@@ -278,7 +295,9 @@ func (s *Service) start(ctx context.Context, roomID, userID string) (string, err
 	m := match{ID: id("match"), RoomID: r.ID, RulesetID: r.RulesetID, RulesetVersion: r.RulesetVersion, Format: r.Format, State: state, Seq: 1, Status: "active", WindowID: flow.WindowID, Owner: s.id, OwnerEpoch: 1, Choices: map[string]string{}}
 	d := s.deadline(ctx, tx, m, flow)
 	m.Deadline = &d
-	_, e = tx.Exec(ctx, `INSERT INTO platform_matches(id,room_id,ruleset_id,ruleset_version,match_format,state,window_id,deadline_at,owner_id,artifact_hash,manifest,config,owner_until) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now()+interval '5 seconds')`, m.ID, r.ID, m.RulesetID, m.RulesetVersion, m.Format, state, m.WindowID, d, s.id, rule.Manifest().ArtifactHash, jsonBytes(rule.Manifest()), jsonBytes(cfg))
+	_, e = tx.Exec(ctx, `INSERT INTO platform_matches(id,room_id,ruleset_id,ruleset_version,match_format,state,window_id,deadline_at,owner_id,artifact_hash,manifest,config,owner_until,next_run_at)
+ VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now()+interval '5 seconds',
+ CASE WHEN EXISTS(SELECT 1 FROM platform_seats WHERE room_id=$2 AND active AND kind='builtin' AND participant_id=ANY($13::text[])) THEN now() ELSE COALESCE($8::timestamptz,now()) END)`, m.ID, r.ID, m.RulesetID, m.RulesetVersion, m.Format, state, m.WindowID, d, s.id, rule.Manifest().ArtifactHash, jsonBytes(rule.Manifest()), jsonBytes(cfg), decisionParticipantIDs(flow.Decisions))
 	if e != nil {
 		return "", e
 	}

@@ -347,7 +347,7 @@ func TestPGUnavailableArtifactAndLongOutageAbort(t *testing.T) {
 			}
 			want := "missing_ruleset"
 			if reason == "artifact" {
-				_, err = s.pool.Exec(context.Background(), `UPDATE platform_matches SET artifact_hash='unavailable-build' WHERE id=$1`, mid)
+				_, err = s.pool.Exec(context.Background(), `UPDATE platform_matches SET artifact_hash='unavailable-build',next_run_at=now() WHERE id=$1`, mid)
 				other = s
 			} else {
 				want = "aborted_by_server"

@@ -217,13 +217,14 @@ type capacityReport struct {
 	SpectatorFrames                           int64 `json:"spectator_frames"`
 	SlowConsumers, SlowConsumersReleased      int
 	HotspotLimitRejected, IPLimitRejected     bool
-	CPUSeconds                                float64               `json:"process_cpu_seconds_including_generator"`
-	Pool                                      map[string]any        `json:"postgres_pool"`
-	DBWaits                                   *capacityDBWaitReport `json:"postgres_wait_diagnostics,omitempty"`
-	LatencyDistributions                      map[string]any        `json:"latency_distributions"`
-	Profiles                                  map[string]string     `json:"profiles,omitempty"`
-	CommandErrors                             map[string]int        `json:"command_errors"`
-	Errors                                    []string              `json:"errors"`
+	CPUSeconds                                float64                    `json:"process_cpu_seconds_including_generator"`
+	Pool                                      map[string]any             `json:"postgres_pool"`
+	DBWaits                                   *capacityDBWaitReport      `json:"postgres_wait_diagnostics,omitempty"`
+	DBQueryTimings                            *capacityQueryTimingReport `json:"postgres_query_timings,omitempty"`
+	LatencyDistributions                      map[string]any             `json:"latency_distributions"`
+	Profiles                                  map[string]string          `json:"profiles,omitempty"`
+	CommandErrors                             map[string]int             `json:"command_errors"`
+	Errors                                    []string                   `json:"errors"`
 }
 
 func capacityNewUser(t *testing.T, s *Service, name string) capacityUser {
@@ -786,6 +787,7 @@ func runCapacity(t *testing.T, seconds int, acceptance bool) {
 	}
 	rule := mcr.New()
 	s := recoveryService(t, rule)
+	queryDiagnostics := capacityInstallQueryDiagnostics(t, s)
 	metrics := &capacityMetrics{commandErrors: map[string]int{}}
 	s.cfg.ObserveTimerLag = metrics.lag
 	report := capacityReport{RequestedSeconds: seconds, Machine: capacityMachine(), Population: map[string]any{"human_tables": 20, "bot_tables": 30, "seats": 200, "player_websockets": 80, "builtin_controllers": 120, "healthy_spectators_launched": 1100, "required_minimum_spectators": 1000, "rematch_reconnection_reserve": 100, "rematch_handover": "replacement authenticates before old connection closes; per-IP baseline <=16; table migrations serialized", "hotspot_spectators": 500, "clock": "unaltered standard_16 human/Bot clocks"}, SlowConsumers: 10}
@@ -814,6 +816,8 @@ func runCapacity(t *testing.T, seconds int, acceptance bool) {
 	profilePrefix := os.Getenv("OMJ_CAPACITY_PROFILE_PREFIX")
 	defer func() {
 		metrics.measure.Store(false)
+		queryTimings := queryDiagnostics.stop()
+		report.DBQueryTimings = &queryTimings
 		if dbDiagnostics != nil {
 			diagnostics := dbDiagnostics.stop()
 			report.DBWaits = &diagnostics
@@ -1063,6 +1067,7 @@ func runCapacity(t *testing.T, seconds int, acceptance bool) {
 	metrics.minimumHumans.Store(metrics.humans.Load())
 	metrics.minimumSpectators.Store(metrics.spectators.Load())
 	metrics.measure.Store(true)
+	queryDiagnostics.start()
 	deadline := time.NewTimer(time.Duration(seconds) * time.Second)
 	defer deadline.Stop()
 	dbDiagnostics = startCapacityDBDiagnostics(ctx, s.pool.Config().ConnConfig, measuredStart, time.Duration(seconds)*time.Second)
@@ -1076,6 +1081,7 @@ func runCapacity(t *testing.T, seconds int, acceptance bool) {
 		select {
 		case <-deadline.C:
 			metrics.measure.Store(false)
+			queryDiagnostics.stop()
 			report.MeasuredSeconds = time.Since(measuredStart).Seconds()
 			report.CPUSeconds = capacityCPU() - cpuStart
 			dbDiagnostics.stop()
