@@ -232,6 +232,10 @@ func TestPGCommitThenLostACKAndFirstValidResponse(t *testing.T) {
 func TestPGSubmitAndTimerSerializeAtDeadline(t *testing.T) {
 	rule := mcr.New()
 	s := recoveryService(t, rule)
+	runCtx, stop := context.WithCancel(context.Background())
+	runDone := make(chan struct{})
+	go func() { defer close(runDone); s.Run(runCtx) }()
+	t.Cleanup(func() { stop(); <-runDone })
 	for iteration := 0; iteration < 12; iteration++ {
 		_, mid := recoveryRoom(t, s, rule, "practice_1")
 		m := recoveryMatch(t, s, mid)
@@ -252,7 +256,29 @@ func TestPGSubmitAndTimerSerializeAtDeadline(t *testing.T) {
 		if submitted != nil && recoveryCode(submitted) != "DECISION_CLOSED" {
 			t.Fatalf("deadline race: %v", submitted)
 		}
-		m = recoveryMatch(t, s, mid)
+		// A timer may skip the row while Submit holds it and then rejects an
+		// expired command. The real 25ms scheduler must rediscover that work;
+		// this observation loop must not perform the retry on its behalf.
+		m = func() match {
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			poll := time.NewTicker(5 * time.Millisecond)
+			defer poll.Stop()
+			for {
+				current, err := loadMatch(ctx, s.pool, mid, false)
+				if err != nil {
+					t.Fatalf("observe deadline adjudication: %v", err)
+				}
+				if current.Seq != 1 {
+					return current
+				}
+				select {
+				case <-ctx.Done():
+					t.Fatal("scheduler did not rediscover the skipped deadline")
+				case <-poll.C:
+				}
+			}
+		}()
 		if m.Seq != 2 {
 			t.Fatalf("window transitioned %d times", m.Seq-1)
 		}
