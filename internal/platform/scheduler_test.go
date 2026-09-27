@@ -91,6 +91,7 @@ func TestTableSchedulerRefreshesPendingWhileBusy(t *testing.T) {
 	started := make(chan string, 20)
 	release := make(chan struct{})
 	refreshed := make(chan struct{})
+	refreshApplied := make(chan struct{})
 	done := make(chan struct{})
 	ids := make([]string, 8)
 	for i := range ids {
@@ -104,7 +105,14 @@ func TestTableSchedulerRefreshesPendingWhileBusy(t *testing.T) {
 			if poll == 1 {
 				return append(append([]string{}, ids...), "stale", "retained"), nil
 			}
-			close(refreshed)
+			if poll == 2 {
+				close(refreshed)
+			}
+			if poll == 3 {
+				// A subsequent query can only start after the scheduler has
+				// applied the previous result to its pending queue.
+				close(refreshApplied)
+			}
 			// Simulate a newly expired deadline and an external submission
 			// making the old pending table no longer due. Running tables must
 			// not reenter the queue, even if the database still lists them.
@@ -128,10 +136,123 @@ func TestTableSchedulerRefreshesPendingWhileBusy(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		t.Fatal("scheduler did not refresh deadlines while all eight slots were busy")
 	}
+	refreshPoll := time.NewTicker(time.Millisecond)
+	defer refreshPoll.Stop()
+	refreshTimeout := time.NewTimer(3 * time.Second)
+	defer refreshTimeout.Stop()
+waitForRefresh:
+	for {
+		select {
+		case <-refreshApplied:
+			break waitForRefresh
+		case now := <-refreshPoll.C:
+			select {
+			case polls <- now:
+			default:
+			}
+		case <-refreshTimeout.C:
+			t.Fatal("scheduler did not apply the refreshed discovery")
+		}
+	}
 	for _, want := range []string{"urgent", "retained"} {
 		release <- struct{}{}
 		if got := schedulerStarted(t, started); got != want {
 			t.Fatalf("started %s, want %s after priority refresh", got, want)
+		}
+	}
+}
+
+func TestTableSchedulerBlockedDiscoveryDoesNotStopPendingWork(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	polls := make(chan time.Time)
+	started := make(chan string, 32)
+	releaseWork := make(chan struct{})
+	discoveryBlocked := make(chan struct{})
+	releaseDiscovery := make(chan struct{})
+	done := make(chan struct{})
+	var calls atomic.Int64
+	ids := make([]string, 20)
+	for i := range ids {
+		ids[i] = fmt.Sprintf("table-%d", i)
+	}
+	go func() {
+		defer close(done)
+		runTableScheduler(ctx, polls, func(ctx context.Context) ([]string, error) {
+			switch calls.Add(1) {
+			case 1:
+				return ids, nil
+			case 2:
+				close(discoveryBlocked)
+				select {
+				case <-releaseDiscovery:
+					// Represents a snapshot read before the workers advanced.
+					return ids, nil
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				}
+			default:
+				return []string{"fresh"}, nil
+			}
+		}, func(ctx context.Context, mid string) {
+			started <- mid
+			select {
+			case <-releaseWork:
+			case <-ctx.Done():
+			}
+		})
+	}()
+	t.Cleanup(func() { schedulerStopped(t, cancel, done) })
+	poll := func() {
+		t.Helper()
+		select {
+		case polls <- time.Now():
+		case <-time.After(3 * time.Second):
+			t.Fatal("discovery blocked the dispatch loop")
+		}
+	}
+	poll()
+	seen := map[string]bool{}
+	for i := 0; i < 8; i++ {
+		seen[schedulerStarted(t, started)] = true
+	}
+	poll()
+	select {
+	case <-discoveryBlocked:
+	case <-time.After(3 * time.Second):
+		t.Fatal("second discovery did not start")
+	}
+	// Polls must be coalesced rather than creating unbounded pool waiters.
+	for i := 0; i < 10; i++ {
+		poll()
+	}
+	if calls.Load() != 2 {
+		t.Fatalf("overlapping discovery calls: %d", calls.Load())
+	}
+	for i := 8; i < len(ids); i++ {
+		releaseWork <- struct{}{}
+		mid := schedulerStarted(t, started)
+		if seen[mid] {
+			t.Fatalf("table %s ran twice", mid)
+		}
+		seen[mid] = true
+	}
+	// All 20 tables started despite the second discovery still waiting.
+	close(releaseWork)
+	close(releaseDiscovery)
+	// Wait for a fresh query. Completed tables returned by the stale query
+	// must not be requeued even after their workers leave the running map.
+	until := time.NewTimer(3 * time.Second)
+	defer until.Stop()
+	for {
+		select {
+		case mid := <-started:
+			if mid != "fresh" {
+				t.Fatalf("stale discovery requeued completed table %s", mid)
+			}
+			return
+		case polls <- time.Now():
+		case <-until.C:
+			t.Fatal("fresh work did not start after discovery recovered")
 		}
 	}
 }

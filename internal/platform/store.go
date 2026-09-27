@@ -46,12 +46,22 @@ func loadRoom(ctx context.Context, q queryer, rid string) (Room, error) {
 	return v, rows.Err()
 }
 func loadMatch(ctx context.Context, q queryer, mid string, lock bool) (match, error) {
+	locking := ""
+	if lock {
+		locking = " FOR UPDATE"
+	}
+	return loadMatchQuery(ctx, q, mid, locking)
+}
+
+func loadMatchForTick(ctx context.Context, q queryer, mid string) (match, error) {
+	return loadMatchQuery(ctx, q, mid, " FOR UPDATE SKIP LOCKED")
+}
+
+func loadMatchQuery(ctx context.Context, q queryer, mid, locking string) (match, error) {
 	var m match
 	var choices []byte
 	sql := `SELECT id,room_id,ruleset_id,ruleset_version,match_format,state,seq,status,window_id,deadline_at,choices,owner_id,owner_epoch,updated_at,interrupted,artifact_hash,archived_at,owner_until<now() FROM platform_matches WHERE id=$1`
-	if lock {
-		sql += " FOR UPDATE"
-	}
+	sql += locking
 	e := q.QueryRow(ctx, sql, mid).Scan(&m.ID, &m.RoomID, &m.RulesetID, &m.RulesetVersion, &m.Format, &m.State, &m.Seq, &m.Status, &m.WindowID, &m.Deadline, &choices, &m.Owner, &m.OwnerEpoch, &m.Updated, &m.Interrupted, &m.Artifact, &m.ArchivedAt, &m.LeaseExpired)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return m, api(404, "MATCH_NOT_FOUND")

@@ -250,6 +250,25 @@ jobs:
         with:
           go-version: "1.27.1"
           cache: true
+      - name: Six-minute capacity diagnostic with the same load and thresholds
+        env:
+          OMJ_CAPACITY_DIAGNOSTIC_SECONDS: "360"
+          OMJ_CAPACITY_REPORT: ${{ github.workspace }}/test-results/diagnostic/capacity-report.json
+          OMJ_CAPACITY_PROFILE_PREFIX: ${{ github.workspace }}/test-results/diagnostic/capacity
+        run: |
+          mkdir -p test-results/diagnostic
+          set -o pipefail
+          go test ./internal/platform -list '^TestCapacityDiagnostic$' | python3 -c 'import sys; assert "TestCapacityDiagnostic" in sys.stdin.read().splitlines(), "required diagnostic test is missing"'
+          go test ./internal/platform -run '^TestCapacityDiagnostic$' -count=1 -v -timeout=15m 2>&1 | tee test-results/diagnostic/capacity.log
+          python3 -c 'import json, os; r=json.load(open(os.environ["OMJ_CAPACITY_REPORT"])); assert r.get("purpose") == "diagnostic" and r.get("checks_passed") is True and r.get("passed") is False, "diagnostics must not claim full-hour acceptance"'
+      - name: Early capacity diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: capacity-diagnostic
+          path: test-results/diagnostic/capacity*
+          if-no-files-found: error
+          retention-days: 7
       - name: Sustain production-clock capacity for a full hour
         run: |
           mkdir -p test-results

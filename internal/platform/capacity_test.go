@@ -195,6 +195,8 @@ func capacityDistribution(values []int64) map[string]any {
 
 type capacityReport struct {
 	Passed                                    bool           `json:"passed"`
+	Purpose                                   string         `json:"purpose"`
+	ChecksPassed                              bool           `json:"checks_passed"`
 	StartedAt                                 time.Time      `json:"started_at"`
 	RequestedSeconds                          int            `json:"requested_seconds"`
 	MeasuredSeconds                           float64        `json:"measured_seconds"`
@@ -215,12 +217,13 @@ type capacityReport struct {
 	SpectatorFrames                           int64 `json:"spectator_frames"`
 	SlowConsumers, SlowConsumersReleased      int
 	HotspotLimitRejected, IPLimitRejected     bool
-	CPUSeconds                                float64           `json:"process_cpu_seconds_including_generator"`
-	Pool                                      map[string]any    `json:"postgres_pool"`
-	LatencyDistributions                      map[string]any    `json:"latency_distributions"`
-	Profiles                                  map[string]string `json:"profiles,omitempty"`
-	CommandErrors                             map[string]int    `json:"command_errors"`
-	Errors                                    []string          `json:"errors"`
+	CPUSeconds                                float64               `json:"process_cpu_seconds_including_generator"`
+	Pool                                      map[string]any        `json:"postgres_pool"`
+	DBWaits                                   *capacityDBWaitReport `json:"postgres_wait_diagnostics,omitempty"`
+	LatencyDistributions                      map[string]any        `json:"latency_distributions"`
+	Profiles                                  map[string]string     `json:"profiles,omitempty"`
+	CommandErrors                             map[string]int        `json:"command_errors"`
+	Errors                                    []string              `json:"errors"`
 }
 
 func capacityNewUser(t *testing.T, s *Service, name string) capacityUser {
@@ -752,6 +755,32 @@ func TestCapacityOneHour(t *testing.T) {
 	if err != nil || seconds < 3600 {
 		t.Fatal("the capacity acceptance gate requires at least 3600 measured seconds")
 	}
+	runCapacity(t, seconds, true)
+}
+
+// A diagnostic can reject a bad candidate quickly, but can never satisfy the
+// release gate. It runs the same population, clocks, checks and measurements.
+func TestCapacityDiagnostic(t *testing.T) {
+	value := os.Getenv("OMJ_CAPACITY_DIAGNOSTIC_SECONDS")
+	if value == "" {
+		t.Skip("set OMJ_CAPACITY_DIAGNOSTIC_SECONDS=360 for a diagnostic only")
+	}
+	seconds, err := strconv.Atoi(value)
+	if err != nil || seconds < 360 || seconds >= 3600 {
+		t.Fatal("diagnostics require 360 to 3599 seconds; use TestCapacityOneHour for acceptance")
+	}
+	runCapacity(t, seconds, false)
+}
+
+func runCapacity(t *testing.T, seconds int, acceptance bool) {
+	t.Helper()
+	if acceptance && seconds < 3600 {
+		t.Fatal("the capacity acceptance gate requires at least 3600 measured seconds")
+	}
+	purpose := "diagnostic"
+	if acceptance {
+		purpose = "full_hour_acceptance"
+	}
 	if runtime.GOOS != "linux" {
 		t.Fatal("this gate requires Linux real 127/8 source addresses")
 	}
@@ -760,6 +789,7 @@ func TestCapacityOneHour(t *testing.T) {
 	metrics := &capacityMetrics{commandErrors: map[string]int{}}
 	s.cfg.ObserveTimerLag = metrics.lag
 	report := capacityReport{RequestedSeconds: seconds, Machine: capacityMachine(), Population: map[string]any{"human_tables": 20, "bot_tables": 30, "seats": 200, "player_websockets": 80, "builtin_controllers": 120, "healthy_spectators_launched": 1100, "required_minimum_spectators": 1000, "rematch_reconnection_reserve": 100, "rematch_handover": "replacement authenticates before old connection closes; per-IP baseline <=16; table migrations serialized", "hotspot_spectators": 500, "clock": "unaltered standard_16 human/Bot clocks"}, SlowConsumers: 10}
+	report.Purpose = purpose
 	ctx, cancel := context.WithCancel(context.Background())
 	mux := http.NewServeMux()
 	server := httptest.NewUnstartedServer(mux)
@@ -778,11 +808,16 @@ func TestCapacityOneHour(t *testing.T) {
 	var clients []*http.Client
 	cpuStart := capacityCPU()
 	var measuredStart time.Time
+	var dbDiagnostics *capacityDBDiagnostics
 	poolBaseline := s.pool.Stat()
 	var cpuProfile *os.File
 	profilePrefix := os.Getenv("OMJ_CAPACITY_PROFILE_PREFIX")
 	defer func() {
 		metrics.measure.Store(false)
+		if dbDiagnostics != nil {
+			diagnostics := dbDiagnostics.stop()
+			report.DBWaits = &diagnostics
+		}
 		// Stop while the load is still present, so heap samples describe the
 		// measured workload rather than an already dismantled test server.
 		if cpuProfile != nil {
@@ -1030,6 +1065,7 @@ func TestCapacityOneHour(t *testing.T) {
 	metrics.measure.Store(true)
 	deadline := time.NewTimer(time.Duration(seconds) * time.Second)
 	defer deadline.Stop()
+	dbDiagnostics = startCapacityDBDiagnostics(ctx, s.pool.Config().ConnConfig, measuredStart, time.Duration(seconds)*time.Second)
 	sample := time.NewTicker(time.Second)
 	defer sample.Stop()
 	slowCheck := time.NewTimer(5 * time.Minute)
@@ -1042,6 +1078,7 @@ func TestCapacityOneHour(t *testing.T) {
 			metrics.measure.Store(false)
 			report.MeasuredSeconds = time.Since(measuredStart).Seconds()
 			report.CPUSeconds = capacityCPU() - cpuStart
+			dbDiagnostics.stop()
 			var totalHands int64
 			if err = s.pool.QueryRow(ctx, `SELECT count(*) FROM (SELECT DISTINCT match_id,hand_index FROM platform_views WHERE participant_id='' AND view->>'phase' IN ('intermission','ended')) q`).Scan(&totalHands); err != nil {
 				t.Fatal(err)
@@ -1058,7 +1095,8 @@ func TestCapacityOneHour(t *testing.T) {
 			if failures > 0 || report.CompletedHands == 0 || ackP95 < 0 || ackP95 >= 100 || lagP99 < 0 || lagP99 >= 100 || report.SlowConsumersReleased != 10 || missing > 0 || metrics.minimumSpectators.Load() < 1000 || metrics.minimumHumans.Load() < 80 {
 				t.Fatalf("capacity acceptance failed: errors=%d hands=%d ACKp95=%.3fms timerp99=%.3fms slow released=%d population dips=%d/%d", failures, report.CompletedHands, ackP95, lagP99, report.SlowConsumersReleased, missing, samples)
 			}
-			report.Passed = true
+			report.ChecksPassed = true
+			report.Passed = acceptance
 			return
 		case <-slowCheck.C:
 			s.mu.Lock()
@@ -1090,6 +1128,7 @@ func TestCapacityOneHour(t *testing.T) {
 			if time.Since(lastProgress) >= time.Minute {
 				lastProgress = time.Now()
 				t.Logf("capacity progress elapsed=%.1fs humans=%d spectators=%d ACKsamples=%d timersamples=%d pool=%d/%d empty_wait=%.3fs acquisitions=%d cpu=%.3fs", time.Since(measuredStart).Seconds(), metrics.humans.Load(), metrics.spectators.Load(), len(metrics.acks), len(metrics.lags), poolStats.AcquiredConns(), poolStats.MaxConns(), (poolStats.EmptyAcquireWaitTime() - poolBaseline.EmptyAcquireWaitTime()).Seconds(), poolStats.AcquireCount()-poolBaseline.AcquireCount(), capacityCPU()-cpuStart)
+				t.Logf("capacity DB diagnostics %s", dbDiagnostics.progress())
 			}
 			if metrics.humans.Load() < 80 || metrics.spectators.Load() < 1000 {
 				metrics.belowPopulation++

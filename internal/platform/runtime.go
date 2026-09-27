@@ -98,6 +98,9 @@ func (s *Service) Submit(ctx context.Context, participant, controller string, a 
 		}
 	}
 	if !valid {
+		// Validation has only read state. Release its row lock and connection
+		// before the independent statistics write, including with a one-slot pool.
+		_ = tx.Rollback(ctx)
 		_ = s.recordInvalidAction(ctx, m, participant, a.CommandID, "INVALID_OPTION")
 		return nil, api(400, "INVALID_OPTION")
 	}
@@ -164,7 +167,7 @@ func (s *Service) Run(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-timer.C:
-				_, _ = s.pool.Exec(ctx, `UPDATE platform_matches SET owner_until=now()+interval '5 seconds' WHERE status='active' AND owner_id=$1 AND owner_until>=now() AND owner_until<now()+interval '3 seconds'`, s.id)
+				_ = s.renewOwnedLeases(ctx)
 			}
 		}
 	})
@@ -172,6 +175,21 @@ func (s *Service) Run(ctx context.Context) {
 	defer ticker.Stop()
 	defer group.Wait()
 	runTableScheduler(ctx, ticker.C, s.dueMatches, s.tickMatch)
+}
+
+func (s *Service) renewOwnedLeases(ctx context.Context) error {
+	// A busy table must not hold up renewal of every other table, or retain
+	// their row locks while waiting. Its current transaction renews the lease
+	// when it advances; otherwise a later heartbeat retries the same predicate.
+	_, err := s.pool.Exec(ctx, `WITH renewable AS (
+ SELECT id FROM platform_matches
+ WHERE status='active' AND owner_id=$1 AND owner_until>=now() AND owner_until<now()+interval '3 seconds'
+ FOR UPDATE SKIP LOCKED
+)
+UPDATE platform_matches m SET owner_until=now()+interval '5 seconds'
+FROM renewable r
+WHERE m.id=r.id AND m.status='active' AND m.owner_id=$1 AND m.owner_until>=now() AND m.owner_until<now()+interval '3 seconds'`, s.id)
+	return err
 }
 
 func (s *Service) dueMatches(ctx context.Context) ([]string, error) {
@@ -196,9 +214,16 @@ func (s *Service) dueMatches(ctx context.Context) ([]string, error) {
 // group of eight adds 150ms to a 50-table burst even when the work itself is fast.
 func runTableScheduler(ctx context.Context, polls <-chan time.Time, due func(context.Context) ([]string, error), work func(context.Context, string)) {
 	const parallelTables = 8
+	type discovery struct {
+		ids []string
+		err error
+	}
 	completed := make(chan string, parallelTables)
+	discovered := make(chan discovery, 1)
 	running := map[string]bool{}
 	var pending []string
+	var discovering bool
+	var touchedDuringDiscovery map[string]bool
 	var group sync.WaitGroup
 	defer group.Wait()
 	dispatch := func() {
@@ -206,6 +231,9 @@ func runTableScheduler(ctx context.Context, polls <-chan time.Time, due func(con
 			mid := pending[0]
 			pending = pending[1:]
 			running[mid] = true
+			if discovering {
+				touchedDuringDiscovery[mid] = true
+			}
 			group.Add(1)
 			go func() {
 				defer group.Done()
@@ -224,26 +252,40 @@ func runTableScheduler(ctx context.Context, polls <-chan time.Time, due func(con
 			delete(running, mid)
 			dispatch()
 		case <-polls:
-			for len(completed) > 0 {
-				delete(running, <-completed)
-			}
-			ids, err := due(ctx)
-			if err != nil {
-				dispatch()
+			if discovering || ctx.Err() != nil {
 				continue
 			}
-			// Replace the queue even while every slot is occupied. This drops
-			// externally advanced tables and promotes newly expired deadlines.
-			// A table may still change after this read; work rechecks its state,
-			// deadline and ownership while holding the match row lock.
-			pending = pending[:0]
-			queued := make(map[string]bool, len(ids))
-			for _, mid := range ids {
-				if !running[mid] && !queued[mid] {
-					pending = append(pending, mid)
-					queued[mid] = true
+			// Discovery may wait for a pool connection. Keep it out of the
+			// dispatch loop so completed workers can drain the existing queue.
+			// Coalesce polls while this single query is in flight.
+			discovering = true
+			touchedDuringDiscovery = make(map[string]bool, len(running))
+			for mid := range running {
+				touchedDuringDiscovery[mid] = true
+			}
+			group.Add(1)
+			go func() {
+				defer group.Done()
+				ids, err := due(ctx)
+				discovered <- discovery{ids: ids, err: err}
+			}()
+		case result := <-discovered:
+			discovering = false
+			if result.err == nil {
+				// Refresh stale pending work and promote newly expired deadlines.
+				// Ignore tables that ran during the query: its snapshot may still
+				// list them even though their worker has already advanced them.
+				// If they are due again, the next poll discovers that new work.
+				pending = pending[:0]
+				queued := make(map[string]bool, len(result.ids))
+				for _, mid := range result.ids {
+					if !running[mid] && !touchedDuringDiscovery[mid] && !queued[mid] {
+						pending = append(pending, mid)
+						queued[mid] = true
+					}
 				}
 			}
+			touchedDuringDiscovery = nil
 			dispatch()
 		}
 	}
@@ -254,7 +296,10 @@ func (s *Service) tickMatch(ctx context.Context, mid string) {
 		return
 	}
 	defer tx.Rollback(ctx)
-	m, e := loadMatch(ctx, tx, mid, true)
+	// Commands and other transactions retain normal row-lock serialization.
+	// A timer can retry a busy table on the next discovery without holding a
+	// shared-pool connection while another transaction owns that table.
+	m, e := loadMatchForTick(ctx, tx, mid)
 	if e != nil || m.Status != "active" {
 		return
 	}

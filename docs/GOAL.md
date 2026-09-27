@@ -23,9 +23,9 @@
 | M0 规格、插件 SDK、协议、骨架 | `pkg/rulesdk`、`rules/registry`、`api`、`docs` | 85 HTTP 操作及强 Schema 已落地，共同样例、生成一致性和离线校验通过 |
 | M1 国标裁判、算番、赛程、重放 | `rules/mcr`、`rules/mcr/scoring` | 两种架构规则回归及 10,000 手已通过；保留线上裁决解释与专家复核边界 |
 | M2 账号、房间、邀请、匹配 | `internal/auth`、`internal/platform` | 真实 PostgreSQL 权限、并发、恢复通过；新增修复须再跑 |
-| M3 React、弃牌观战、重连、历史 | `web`、`internal/platform` | 构建和单测通过；43 前端单测通过；第六轮六组真实浏览器通过；本批公共帧优化待 CI |
+| M3 React、弃牌观战、重连、历史 | `web`、`internal/platform` | 构建和单测通过；43 前端单测通过；第七轮六组真实浏览器通过；本批锁等待修复待 CI |
 | M4 内置/外部 Bot、SDK、统计 | `internal/bots`、`sdk`、`internal/platform/stats.go` | 两语言 SDK 用例通过；第六轮3 Python+1 TypeScript真实 WSS 112手通过；本批 Host 优化待复验 |
-| M5 Docker、CI、运维、完整验收 | `Dockerfile`、`deploy`、`.github/workflows` | 双架构容器构建/冒烟通过；第六轮备份恢复通过；容量裁决 p99 133.382 ms 超标，继续修复 |
+| M5 Docker、CI、运维、完整验收 | `Dockerfile`、`deploy`、`.github/workflows` | 双架构容器构建/冒烟通过；第七轮备份恢复通过；容量 ACK p95 184.351 ms / 裁决 p99 408.430 ms 超标，继续修复 |
 
 实现落地与发布门槛分开记录。以上通过项只适用于验收记录标明的提交；后续变更由同一工作流重跑。
 
